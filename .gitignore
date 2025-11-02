@@ -24,6 +24,8 @@ logs/
 allure-results/
 allure-report/
 *.tgz
+.allure/
+selenium-java-framework/.allure/
 
 # Test screenshots
 screenshots/
