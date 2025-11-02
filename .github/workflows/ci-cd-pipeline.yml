@@ -280,10 +280,114 @@ jobs:
         retention-days: 90
 
   # ==========================================
-  # 🔔 NOTIFICATION JOB
+  # 🌐 DEPLOY REPORTS TO GITHUB PAGES
+  # ==========================================
+  deploy-reports:
+    needs: [smoke-tests, generate-reports]
+    runs-on: ubuntu-latest
+    if: always() && github.ref == 'refs/heads/implementation'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+    - name: � Download Test Results
+      uses: actions/download-artifact@v4
+      with:
+        path: test-results/
+        
+    - name: 🏗️ Prepare Pages Content
+      run: |
+        mkdir -p pages
+        
+        # Create main index page
+        cat > pages/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Selenium Test Reports</title>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+                .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; }
+                .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+                .content { padding: 30px; }
+                .browser-section { margin: 20px 0; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; }
+                .btn { display: inline-block; padding: 12px 24px; background: #667eea; color: white; text-decoration: none; border-radius: 6px; margin: 5px; transition: background 0.3s; }
+                .btn:hover { background: #5a6fd8; }
+                .timestamp { color: #666; font-size: 0.9em; margin-top: 20px; text-align: center; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🧪 Selenium Test Reports</h1>
+                    <p>Automated Test Results Dashboard</p>
+                </div>
+                <div class="content">
+                    <div class="browser-section">
+                        <h3>🌐 Chrome Test Results</h3>
+                        <a href="chrome/index.html" class="btn">📊 View Chrome Report</a>
+                        <p>Automated tests executed on Google Chrome browser</p>
+                    </div>
+                    <div class="browser-section">
+                        <h3>🦊 Firefox Test Results</h3>
+                        <a href="firefox/index.html" class="btn">📊 View Firefox Report</a>
+                        <p>Automated tests executed on Mozilla Firefox browser</p>
+                    </div>
+                    <div class="browser-section">
+                        <h3>📋 Combined Reports</h3>
+                        <a href="summary/test-summary.md" class="btn">📄 View Summary</a>
+                        <p>Overall test execution summary</p>
+                    </div>
+                    <div class="timestamp">
+                        <p>Generated: $(date) | Branch: ${{ github.ref_name }} | Commit: ${{ github.sha }}</p>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+        EOF
+        
+        # Copy reports if they exist
+        if [ -d "test-results/smoke-test-results-chrome" ]; then
+          mkdir -p pages/chrome
+          cp -r test-results/smoke-test-results-chrome/selenium-java-framework/target/allure-report/* pages/chrome/ 2>/dev/null || true
+        fi
+        
+        if [ -d "test-results/smoke-test-results-firefox" ]; then
+          mkdir -p pages/firefox  
+          cp -r test-results/smoke-test-results-firefox/selenium-java-framework/target/allure-report/* pages/firefox/ 2>/dev/null || true
+        fi
+        
+        if [ -d "test-results/combined-test-reports" ]; then
+          mkdir -p pages/summary
+          cp -r test-results/combined-test-reports/* pages/summary/ 2>/dev/null || true
+        fi
+        
+    - name: 🚀 Setup Pages
+      uses: actions/configure-pages@v4
+      
+    - name: 📦 Upload Pages Artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: 'pages'
+        
+    - name: 🌐 Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+
+  # ==========================================
+  # �🔔 NOTIFICATION JOB
   # ==========================================
   notify-results:
-    needs: [smoke-tests, generate-reports]
+    needs: [smoke-tests, generate-reports, deploy-reports]
     runs-on: ubuntu-latest
     if: always()
     
@@ -292,4 +396,5 @@ jobs:
       run: |
         echo "🚀 Test execution completed!"
         echo "📊 Results available in artifacts"
+        echo "🌐 Live reports: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
         echo "🔗 View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
