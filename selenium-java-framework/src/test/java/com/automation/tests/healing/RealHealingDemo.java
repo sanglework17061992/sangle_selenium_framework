@@ -90,15 +90,23 @@ public class RealHealingDemo {
         Allure.step("Try healing to find the modified username field", () -> {
             LoggerUtil.info("🔧 ATTEMPTING HEALING: Looking for username field with modified ID");
             
-            // Try healing approach
+            // Try healing approach with proper action supplier
             By originalLocator = By.id("username");
-            Optional<WebElement> healedElement = healingManager.healAndRetry(originalLocator, "type");
+            Optional<String> healingResult = healingManager.healAndRetry(originalLocator, () -> {
+                try {
+                    // This action will be attempted on the healed element
+                    WebElement element = driver.findElement(originalLocator);
+                    element.clear();
+                    element.sendKeys("healed-user");
+                    return "SUCCESS: Typed 'healed-user' via healing";
+                } catch (Exception e) {
+                    return null;
+                }
+            });
             
-            if (healedElement.isPresent()) {
-                LoggerUtil.info("✅ HEALING SUCCESS: Found username field with modified ID!");
-                healedElement.get().sendKeys("healed-user");
-                
-                Allure.addAttachment("Healing Success", "Successfully found username field despite ID change from 'username' to 'username-modified'");
+            if (healingResult.isPresent()) {
+                LoggerUtil.info("✅ HEALING SUCCESS: " + healingResult.get());
+                Allure.addAttachment("Healing Success", "Successfully found and filled username field despite ID change from 'username' to 'username-modified': " + healingResult.get());
             } else {
                 LoggerUtil.info("❌ HEALING FAILED: Could not find username field");
                 
@@ -211,11 +219,19 @@ public class RealHealingDemo {
                 
                 // Try healing
                 LoggerUtil.info("🔧 Attempting healing for username field");
-                Optional<WebElement> healedUsername = healingManager.healAndRetry(By.id("username"), "type");
+                Optional<String> healedUsernameResult = healingManager.healAndRetry(By.id("username"), () -> {
+                    try {
+                        WebElement element = driver.findElement(By.id("username"));
+                        element.clear();
+                        element.sendKeys("testuser-healed");
+                        return "SUCCESS: Username filled via healing";
+                    } catch (Exception ex) {
+                        return null;
+                    }
+                });
                 
-                if (healedUsername.isPresent()) {
-                    healedUsername.get().sendKeys("testuser-healed");
-                    LoggerUtil.info("✅ Username filled via healing");
+                if (healedUsernameResult.isPresent()) {
+                    LoggerUtil.info("✅ Username filled via healing: " + healedUsernameResult.get());
                     usernameSuccess = true;
                 } else {
                     // Manual fallback strategies
@@ -265,11 +281,19 @@ public class RealHealingDemo {
                 
                 // Try healing
                 LoggerUtil.info("🔧 Attempting healing for password field");
-                Optional<WebElement> healedPassword = healingManager.healAndRetry(By.id("password"), "type");
+                Optional<String> healedPasswordResult = healingManager.healAndRetry(By.id("password"), () -> {
+                    try {
+                        WebElement element = driver.findElement(By.id("password"));
+                        element.clear();
+                        element.sendKeys("password123");
+                        return "SUCCESS: Password filled via healing";
+                    } catch (Exception ex) {
+                        return null;
+                    }
+                });
                 
-                if (healedPassword.isPresent()) {
-                    healedPassword.get().sendKeys("password123");
-                    LoggerUtil.info("✅ Password filled via healing");
+                if (healedPasswordResult.isPresent()) {
+                    LoggerUtil.info("✅ Password filled via healing: " + healedPasswordResult.get());
                     passwordSuccess = true;
                 } else {
                     // Manual fallback strategies
@@ -327,11 +351,18 @@ public class RealHealingDemo {
                 
                 // Try healing
                 LoggerUtil.info("🔧 Attempting healing for login button");
-                Optional<WebElement> healedButton = healingManager.healAndRetry(By.id("login-btn"), "click");
+                Optional<String> healedButtonResult = healingManager.healAndRetry(By.id("login-btn"), () -> {
+                    try {
+                        WebElement element = driver.findElement(By.id("login-btn"));
+                        element.click();
+                        return "SUCCESS: Login button clicked via healing";
+                    } catch (Exception ex) {
+                        return null;
+                    }
+                });
                 
-                if (healedButton.isPresent()) {
-                    healedButton.get().click();
-                    LoggerUtil.info("✅ Login button clicked via healing");
+                if (healedButtonResult.isPresent()) {
+                    LoggerUtil.info("✅ Login button clicked via healing: " + healedButtonResult.get());
                     loginButtonSuccess = true;
                 } else {
                     // Manual fallback strategies
@@ -638,10 +669,18 @@ public class RealHealingDemo {
                 
                 // Now try the broken locator to trigger healing
                 By brokenLocator = By.id("username");
-                Optional<WebElement> healedElement = healingManager.healAndRetry(brokenLocator, "DOM Analysis");
+                Optional<String> healingAnalysisResult = healingManager.healAndRetry(brokenLocator, () -> {
+                    try {
+                        WebElement element = driver.findElement(brokenLocator);
+                        element.sendKeys("healing-analysis-test");
+                        return "SUCCESS: DOM Analysis healing worked!";
+                    } catch (Exception ex) {
+                        return null;
+                    }
+                });
                 
-                if (healedElement.isPresent()) {
-                    LoggerUtil.info("✅ DOM ANALYSIS SUCCESS: Healing worked!");
+                if (healingAnalysisResult.isPresent()) {
+                    LoggerUtil.info("✅ DOM ANALYSIS SUCCESS: " + healingAnalysisResult.get());
                 } else {
                     LoggerUtil.info("❌ DOM ANALYSIS: Healing failed - need to improve algorithm");
                 }

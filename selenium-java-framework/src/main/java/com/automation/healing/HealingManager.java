@@ -2,8 +2,7 @@ package com.automation.healing;
 
 import com.automation.healing.analyzer.Analyzer;
 import com.automation.healing.analyzer.SmartAnalyzer;
-import com.automation.healing.connector.CdpConnector;
-import com.automation.healing.connector.ChromeCdpConnector;
+import com.automation.healing.connector.SimpleDomConnector;
 import com.automation.healing.models.*;
 import com.automation.healing.repository.JsonLocatorRepository;
 import com.automation.healing.repository.LocatorRepository;
@@ -33,7 +32,7 @@ public class HealingManager {
     private static final DateTimeFormatter EVENT_ID_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSS");
     
     private WebDriver driver;
-    private CdpConnector cdpConnector;
+    private SimpleDomConnector domConnector;
     private LocatorRepository repository;
     private Analyzer analyzer;
     private HealingReporter reporter;
@@ -83,8 +82,7 @@ public class HealingManager {
         
         try {
             // Initialize components
-            this.cdpConnector = new ChromeCdpConnector(driver);
-            this.cdpConnector.initialize(driver);
+            this.domConnector = new SimpleDomConnector(driver);
             
             this.repository = new JsonLocatorRepository();
             this.analyzer = new SmartAnalyzer();
@@ -383,9 +381,7 @@ public class HealingManager {
     
     public void shutdown() {
         try {
-            if (cdpConnector != null) {
-                cdpConnector.close();
-            }
+            // SimpleDomConnector doesn't need explicit cleanup
             LoggerUtil.info("HealingManager shutdown completed");
         } catch (Exception e) {
             LoggerUtil.error("Error during HealingManager shutdown: " + e.getMessage(), e);
@@ -412,13 +408,13 @@ public class HealingManager {
     }
     
     private Map<String, Object> captureDomSnapshot() {
-        if (cdpConnector == null) {
-            LoggerUtil.warn("CDP connector not available");
+        if (domConnector == null) {
+            LoggerUtil.warn("DOM connector not available");
             return null;
         }
         
         try {
-            return cdpConnector.captureDomSnapshot();
+            return domConnector.captureDomSnapshot();
         } catch (Exception e) {
             LoggerUtil.error("Failed to capture DOM snapshot: " + e.getMessage(), e);
             return null;
@@ -503,9 +499,9 @@ public class HealingManager {
         event.setConfidence(0.0);
         event.setHealingMode(healingMode);
         
-        if (cdpConnector != null) {
-            event.setPageUrl(cdpConnector.getCurrentUrl());
-            event.setBrowserInfo(cdpConnector.getBrowserInfo().toString());
+        if (domConnector != null) {
+            event.setPageUrl(domConnector.getCurrentUrl());
+            event.setBrowserInfo(domConnector.getBrowserInfo().toString());
         }
         
         repository.saveHealingSuggestion(event);
@@ -527,9 +523,9 @@ public class HealingManager {
         event.setHealingMode(healingMode);
         event.setCandidatesCount(1);
         
-        if (cdpConnector != null) {
-            event.setPageUrl(cdpConnector.getCurrentUrl());
-            event.setBrowserInfo(cdpConnector.getBrowserInfo().toString());
+        if (domConnector != null) {
+            event.setPageUrl(domConnector.getCurrentUrl());
+            event.setBrowserInfo(domConnector.getBrowserInfo().toString());
         }
         
         return event;
