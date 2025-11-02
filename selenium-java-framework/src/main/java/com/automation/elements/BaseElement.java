@@ -1,7 +1,7 @@
 package com.automation.elements;
 
 import com.automation.core.ConfigManager;
-import com.automation.utils.Action;
+import com.automation.enums.Action;
 import com.automation.utils.LoggerUtil;
 import com.automation.utils.RetryUtil;
 import com.automation.utils.WaitUtil;
