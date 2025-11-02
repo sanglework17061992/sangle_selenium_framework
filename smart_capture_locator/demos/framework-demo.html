@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Framework Demo - Smart Locator Inspector</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 2px solid #f0f0f0;
+            border-radius: 8px;
+        }
+        .section h2 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #34495e;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .btn-primary { background: #3498db; color: white; }
+        .btn-secondary { background: #95a5a6; color: white; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn:hover { transform: translateY(-2px); opacity: 0.9; }
+        .card {
+            border: 1px solid #ecf0f1;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #fafafa;
+        }
+        .mat-card {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: none;
+        }
+        .vue-component {
+            border-left: 4px solid #42b883;
+        }
+        .react-component {
+            border-left: 4px solid #61dafb;
+        }
+        .angular-component {
+            border-left: 4px solid #dd0031;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .data-table th, .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .data-table th {
+            background: #34495e;
+            color: white;
+            font-weight: 600;
+        }
+        .highlight {
+            background: #f39c12;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="main-title">🚀 Framework Demo - Smart XPath Testing</h1>
+        
+        <!-- Angular Components Section -->
+        <div class="section angular-component">
+            <h2>🅰️ Angular Framework Elements</h2>
+            
+            <!-- Angular Material Components -->
+            <div class="form-group">
+                <label for="angular-input">Angular Material Input</label>
+                <input 
+                    id="angular-input" 
+                    type="text" 
+                    ng-model="user.name" 
+                    class="mat-input-element mat-form-field-input"
+                    placeholder="Enter your name"
+                    data-testid="angular-name-input">
+            </div>
+            
+            <div class="form-group">
+                <label for="angular-select">Angular Material Select</label>
+                <select 
+                    id="angular-select" 
+                    ng-model="user.country" 
+                    class="mat-select mat-form-field-input"
+                    data-testid="country-selector">
+                    <option value="">Select Country</option>
+                    <option value="us">United States</option>
+                    <option value="ca">Canada</option>
+                    <option value="uk">United Kingdom</option>
+                </select>
+            </div>
+            
+            <button 
+                class="btn btn-primary mat-raised-button mat-primary" 
+                ng-click="saveUser()" 
+                data-testid="save-user-btn"
+                aria-label="Save user information">
+                Save User
+            </button>
+            
+            <button 
+                class="btn btn-secondary mat-stroked-button" 
+                ng-submit="validateForm()" 
+                data-cy="validate-form">
+                Validate Form
+            </button>
+        </div>
+
+        <!-- React Components Section -->
+        <div class="section react-component">
+            <h2>⚛️ React Framework Elements</h2>
+            
+            <!-- React Testing Library Components -->
+            <div class="form-group">
+                <label htmlFor="react-email">React Email Input</label>
+                <input 
+                    id="react-email" 
+                    type="email" 
+                    data-testid="email-input" 
+                    data-test="user-email-field"
+                    placeholder="user@example.com"
+                    className="form-control react-input"
+                    aria-label="Email address">
+            </div>
+            
+            <div class="form-group">
+                <label htmlFor="react-password">React Password Input</label>
+                <input 
+                    id="react-password" 
+                    type="password" 
+                    data-testid="password-input" 
+                    data-cy="password-field"
+                    placeholder="Enter password"
+                    className="form-control react-input"
+                    aria-describedby="password-help">
+            </div>
+            
+            <div className="card react-card">
+                <h3 data-testid="card-title">User Profile Card</h3>
+                <p data-testid="card-description">This is a React component card with <span class="highlight">dynamic content</span></p>
+                <button 
+                    className="btn btn-success react-btn" 
+                    data-testid="profile-save-btn"
+                    onClick="handleSave()"
+                    role="button">
+                    Save Profile
+                </button>
+            </div>
+        </div>
+
+        <!-- Vue.js Components Section -->
+        <div class="section vue-component">
+            <h2>🖖 Vue.js Framework Elements</h2>
+            
+            <!-- Vue.js Directives -->
+            <div class="form-group">
+                <label for="vue-message">Vue Message Input</label>
+                <input 
+                    id="vue-message" 
+                    type="text" 
+                    v-model="message" 
+                    v-bind:placeholder="placeholderText"
+                    data-testid="vue-message-input"
+                    class="form-control vue-input">
+            </div>
+            
+            <div class="form-group">
+                <label for="vue-category">Vue Category Select</label>
+                <select 
+                    id="vue-category" 
+                    v-model="selectedCategory" 
+                    v-on:change="handleCategoryChange"
+                    data-testid="category-select"
+                    class="form-control vue-select">
+                    <option v-for="category in categories" :key="category.id" :value="category.id">
+                        {{ category.name }}
+                    </option>
+                </select>
+            </div>
+            
+            <div v-if="showAdvanced" class="card vue-card">
+                <h3>Advanced Options</h3>
+                <textarea 
+                    v-model="advancedConfig" 
+                    v-show="isVisible"
+                    data-testid="advanced-config"
+                    placeholder="Enter JSON configuration"
+                    class="form-control vue-textarea">
+                </textarea>
+            </div>
+            
+            <button 
+                class="btn btn-primary vue-btn" 
+                v-on:click="submitForm" 
+                v-bind:disabled="!isFormValid"
+                data-testid="vue-submit-btn">
+                Submit Vue Form
+            </button>
+        </div>
+
+        <!-- Dynamic Content Section -->
+        <div class="section">
+            <h2>🔄 Dynamic Content Elements</h2>
+            
+            <!-- List with dynamic IDs -->
+            <div class="dynamic-list">
+                <div class="card dynamic-item" id="item-123456" data-item-id="123456">
+                    <h3>Dynamic Item #123456</h3>
+                    <p>This item has a dynamic ID that changes</p>
+                    <button class="btn btn-danger" data-action="delete" data-item="123456">Delete Item</button>
+                </div>
+                
+                <div class="card dynamic-item" id="item-789012" data-item-id="789012">
+                    <h3>Dynamic Item #789012</h3>
+                    <p>Another item with dynamic identifier</p>
+                    <button class="btn btn-danger" data-action="delete" data-item="789012">Delete Item</button>
+                </div>
+            </div>
+            
+            <!-- Table with repeating structure -->
+            <table class="data-table dynamic-table">
+                <thead>
+                    <tr>
+                        <th data-testid="table-header-name">Name</th>
+                        <th data-testid="table-header-email">Email</th>
+                        <th data-testid="table-header-role">Role</th>
+                        <th data-testid="table-header-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="user-row" data-user-id="user-001" data-testid="user-row-1">
+                        <td class="user-name" data-testid="user-name-1">John Smith</td>
+                        <td class="user-email" data-testid="user-email-1">john@example.com</td>
+                        <td class="user-role" data-testid="user-role-1">Admin</td>
+                        <td class="user-actions" data-testid="user-actions-1">
+                            <button class="btn btn-secondary" data-action="edit" data-user="user-001">Edit</button>
+                            <button class="btn btn-danger" data-action="delete" data-user="user-001">Delete</button>
+                        </td>
+                    </tr>
+                    <tr class="user-row" data-user-id="user-002" data-testid="user-row-2">
+                        <td class="user-name" data-testid="user-name-2">Jane Doe</td>
+                        <td class="user-email" data-testid="user-email-2">jane@example.com</td>
+                        <td class="user-role" data-testid="user-role-2">User</td>
+                        <td class="user-actions" data-testid="user-actions-2">
+                            <button class="btn btn-secondary" data-action="edit" data-user="user-002">Edit</button>
+                            <button class="btn btn-danger" data-action="delete" data-user="user-002">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Accessibility Focused Section -->
+        <div class="section">
+            <h2>♿ Accessibility-First Elements</h2>
+            
+            <div class="form-group">
+                <label for="accessible-input">Accessible Input Field</label>
+                <input 
+                    id="accessible-input" 
+                    type="text" 
+                    aria-label="Full name input field"
+                    aria-describedby="name-help"
+                    role="textbox"
+                    data-testid="accessible-name-input"
+                    placeholder="Enter your full name">
+                <small id="name-help">Enter your first and last name</small>
+            </div>
+            
+            <fieldset>
+                <legend>Notification Preferences</legend>
+                <label>
+                    <input type="radio" name="notifications" value="email" aria-describedby="email-help" data-testid="notify-email">
+                    Email notifications
+                </label>
+                <label>
+                    <input type="radio" name="notifications" value="sms" aria-describedby="sms-help" data-testid="notify-sms">
+                    SMS notifications
+                </label>
+                <label>
+                    <input type="radio" name="notifications" value="none" aria-describedby="none-help" data-testid="notify-none">
+                    No notifications
+                </label>
+            </fieldset>
+            
+            <button 
+                class="btn btn-success" 
+                aria-label="Save all preferences and settings"
+                role="button"
+                data-testid="save-preferences-btn"
+                title="Click to save your preference settings">
+                Save Preferences
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Simulate framework behavior
+        console.log('Framework Demo Page Loaded');
+        
+        // Add some dynamic behavior
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Smart Locator Inspector will analyze these framework patterns!');
+        });
+    </script>
+</body>
+</html>

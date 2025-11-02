@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table XPath Demo - Smart Locator Inspector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #007acc 0%, #005a9e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .demo-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+        }
+        
+        .table th, .table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        
+        .table th {
+            background: #007acc;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .table tbody tr:nth-child(odd) {
+            background: #f9f9f9;
+        }
+        
+        .table tbody tr:nth-child(even) {
+            background: #ffffff;
+        }
+        
+        .table tbody tr:hover {
+            background: #e3f2fd;
+        }
+        
+        .MyTable {
+            border: 2px solid #007acc;
+            border-radius: 8px;
+        }
+        
+        .WideTable {
+            width: 100%;
+        }
+        
+        .TableSmallHeader th {
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        
+        .OddRow {
+            background: #f5f5f5;
+        }
+        
+        .EvenRow {
+            background: #ffffff;
+        }
+        
+        .TableHilightRow {
+            background: #ffeb3b !important;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .btn {
+            background: #007acc;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 12px;
+        }
+        
+        .btn:hover {
+            background: #005a9e;
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            border-left: 4px solid #007acc;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .highlight-xpath {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Table XPath Demo - Smart Locator Inspector</h1>
+            <p>Enhanced table detection and dynamic XPath generation for automation testing</p>
+        </div>
+        
+        <div class="content">
+            <div class="alert alert-info">
+                <strong>🎯 New Table Features:</strong> 
+                When you hover over table elements (table, tr, td, th, or elements inside cells), 
+                the Smart Locator Inspector now generates specialized XPaths that reference:
+                <ul>
+                    <li><strong>Column headers</strong> - Find elements by column name</li>
+                    <li><strong>Row content</strong> - Locate cells based on other cells in the same row</li>
+                    <li><strong>Cell coordinates</strong> - Combine header + row data for precise targeting</li>
+                    <li><strong>Table context</strong> - Multi-condition XPaths for complex scenarios</li>
+                </ul>
+            </div>
+
+            <div class="instructions">
+                <h3>🚀 How to Test Table XPaths:</h3>
+                <ol>
+                    <li>Run: <code>node smart-locator.js file:///absolute/path/to/this/file.html</code></li>
+                    <li>Hover over any cell in the tables below</li>
+                    <li>Notice the <strong>📊 Table-specific XPaths</strong> with orange styling</li>
+                    <li>Try hovering over buttons inside cells to see contextual XPaths</li>
+                    <li>Test different cell types: text, links, buttons, form inputs</li>
+                </ol>
+            </div>
+            
+            <!-- Realistic Train Timetable Table -->
+            <div class="demo-section">
+                <h2>🚂 Train Timetable (Example from Safe Railway)</h2>
+                <div id="content">
+                    <h1 align="center">Train Timetable</h1>
+                    <div align="center" class="divCenter">
+                        <div class="DivTable">
+                            <table class="MyTable WideTable table" align="center">
+                                <thead>
+                                    <tr class="TableSmallHeader" align="left">
+                                        <th>No.</th>
+                                        <th>Depart Station</th>
+                                        <th>Arrive Station</th>
+                                        <th>Depart Time</th>        
+                                        <th>Arrive Time</th>
+                                        <th>Check Price</th>
+                                        <th>Book ticket</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="OddRow" onmouseout="this.className='OddRow'" onmouseover="this.className='TableHilightRow'">
+                                        <td>1</td>
+                                        <td>Sài Gòn</td>
+                                        <td>Phan Thiết</td>
+                                        <td>7:30</td>
+                                        <td>11:30</td>
+                                        <td><a href="TicketPricePage.cshtml?id1=1&amp;id2=2" class="btn">check price</a></td>
+                                        <td><a href="BookTicketPage.cshtml?id1=1&amp;id2=2" class="btn">book ticket</a></td>
+                                    </tr>
+                                    <tr class="EvenRow" onmouseout="this.className='EvenRow'" onmouseover="this.className='TableHilightRow'">
+                                        <td>2</td>
+                                        <td>Sài Gòn</td>
+                                        <td>Nha Trang</td>
+                                        <td>6:00</td>
+                                        <td>14:00</td>
+                                        <td><a href="TicketPricePage.cshtml?id1=1&amp;id2=3" class="btn">check price</a></td>
+                                        <td><a href="BookTicketPage.cshtml?id1=1&amp;id2=3" class="btn">book ticket</a></td>
+                                    </tr>
+                                    <tr class="OddRow" onmouseout="this.className='OddRow'" onmouseover="this.className='TableHilightRow'">
+                                        <td>3</td>
+                                        <td>Sài Gòn</td>
+                                        <td>Đà Nẵng</td>
+                                        <td>5:00</td>
+                                        <td>16:00</td>
+                                        <td><a href="TicketPricePage.cshtml?id1=1&amp;id2=4" class="btn">check price</a></td>
+                                        <td><a href="BookTicketPage.cshtml?id1=1&amp;id2=4" class="btn">book ticket</a></td>
+                                    </tr>
+                                    <tr class="EvenRow" onmouseout="this.className='EvenRow'" onmouseover="this.className='TableHilightRow'">
+                                        <td>4</td>
+                                        <td>Huế</td>
+                                        <td>Đà Nẵng</td>
+                                        <td>8:00</td>
+                                        <td>12:00</td>
+                                        <td><a href="TicketPricePage.cshtml?id1=5&amp;id2=4" class="btn">check price</a></td>
+                                        <td><a href="BookTicketPage.cshtml?id1=5&amp;id2=4" class="btn">book ticket</a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="highlight-xpath">
+                    <strong>Example XPaths you should see:</strong><br>
+                    📊 <strong>Book Ticket for Sài Gòn → Nha Trang:</strong><br>
+                    <code>//table[.//th[normalize-space(text())="Book ticket"]]//tr[td[normalize-space(text())="Sài Gòn"] and td[normalize-space(text())="Nha Trang"]]/td[7]</code><br><br>
+                    📊 <strong>Check Price by Depart Station:</strong><br>
+                    <code>//td[normalize-space(text())="Sài Gòn"]/following-sibling::td[5]</code>
+                </div>
+            </div>
+
+            <!-- E-commerce Product Table -->
+            <div class="demo-section">
+                <h2>🛒 Product Comparison Table</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Rating</th>
+                            <th>Stock</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Laptop Pro 15"</td>
+                            <td>$1,299</td>
+                            <td>⭐⭐⭐⭐⭐ 4.8</td>
+                            <td>In Stock</td>
+                            <td>
+                                <button class="btn" onclick="alert('Add to cart: Laptop Pro')">Add to Cart</button>
+                                <button class="btn" onclick="alert('View details: Laptop Pro')">Details</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Smartphone X</td>
+                            <td>$899</td>
+                            <td>⭐⭐⭐⭐ 4.2</td>
+                            <td>Limited</td>
+                            <td>
+                                <button class="btn" onclick="alert('Add to cart: Smartphone X')">Add to Cart</button>
+                                <button class="btn" onclick="alert('View details: Smartphone X')">Details</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Tablet Air</td>
+                            <td>$599</td>
+                            <td>⭐⭐⭐⭐ 4.5</td>
+                            <td>Out of Stock</td>
+                            <td>
+                                <button class="btn" disabled>Notify Me</button>
+                                <button class="btn" onclick="alert('View details: Tablet Air')">Details</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="highlight-xpath">
+                    <strong>Expected table XPaths:</strong><br>
+                    📊 <strong>Add to Cart for Smartphone X:</strong><br>
+                    <code>//tr[td[normalize-space(text())="Smartphone X"]]/td[5]/button[normalize-space(text())="Add to Cart"]</code><br><br>
+                    📊 <strong>Price column for Laptop Pro:</strong><br>
+                    <code>//table[.//th[normalize-space(text())="Price"]]//tr[td[normalize-space(text())="Laptop Pro 15\""]]/td[2]</code>
+                </div>
+            </div>
+
+            <!-- User Management Table -->
+            <div class="demo-section">
+                <h2>👥 User Management Table</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Last Login</th>
+                            <th>Manage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>001</td>
+                            <td>John Doe</td>
+                            <td>john.doe@example.com</td>
+                            <td>Admin</td>
+                            <td><span style="color: green">Active</span></td>
+                            <td>2025-10-07 09:30</td>
+                            <td>
+                                <button class="btn" onclick="editUser('001')">Edit</button>
+                                <button class="btn" onclick="deleteUser('001')" style="background: #dc3545">Delete</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>002</td>
+                            <td>Jane Smith</td>
+                            <td>jane.smith@example.com</td>
+                            <td>Editor</td>
+                            <td><span style="color: orange">Pending</span></td>
+                            <td>2025-10-06 14:22</td>
+                            <td>
+                                <button class="btn" onclick="editUser('002')">Edit</button>
+                                <button class="btn" onclick="deleteUser('002')" style="background: #dc3545">Delete</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>003</td>
+                            <td>Bob Wilson</td>
+                            <td>bob.wilson@example.com</td>
+                            <td>Viewer</td>
+                            <td><span style="color: red">Inactive</span></td>
+                            <td>2025-10-01 11:15</td>
+                            <td>
+                                <button class="btn" onclick="editUser('003')">Edit</button>
+                                <button class="btn" onclick="deleteUser('003')" style="background: #dc3545">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="highlight-xpath">
+                    <strong>Complex table XPaths:</strong><br>
+                    📊 <strong>Edit button for Jane Smith:</strong><br>
+                    <code>//tr[td[normalize-space(text())="Jane Smith"]]/td[7]/button[normalize-space(text())="Edit"]</code><br><br>
+                    📊 <strong>Status cell for Admin role:</strong><br>
+                    <code>//tr[td[normalize-space(text())="Admin"]]/td[5]</code><br><br>
+                    📊 <strong>Delete user with email john.doe@example.com:</strong><br>
+                    <code>//tr[td[normalize-space(text())="john.doe@example.com"]]/td[7]/button[normalize-space(text())="Delete"]</code>
+                </div>
+            </div>
+
+            <!-- Test Instructions -->
+            <div class="demo-section">
+                <h2>🧪 Testing Instructions</h2>
+                <div class="instructions">
+                    <h3>Manual Testing Steps:</h3>
+                    <ol>
+                        <li><strong>Start the tool:</strong>
+                            <code>node smart-locator.js file:///{absolute-path-to-this-file}</code>
+                        </li>
+                        <li><strong>Test cell hover:</strong> Hover over any table cell and see table-specific XPaths</li>
+                        <li><strong>Test button hover:</strong> Hover over buttons inside cells (e.g., "check price", "Add to Cart")</li>
+                        <li><strong>Test header hover:</strong> Hover over column headers</li>
+                        <li><strong>Test row hover:</strong> Hover over entire table rows</li>
+                        <li><strong>Verify XPath types:</strong> Look for these types in the modal:
+                            <ul>
+                                <li>📊 Table Cell Content</li>
+                                <li>📊 Table Row Context</li>
+                                <li>📊 Table Header Column</li>
+                                <li>📊 Table Coordinate</li>
+                                <li>📊 Table Row Reference</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    
+                    <h3>What to Look For:</h3>
+                    <ul>
+                        <li><strong>Orange border styling</strong> for table-specific XPaths</li>
+                        <li><strong>📊 table icon</strong> in XPath labels</li>
+                        <li><strong>High scores (85-95)</strong> for table-specific suggestions</li>
+                        <li><strong>Contextual descriptions</strong> explaining how XPaths work</li>
+                        <li><strong>Multiple strategies</strong> for the same element</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function editUser(id) {
+            alert(`Edit user with ID: ${id}`);
+        }
+        
+        function deleteUser(id) {
+            alert(`Delete user with ID: ${id}`);
+        }
+        
+        // Add some dynamic content for testing
+        console.log('Table XPath Demo loaded successfully!');
+        console.log('Total tables on page:', document.querySelectorAll('table').length);
+        console.log('Total table cells:', document.querySelectorAll('td, th').length);
+    </script>
+</body>
+</html>

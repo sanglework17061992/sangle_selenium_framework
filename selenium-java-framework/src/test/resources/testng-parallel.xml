@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suite name="Parallel Execution Test Suite" parallel="methods" thread-count="3" verbose="1">
+    <parameter name="browser" value="chrome"/>
+    <parameter name="environment" value="qa"/>
+    
+    <test name="Parallel Test Execution">
+        <classes>
+            <class name="com.automation.tests.LoginTest"/>
+            <class name="com.automation.tests.ProductTest"/>
+            <class name="com.automation.tests.ContactTest"/>
+        </classes>
+    </test>
+</suite>

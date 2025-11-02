@@ -1,0 +1,42 @@
+# Maven
+target/
+*.jar
+*.war
+*.ear
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Allure
+allure-results/
+allure-report/
+*.tgz
+
+# Test screenshots
+screenshots/
+
+# Node modules
+node_modules/
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Additional Maven build artifacts
+selenium-java-framework/target/

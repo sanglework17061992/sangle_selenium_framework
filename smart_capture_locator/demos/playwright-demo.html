@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playwright Locators Demo - Smart Locator Inspector</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        h1, h2 {
+            color: #2D8659;
+            text-align: center;
+        }
+        
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        
+        .form-section {
+            background: linear-gradient(45deg, #f3f4f6, #ffffff);
+        }
+        
+        .button-section {
+            background: linear-gradient(45deg, #e8f5e8, #ffffff);
+        }
+        
+        .navigation-section {
+            background: linear-gradient(45deg, #e8f2ff, #ffffff);
+        }
+        
+        .accessibility-section {
+            background: linear-gradient(45deg, #fff5e8, #ffffff);
+        }
+        
+        .form-group {
+            margin: 15px 0;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+        
+        input, textarea, select {
+            padding: 10px;
+            border: 2px solid #ced4da;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #2D8659;
+        }
+        
+        button {
+            background: #2D8659;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #228B22;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        nav {
+            background: #2D8659;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        nav a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            background: white;
+        }
+        
+        .alert {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 5px solid #2D8659;
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        th {
+            background: #2D8659;
+            color: white;
+        }
+        
+        .checkbox-group, .radio-group {
+            display: flex;
+            gap: 20px;
+            margin: 10px 0;
+        }
+        
+        .checkbox-group label, .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: normal;
+        }
+        
+        .demo-highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 Playwright Locators Demo</h1>
+        <p style="text-align: center; font-size: 18px; color: #666;">
+            Hover over elements to see Playwright-specific locator suggestions!
+        </p>
+        
+        <!-- Form Elements Section -->
+        <div class="section form-section">
+            <h2>📝 Form Elements (Great for getByLabel, getByPlaceholder)</h2>
+            
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter your username" data-testid="username-input">
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="user@example.com" required aria-describedby="email-help">
+                <small id="email-help">We'll never share your email with anyone else.</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter secure password" minlength="8">
+            </div>
+            
+            <div class="form-group">
+                <label for="country">Country</label>
+                <select id="country" name="country" aria-label="Select your country">
+                    <option value="">Choose a country</option>
+                    <option value="us">United States</option>
+                    <option value="uk">United Kingdom</option>
+                    <option value="ca">Canada</option>
+                    <option value="au">Australia</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="bio">Biography</label>
+                <textarea id="bio" name="bio" rows="4" placeholder="Tell us about yourself..." aria-label="Personal biography"></textarea>
+            </div>
+            
+            <div class="checkbox-group">
+                <label>
+                    <input type="checkbox" id="newsletter" name="newsletter" value="yes" data-testid="newsletter-checkbox">
+                    Subscribe to newsletter
+                </label>
+                <label>
+                    <input type="checkbox" id="terms" name="terms" required>
+                    I agree to the terms and conditions
+                </label>
+            </div>
+            
+            <div class="radio-group">
+                <label>Gender:</label>
+                <label>
+                    <input type="radio" name="gender" value="male" id="male">
+                    Male
+                </label>
+                <label>
+                    <input type="radio" name="gender" value="female" id="female">
+                    Female
+                </label>
+                <label>
+                    <input type="radio" name="gender" value="other" id="other">
+                    Other
+                </label>
+            </div>
+        </div>
+        
+        <!-- Button Elements Section -->
+        <div class="section button-section">
+            <h2>🔘 Buttons & Links (Perfect for getByRole)</h2>
+            
+            <button type="submit" data-testid="submit-btn" aria-label="Submit the registration form">
+                Submit Registration
+            </button>
+            
+            <button type="button" class="btn-secondary" disabled>
+                Disabled Button
+            </button>
+            
+            <button type="reset" class="btn-danger">
+                Reset Form
+            </button>
+            
+            <button type="button" aria-pressed="false" data-cy="toggle-button">
+                Toggle Settings
+            </button>
+            
+            <div style="margin: 20px 0;">
+                <a href="/home" role="button" class="button-link">Home</a>
+                <a href="/profile" data-testid="profile-link">View Profile</a>
+                <a href="/settings" aria-label="Account Settings">Settings</a>
+                <a href="#" onclick="return false;">Contact Us</a>
+            </div>
+        </div>
+        
+        <!-- Navigation Section -->
+        <div class="section navigation-section">
+            <h2>🧭 Navigation (getByRole navigation, link)</h2>
+            
+            <nav role="navigation" aria-label="Main navigation">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/products">Products</a>
+                <a href="/orders" data-testid="orders-nav">Orders</a>
+                <a href="/reports">Reports</a>
+                <a href="/help">Help</a>
+            </nav>
+            
+            <nav aria-label="Breadcrumb navigation">
+                <a href="/">Home</a> > 
+                <a href="/category">Category</a> > 
+                <span>Current Page</span>
+            </nav>
+        </div>
+        
+        <!-- Accessibility Elements Section -->
+        <div class="section accessibility-section">
+            <h2>♿ Accessibility Elements (ARIA roles & labels)</h2>
+            
+            <div role="alert" class="alert">
+                This is an important alert message that screen readers will announce.
+            </div>
+            
+            <div role="status" aria-live="polite" id="status-message">
+                Status updates will appear here...
+            </div>
+            
+            <div role="tabpanel" id="panel1" aria-labelledby="tab1">
+                <h3 id="tab1">Tab Panel Content</h3>
+                <p>This content is inside a tab panel with proper ARIA labeling.</p>
+            </div>
+            
+            <div role="search">
+                <label for="search-input">Search</label>
+                <input type="search" id="search-input" placeholder="Search products..." aria-describedby="search-help">
+                <button type="submit" aria-label="Execute search">🔍</button>
+                <div id="search-help">Use keywords to find products</div>
+            </div>
+            
+            <div role="complementary" aria-label="Related links">
+                <h3>Related Articles</h3>
+                <ul>
+                    <li><a href="/article1">Getting Started Guide</a></li>
+                    <li><a href="/article2">Advanced Features</a></li>
+                    <li><a href="/article3">Troubleshooting Tips</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Complex Elements Section -->
+        <div class="section">
+            <h2>🏗️ Complex Elements (Multiple locator strategies)</h2>
+            
+            <div class="card" data-testid="user-card" role="article" aria-labelledby="card-title">
+                <h3 id="card-title">User Profile Card</h3>
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzIiIGZpbGw9IiMyRDg2NTkiLz4KPHN2ZyB4PSIxNiIgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+CjxjaXJjbGUgY3g9IjE2IiBjeT0iMTIiIHI9IjYiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik02IDI4YzAtNCw0LTgsOC04aDRjNCwwLDgsNCw4LDh2NGgtMjB2LTR6IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPC9zdmc+" 
+                     alt="User profile picture" 
+                     width="64" height="64" 
+                     style="border-radius: 50%;">
+                <p><strong>John Doe</strong></p>
+                <p>Senior Developer</p>
+                <button data-testid="edit-profile" aria-label="Edit John Doe's profile">
+                    Edit Profile
+                </button>
+            </div>
+            
+            <table role="table" aria-label="User data table">
+                <caption>User Information Table</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Role</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Alice Johnson</td>
+                        <td>alice@example.com</td>
+                        <td>Administrator</td>
+                        <td>
+                            <button data-testid="edit-alice" aria-label="Edit Alice Johnson">Edit</button>
+                            <button data-testid="delete-alice" aria-label="Delete Alice Johnson">Delete</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Bob Smith</td>
+                        <td>bob@example.com</td>
+                        <td>User</td>
+                        <td>
+                            <button data-testid="edit-bob" aria-label="Edit Bob Smith">Edit</button>
+                            <button data-testid="delete-bob" aria-label="Delete Bob Smith">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Test Instructions -->
+        <div class="demo-highlight">
+            <h3>🎯 How to Test Playwright Locators:</h3>
+            <ol>
+                <li>Start the Smart Locator Inspector by running: <code>npm run dev file:///$(pwd)/demos/playwright-demo.html</code></li>
+                <li>Hover over different elements on this page</li>
+                <li>Look for the "🎭 Playwright Locators" section in the inspector modal</li>
+                <li>Try elements like buttons, form inputs, navigation links, and ARIA elements</li>
+                <li>Notice how Playwright locators use semantic roles and accessible names</li>
+                <li>Copy the generated Playwright locators and use them in your test scripts!</li>
+            </ol>
+        </div>
+        
+        <!-- Playwright Examples -->
+        <div class="section">
+            <h2>📋 Expected Playwright Locator Examples</h2>
+            <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto;">
+// Form elements
+await page.getByLabel('Username').fill('testuser');
+await page.getByPlaceholder('Enter your username').fill('testuser');
+await page.getByRole('textbox', { name: 'Email Address' }).fill('test@example.com');
+
+// Buttons and links
+await page.getByRole('button', { name: 'Submit Registration' }).click();
+await page.getByRole('button', { name: /Submit/ }).click();
+await page.getByRole('link', { name: 'View Profile' }).click();
+
+// Test IDs (highest priority)
+await page.getByTestId('username-input').fill('testuser');
+await page.getByTestId('submit-btn').click();
+
+// Accessibility locators
+await page.getByText('Subscribe to newsletter').click();
+await page.getByAltText('User profile picture').hover();
+await page.getByTitle('Account Settings').click();
+
+// Navigation
+await page.getByRole('navigation').getByRole('link', { name: 'Dashboard' }).click();
+
+// Complex selections
+await page.getByRole('table').getByRole('row', { name: /Alice Johnson/ }).getByRole('button', { name: 'Edit' }).click();
+            </pre>
+        </div>
+    </div>
+</body>
+</html>

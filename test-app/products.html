@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test App - Products</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .page-header h1 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .search-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .search-box input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .product-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            transition: transform 0.3s ease;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .product-card h3 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .product-card .price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #27ae60;
+            margin: 1rem 0;
+        }
+        
+        .product-card .category {
+            background: #f8f9fa;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            color: #666;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        
+        .user-info {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            display: none;
+        }
+        
+        .user-info.show {
+            display: block;
+        }
+        
+        .no-results {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            margin-top: 2rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav>
+                <div class="logo" id="app-logo">TestApp</div>
+                <ul class="nav-links">
+                    <li><a href="index.html" id="home-link">Home</a></li>
+                    <li><a href="login.html" id="login-link">Login</a></li>
+                    <li><a href="products.html" id="products-link">Products</a></li>
+                    <li><a href="contact.html" id="contact-link">Contact</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <div class="user-info" id="user-info">
+            <h3>Welcome, <span id="logged-user">Guest</span>!</h3>
+            <button class="btn" onclick="logout()" id="logout-btn">Logout</button>
+        </div>
+
+        <div class="page-header">
+            <h1 id="page-title">Our Products</h1>
+            <p id="page-description">Browse our collection of amazing products</p>
+        </div>
+
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Search products..." />
+                <button class="btn" onclick="searchProducts()" id="search-btn">Search</button>
+                <button class="btn" onclick="clearSearch()" id="clear-btn">Clear</button>
+            </div>
+        </div>
+
+        <div id="products-container">
+            <div class="products-grid" id="products-grid">
+                <!-- Products will be loaded here -->
+            </div>
+            <div class="no-results" id="no-results">
+                No products found matching your search.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const products = [
+            { id: 1, name: "Wireless Headphones", price: "$99.99", category: "Electronics", description: "High-quality wireless headphones with noise cancellation" },
+            { id: 2, name: "Coffee Maker", price: "$149.99", category: "Appliances", description: "Programmable coffee maker with 12-cup capacity" },
+            { id: 3, name: "Running Shoes", price: "$79.99", category: "Sports", description: "Comfortable running shoes for daily exercise" },
+            { id: 4, name: "Smartphone", price: "$599.99", category: "Electronics", description: "Latest smartphone with advanced camera features" },
+            { id: 5, name: "Backpack", price: "$49.99", category: "Accessories", description: "Durable backpack perfect for travel and daily use" },
+            { id: 6, name: "Gaming Mouse", price: "$39.99", category: "Electronics", description: "High-precision gaming mouse with RGB lighting" }
+        ];
+
+        let filteredProducts = [...products];
+
+        function renderProducts(productsToRender) {
+            const grid = document.getElementById('products-grid');
+            const noResults = document.getElementById('no-results');
+            
+            if (productsToRender.length === 0) {
+                grid.style.display = 'none';
+                noResults.style.display = 'block';
+                return;
+            }
+            
+            grid.style.display = 'grid';
+            noResults.style.display = 'none';
+            
+            grid.innerHTML = productsToRender.map(product => `
+                <div class="product-card" data-product-id="${product.id}">
+                    <div class="category">${product.category}</div>
+                    <h3 class="product-name">${product.name}</h3>
+                    <p class="product-description">${product.description}</p>
+                    <div class="price">${product.price}</div>
+                    <button class="btn" onclick="selectProduct(${product.id})">Select Product</button>
+                </div>
+            `).join('');
+        }
+
+        function searchProducts() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            filteredProducts = products.filter(product => 
+                product.name.toLowerCase().includes(searchTerm) ||
+                product.category.toLowerCase().includes(searchTerm) ||
+                product.description.toLowerCase().includes(searchTerm)
+            );
+            renderProducts(filteredProducts);
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            filteredProducts = [...products];
+            renderProducts(filteredProducts);
+        }
+
+        function selectProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            alert(`You selected: ${product.name} - ${product.price}`);
+        }
+
+        function checkLoginStatus() {
+            const loggedUser = localStorage.getItem('loggedUser');
+            if (loggedUser) {
+                document.getElementById('logged-user').textContent = loggedUser;
+                document.getElementById('user-info').classList.add('show');
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('loggedUser');
+            window.location.href = 'index.html';
+        }
+
+        // Search on Enter key
+        document.getElementById('search-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchProducts();
+            }
+        });
+
+        // Initialize page
+        checkLoginStatus();
+        renderProducts(filteredProducts);
+    </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suite name="Selenium Java Framework Test Suite" verbose="1">
+    <parameter name="browser" value="chrome"/>
+    <parameter name="environment" value="qa"/>
+    
+    <!-- Default Test Suite -->
+    <test name="Smoke Tests" preserve-order="true">
+        <groups>
+            <run>
+                <include name="smoke"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="com.automation.tests.LoginTest">
+                <methods>
+                    <include name="testValidLogin"/>
+                    <include name="testLoginPageValidation"/>
+                </methods>
+            </class>
+            <class name="com.automation.tests.ProductTest">
+                <methods>
+                    <include name="testProductsPageLoad"/>
+                </methods>
+            </class>
+            <class name="com.automation.tests.ContactTest">
+                <methods>
+                    <include name="testContactPageLoad"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <!-- Full Regression Test Suite -->
+    <test name="Regression Tests" preserve-order="false">
+        <classes>
+            <class name="com.automation.tests.LoginTest"/>
+            <class name="com.automation.tests.ProductTest"/>
+            <class name="com.automation.tests.ContactTest"/>
+        </classes>
+    </test>
+
+    <!-- Login Specific Tests -->
+    <test name="Login Tests" preserve-order="true">
+        <classes>
+            <class name="com.automation.tests.LoginTest"/>
+        </classes>
+    </test>
+
+    <!-- Products Specific Tests -->
+    <test name="Product Tests" preserve-order="true">
+        <classes>
+            <class name="com.automation.tests.ProductTest"/>
+        </classes>
+    </test>
+
+    <!-- Contact Specific Tests -->
+    <test name="Contact Tests" preserve-order="true">
+        <classes>
+            <class name="com.automation.tests.ContactTest"/>
+        </classes>
+    </test>
+</suite>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Locator Inspector - Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #667eea;
+        }
+        
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #5a6fd8;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+        }
+        
+        .navigation {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            gap: 20px;
+        }
+        
+        .navigation li {
+            background: #28a745;
+            border-radius: 4px;
+        }
+        
+        .navigation a {
+            display: block;
+            padding: 10px 15px;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .navigation a:hover {
+            background: #218838;
+            border-radius: 4px;
+        }
+        
+        .dynamic-content {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .data-element {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .highlight {
+            background: yellow;
+            padding: 2px 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 id="main-title">🎯 Smart Locator Inspector Test Page</h1>
+            <p class="subtitle">This page contains various elements to test locator generation</p>
+        </div>
+
+        <!-- Navigation Section -->
+        <div class="section" data-testid="navigation-section">
+            <h2>Navigation Elements</h2>
+            <ul class="navigation">
+                <li><a href="#section1" id="nav-home">Home</a></li>
+                <li><a href="#section2" id="nav-about">About</a></li>
+                <li><a href="#section3" id="nav-contact" data-test="contact-link">Contact</a></li>
+                <li><a href="#section4" aria-label="User Profile">Profile</a></li>
+            </ul>
+        </div>
+
+        <!-- Form Section -->
+        <div class="section" id="form-section">
+            <h2>Form Elements</h2>
+            <form id="test-form" name="testForm" data-testid="main-form">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" placeholder="Enter your username" data-testid="username-input">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email" aria-label="Email address">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" data-test="password-field">
+                </div>
+                
+                <div class="form-group">
+                    <label for="country">Country:</label>
+                    <select id="country" name="country" data-testid="country-select">
+                        <option value="">Select Country</option>
+                        <option value="us">United States</option>
+                        <option value="uk">United Kingdom</option>
+                        <option value="ca">Canada</option>
+                        <option value="de">Germany</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bio">Bio:</label>
+                    <textarea id="bio" name="bio" rows="4" placeholder="Tell us about yourself" data-testid="bio-textarea"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" id="submit-btn" data-testid="submit-button">Submit Form</button>
+                    <button type="button" class="btn-secondary" id="clear-btn">Clear</button>
+                    <button type="button" class="btn-danger" onclick="alert('Cancelled!')">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Buttons Section -->
+        <div class="section" data-section="buttons">
+            <h2>Various Button Types</h2>
+            <button id="primary-action" class="btn-primary" data-test="primary-action">Primary Action</button>
+            <button class="btn-secondary" data-role="secondary-action">Secondary Action</button>
+            <button class="btn-danger" aria-label="Delete item">Delete</button>
+            <button disabled data-testid="disabled-button">Disabled Button</button>
+            
+            <div style="margin-top: 15px;">
+                <button onclick="showAlert('Hello!')">Show Alert</button>
+                <button onclick="toggleVisibility()">Toggle Content</button>
+                <button onclick="addDynamicElement()">Add Dynamic Element</button>
+            </div>
+        </div>
+
+        <!-- Dynamic Content Section -->
+        <div class="section">
+            <h2>Dynamic Content</h2>
+            <div id="dynamic-container" data-testid="dynamic-container">
+                <div class="dynamic-content" id="content-123456">
+                    <p>This element has a dynamic ID: content-123456</p>
+                </div>
+                <div class="dynamic-content" id="item-abc-def-789">
+                    <p>This element has an unstable ID: item-abc-def-789</p>
+                </div>
+            </div>
+            <div id="toggle-content" class="data-element" style="display: block;">
+                <p>This content can be toggled</p>
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="section">
+            <h2>Table Elements</h2>
+            <table id="data-table" data-testid="user-table">
+                <thead>
+                    <tr>
+                        <th data-column="name">Name</th>
+                        <th data-column="email">Email</th>
+                        <th data-column="role">Role</th>
+                        <th data-column="actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-user-id="1">
+                        <td class="user-name">John Doe</td>
+                        <td class="user-email">john@example.com</td>
+                        <td class="user-role">Admin</td>
+                        <td class="user-actions">
+                            <button class="btn-edit" data-action="edit" data-user="1">Edit</button>
+                            <button class="btn-delete" data-action="delete" data-user="1">Delete</button>
+                        </td>
+                    </tr>
+                    <tr data-user-id="2">
+                        <td class="user-name">Jane Smith</td>
+                        <td class="user-email">jane@example.com</td>
+                        <td class="user-role">User</td>
+                        <td class="user-actions">
+                            <button class="btn-edit" data-action="edit" data-user="2">Edit</button>
+                            <button class="btn-delete" data-action="delete" data-user="2">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Card Section -->
+        <div class="section">
+            <h2>Card Components</h2>
+            <div class="card" data-card-type="feature">
+                <h3 class="card-title">Feature Card</h3>
+                <p class="card-description">This is a feature card with various elements to test</p>
+                <button class="card-action" data-testid="feature-action">Learn More</button>
+            </div>
+            
+            <div class="card" data-card-type="product" data-product-id="abc123">
+                <h3 class="card-title">Product Card</h3>
+                <p class="card-description">This product card has a <span class="highlight">highlighted text</span></p>
+                <div class="card-footer">
+                    <button class="card-action" data-action="buy">Buy Now</button>
+                    <button class="card-action btn-secondary" data-action="wishlist" aria-label="Add to wishlist">♡</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nested Elements -->
+        <div class="section" data-testid="nested-section">
+            <h2>Nested Elements</h2>
+            <div class="outer-container" data-level="1">
+                <div class="middle-container" data-level="2">
+                    <div class="inner-container" data-level="3">
+                        <span class="nested-text" data-testid="deeply-nested">Deeply nested element</span>
+                        <button class="nested-button" onclick="alert('Nested click!')">Nested Button</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Text Content -->
+        <div class="section">
+            <h2>Text-based Elements</h2>
+            <p>This is a paragraph with <a href="#" class="inline-link">an inline link</a> and some text.</p>
+            <div class="text-container">
+                <span class="label">Status:</span>
+                <span class="status active" data-status="active">Active</span>
+            </div>
+            <div class="breadcrumbs">
+                <span>Home</span> &gt; 
+                <span>Testing</span> &gt; 
+                <span class="current">Locator Inspector</span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="section" id="footer" role="contentinfo">
+            <h2>Footer Elements</h2>
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="#privacy" data-footer-link="privacy">Privacy Policy</a>
+                    <a href="#terms" data-footer-link="terms">Terms of Service</a>
+                    <a href="#contact" data-footer-link="contact">Contact Us</a>
+                </div>
+                <div class="footer-info">
+                    <p>&copy; 2025 Smart Locator Inspector. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showAlert(message) {
+            alert(message);
+        }
+
+        function toggleVisibility() {
+            const content = document.getElementById('toggle-content');
+            content.style.display = content.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function addDynamicElement() {
+            const container = document.getElementById('dynamic-container');
+            const timestamp = Date.now();
+            const newElement = document.createElement('div');
+            newElement.className = 'dynamic-content';
+            newElement.id = `dynamic-${timestamp}`;
+            newElement.innerHTML = `<p>Dynamically added element at ${new Date().toLocaleTimeString()}</p>`;
+            container.appendChild(newElement);
+        }
+
+        // Add some dynamic behavior
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Test page loaded - ready for Smart Locator Inspector!');
+            
+            // Add click handlers for table buttons
+            document.querySelectorAll('.btn-edit').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-user');
+                    alert(`Editing user ${userId}`);
+                });
+            });
+
+            document.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-user');
+                    if (confirm(`Delete user ${userId}?`)) {
+                        this.closest('tr').remove();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

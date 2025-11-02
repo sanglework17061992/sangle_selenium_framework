@@ -1,0 +1,128 @@
+# 🐳 Docker Compose for Selenium Test Environment
+version: '3.8'
+
+services:
+  # ==========================================
+  # 🌐 Test Application Service
+  # ==========================================
+  test-app:
+    build:
+      context: ./test-app
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=test
+      - PORT=8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - selenium-network
+
+  # ==========================================
+  # 🧪 Selenium Framework Service
+  # ==========================================
+  selenium-tests:
+    build:
+      context: ./selenium-java-framework
+      dockerfile: Dockerfile
+    depends_on:
+      test-app:
+        condition: service_healthy
+    environment:
+      - BROWSER=chrome
+      - HEADLESS=true
+      - BASE_URL=http://test-app:8080
+      - EXPLICIT_WAIT=10
+      - RETRY_COUNT=3
+      - PARALLEL=true
+      - THREAD_COUNT=3
+    volumes:
+      - ./test-results:/app/test-results
+      - ./allure-results:/app/allure-results
+    networks:
+      - selenium-network
+    command: >
+      sh -c "
+        echo '🚀 Starting Selenium tests...' &&
+        mvn clean test -Dmaven.test.failure.ignore=true &&
+        echo '✅ Tests completed!' &&
+        cp -r target/allure-results/* /app/allure-results/ 2>/dev/null || true &&
+        cp -r target/surefire-reports/* /app/test-results/ 2>/dev/null || true
+      "
+
+  # ==========================================
+  # 🕷️ Selenium Grid Hub
+  # ==========================================
+  selenium-hub:
+    image: selenium/hub:4.15.0
+    container_name: selenium-hub
+    ports:
+      - "4444:4444"
+    environment:
+      - GRID_MAX_SESSION=16
+      - GRID_BROWSER_TIMEOUT=300
+      - GRID_TIMEOUT=300
+    networks:
+      - selenium-network
+
+  # ==========================================
+  # 🌐 Chrome Node
+  # ==========================================
+  selenium-chrome:
+    image: selenium/node-chrome:4.15.0
+    shm_size: 2gb
+    depends_on:
+      - selenium-hub
+    environment:
+      - HUB_HOST=selenium-hub
+      - HUB_PORT=4444
+      - NODE_MAX_INSTANCES=2
+      - NODE_MAX_SESSION=2
+    networks:
+      - selenium-network
+
+  # ==========================================
+  # 🦊 Firefox Node
+  # ==========================================
+  selenium-firefox:
+    image: selenium/node-firefox:4.15.0
+    shm_size: 2gb
+    depends_on:
+      - selenium-hub
+    environment:
+      - HUB_HOST=selenium-hub
+      - HUB_PORT=4444
+      - NODE_MAX_INSTANCES=2
+      - NODE_MAX_SESSION=2
+    networks:
+      - selenium-network
+
+  # ==========================================
+  # 📊 Allure Report Service
+  # ==========================================
+  allure-reports:
+    image: frankescobar/allure-docker-service:2.24.0
+    ports:
+      - "5050:5050"
+    environment:
+      CHECK_RESULTS_EVERY_SECONDS: 3
+      KEEP_HISTORY: 20
+    volumes:
+      - ./allure-results:/app/allure-results
+      - ./allure-reports:/app/default-reports
+    networks:
+      - selenium-network
+
+networks:
+  selenium-network:
+    driver: bridge
+
+volumes:
+  test-results:
+  allure-results:
+  allure-reports:

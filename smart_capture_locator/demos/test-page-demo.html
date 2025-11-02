@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Locator Inspector - Demo Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #007acc 0%, #005a9e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .demo-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            background: #007acc;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            background: #005a9e;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+        }
+        
+        .navigation {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .nav-item {
+            display: inline-block;
+            margin-right: 20px;
+            color: #007acc;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .nav-item:hover {
+            text-decoration: underline;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .table th, .table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        
+        .table th {
+            background: #007acc;
+            color: white;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .sidebar {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 200px;
+            background: white;
+            border: 2px solid #007acc;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar h3 {
+            margin-top: 0;
+            color: #007acc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Smart Locator Inspector Demo</h1>
+            <p>Test page for the enhanced Chrome extension with left-side positioning</p>
+        </div>
+        
+        <div class="navigation">
+            <a href="#" class="nav-item" id="home-link">Home</a>
+            <a href="#" class="nav-item" id="products-link">Products</a>
+            <a href="#" class="nav-item" id="services-link">Services</a>
+            <a href="#" class="nav-item" id="contact-link">Contact</a>
+        </div>
+        
+        <div class="content">
+            <div class="alert alert-info">
+                <strong>ℹ️ Instructions:</strong> 
+                Activate the Smart Locator Inspector extension and hover over any element on this page. 
+                The inspector modal now appears on the <strong>left side</strong> for better visibility!
+            </div>
+            
+            <div class="demo-section">
+                <h2>📝 Sample Form</h2>
+                <form id="demo-form">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username" data-testid="username-input" placeholder="Enter your username">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" data-test="email-field" placeholder="Enter your email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="country">Country:</label>
+                        <select id="country" name="country" data-automation="country-selector">
+                            <option value="">Select a country</option>
+                            <option value="us">United States</option>
+                            <option value="uk">United Kingdom</option>
+                            <option value="ca">Canada</option>
+                            <option value="au">Australia</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Message:</label>
+                        <textarea id="message" name="message" rows="4" placeholder="Enter your message here..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn" id="submit-btn" data-testid="submit-button">Submit Form</button>
+                    <button type="reset" class="btn btn-secondary" id="reset-btn">Reset</button>
+                </form>
+            </div>
+            
+            <div class="demo-section">
+                <h2>🎯 Interactive Elements</h2>
+                <p>Test the locator generation on these different element types:</p>
+                
+                <button class="btn" onclick="showAlert('Primary button clicked!')">Primary Button</button>
+                <button class="btn btn-secondary" onclick="showAlert('Secondary button clicked!')">Secondary Button</button>
+                
+                <div class="card">
+                    <h3>Card Component</h3>
+                    <p class="card-text">This is a sample card with various elements to inspect.</p>
+                    <a href="#" class="card-link" data-action="card-action">Card Link</a>
+                </div>
+            </div>
+            
+            <div class="demo-section">
+                <h2>📊 Data Table</h2>
+                <table class="table" id="data-table">
+                    <thead>
+                        <tr>
+                            <th data-sort="id">ID</th>
+                            <th data-sort="name">Name</th>
+                            <th data-sort="role">Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-row-id="1">
+                            <td>001</td>
+                            <td class="user-name">John Doe</td>
+                            <td class="user-role">Developer</td>
+                            <td>
+                                <button class="btn" data-action="edit" data-user-id="1">Edit</button>
+                                <button class="btn btn-secondary" data-action="delete" data-user-id="1">Delete</button>
+                            </td>
+                        </tr>
+                        <tr data-row-id="2">
+                            <td>002</td>
+                            <td class="user-name">Jane Smith</td>
+                            <td class="user-role">Designer</td>
+                            <td>
+                                <button class="btn" data-action="edit" data-user-id="2">Edit</button>
+                                <button class="btn btn-secondary" data-action="delete" data-user-id="2">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="sidebar">
+        <h3>🎮 Test Instructions</h3>
+        <ol style="font-size: 12px; line-height: 1.4;">
+            <li>Install the Chrome extension</li>
+            <li>Click the extension icon</li>
+            <li>Click "Activate Inspector"</li>
+            <li>Hover over elements on this page</li>
+            <li>Notice the modal appears on the <strong>left side</strong></li>
+            <li>Try dragging the modal around</li>
+            <li>Double-click the header to reset position</li>
+        </ol>
+    </div>
+    
+    <script>
+        function showAlert(message) {
+            alert(message);
+        }
+        
+        // Add some interactivity for testing
+        document.getElementById('demo-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Form submitted! (Demo only)');
+        });
+        
+        // Add click handlers for table buttons
+        document.querySelectorAll('[data-action]').forEach(button => {
+            button.addEventListener('click', function() {
+                const action = this.getAttribute('data-action');
+                const userId = this.getAttribute('data-user-id');
+                if (userId) {
+                    alert(`${action} action for user ${userId}`);
+                } else {
+                    alert(`${action} action triggered`);
+                }
+            });
+        });
+        
+        // Navigation handlers
+        document.querySelectorAll('.nav-item').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert(`Navigating to ${this.textContent}`);
+            });
+        });
+    </script>
+</body>
+</html>
