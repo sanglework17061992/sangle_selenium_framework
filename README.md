@@ -1,6 +1,41 @@
 # Selenium Java Test Automation Framework
 
-A comprehensive, enterprise-grade Selenium WebDriver framework built with Java, TestNG, and Allure reporting for robust web application testing.
+A comprehensive, enterprise-grade Selenium WebDriver framework built with Java, TestNG, and Allure reporting for robust web application testing with advanced self-healing capabilities.
+
+## 📑 Table of Contents
+
+### Quick Start
+- [🚀 Features](#-features)
+- [📋 Prerequisites](#-prerequisites)
+- [🛠 Installation & Setup](#-installation--setup)
+- [🧪 Running Tests](#-running-tests)
+
+### Core Framework
+- [🏗 Framework Structure](#-framework-structure)
+- [🔧 Key Components](#-key-components)
+- [📊 Test Reporting](#-test-reporting)
+
+### Self-Healing System
+- [🔧 Self-Healing Locator System](#-self-healing-locator-system)
+- [⚙️ Healing Configuration](#️-healing-configuration)
+- [🧩 Healing Usage Examples](#-healing-usage-examples)
+- [📊 Healing Performance & Monitoring](#-healing-performance--monitoring)
+
+### Advanced Features
+- [🔄 Authentication Support](#-authentication-support)
+- [🌐 Browser Configuration](#-browser-configuration)
+- [📈 Advanced Features](#-advanced-features)
+
+### Companion Tools
+- [🧪 Test Application](#-test-application)
+- [🔍 Smart Locator Capture](#-smart-locator-capture)
+
+### Support & Maintenance
+- [🎯 Best Practices](#-best-practices)
+- [🔍 Troubleshooting](#-troubleshooting)
+- [🤝 Contributing](#-contributing)
+
+---
 
 ## 🚀 Features
 
@@ -35,8 +70,8 @@ A comprehensive, enterprise-grade Selenium WebDriver framework built with Java, 
 
 ### 1. Clone and Navigate
 ```bash
-git clone <repository-url>
-cd selenium-java-framework
+git clone https://github.com/sanglework17061992/sangle_selenium_framework.git
+cd sangle_selenium_framework/selenium-java-framework
 ```
 
 ### 2. Install Dependencies
@@ -55,14 +90,19 @@ explicit_wait=15
 page_load_timeout=30
 
 # Application Under Test
-base_url=http://localhost:3000
-login_url=http://localhost:3000/login.html
-products_url=http://localhost:3000/products.html
-contact_url=http://localhost:3000/contact.html
+base_url=http://localhost:8080
+login_url=http://localhost:8080/login.html
+products_url=http://localhost:8080/products.html
 
 # Test Credentials
-username=admin
-password=admin123
+username=testuser
+password=password123
+
+# Self-Healing Configuration
+healing.enabled=true
+healing.mode=auto
+healing.confidence.threshold=0.5
+healing.max.candidates=10
 ```
 
 ### 4. Download Allure Commandline (for reporting)
@@ -81,8 +121,7 @@ mvn test
 ### Run Specific Test Class
 ```bash
 mvn test -Dtest=LoginTest
-mvn test -Dtest=ProductTest
-mvn test -Dtest=ContactTest
+mvn test -Dtest=RealHealingDemo
 ```
 
 ### Run with Different Browser
@@ -96,305 +135,14 @@ mvn test -Dbrowser=edge
 mvn test -Dheadless=true
 ```
 
-### Parallel Execution
+### Run Self-Healing Demo
 ```bash
-mvn test -DsuiteXmlFile=src/test/resources/testng.xml
-```
-
-## 🔧 Self-Healing Locator System
-
-### Overview
-The framework includes an advanced self-healing system that automatically detects and recovers from broken locators without manual intervention. This significantly reduces maintenance overhead and improves test stability.
-
-### Key Features
-
-#### Intelligent Element Recovery
-- **Fuzzy Heuristic Scoring**: Uses multiple algorithms to find alternative elements
-- **Pattern Matching**: Detects similar IDs, classes, and attributes using Levenshtein distance
-- **DOM Analysis**: Analyzes page structure to identify potential healing candidates
-- **Confidence Scoring**: Ranks healing candidates by similarity and context
-
-#### Healing Strategies
-```java
-// The system uses multiple healing approaches:
-1. ID Pattern Matching (80% similarity threshold)
-2. Name Attribute Matching
-3. Class Name Analysis
-4. XPath Pattern Recognition
-5. CSS Selector Adaptation
-6. Text Content Matching
-7. Element Type Validation
-```
-
-#### Automatic Candidate Discovery
-```java
-// Example: Original locator breaks
-By originalLocator = By.id("username");
-
-// System automatically discovers alternatives:
-By.id("username-modified")     // Score: 1.0 (exact pattern match)
-By.name("username")           // Score: 0.8 (name attribute match)
-By.cssSelector("[type='text']") // Score: 0.6 (type match)
-```
-
-### Configuration
-
-#### Enable/Disable Healing
-```properties
-# config.properties
-healing.enabled=true
-healing.mode=auto
-healing.confidence.threshold=0.5
-healing.max.candidates=10
-healing.timeout=30000
-```
-
-#### Healing Modes
-- **auto**: Fully automatic healing (recommended)
-- **manual**: Healing suggestions only
-- **disabled**: No healing functionality
-
-### Usage Examples
-
-#### Basic Healing Integration
-```java
-@Test
-public void testLoginWithHealing() {
-    // Standard element interaction - healing happens automatically
-    WebElement usernameField = driver.findElement(By.id("username"));
-    usernameField.sendKeys("testuser");
-    
-    // If locator breaks, healing system activates automatically
-    // Alternative elements are found and used seamlessly
-}
-```
-
-#### Advanced Healing with HealingManager
-```java
-public class LoginPage extends BasePage {
-    private HealingManager healingManager;
-    
-    public LoginPage(WebDriver driver) {
-        super(driver);
-        this.healingManager = HealingManager.getInstance();
-        healingManager.initialize(driver);
-    }
-    
-    public void enterUsername(String username) {
-        By locator = By.id("username");
-        
-        // Try healing if primary locator fails
-        Optional<WebElement> element = healingManager.healAndRetry(locator, "type");
-        
-        if (element.isPresent()) {
-            element.get().sendKeys(username);
-        } else {
-            // Fallback strategies
-            findElementWithFallback(locator).sendKeys(username);
-        }
-    }
-}
-```
-
-### Healing Process Flow
-
-1. **Primary Locator Attempt**: Try original locator first
-2. **Failure Detection**: Catch NoSuchElementException
-3. **DOM Capture**: Analyze current page structure
-4. **Candidate Discovery**: Find potential alternative elements
-5. **Scoring & Ranking**: Score candidates using fuzzy algorithms
-6. **Validation**: Test candidate viability
-7. **Element Selection**: Choose best candidate above confidence threshold
-8. **Action Execution**: Perform intended action on healed element
-9. **Repository Update**: Save successful healing for future use
-
-### Healing Algorithms
-
-#### Fuzzy Heuristic Scoring
-```java
-// ID Pattern Matching (using Levenshtein distance)
-double idSimilarity = LevenshteinDistance.calculate(originalId, candidateId);
-if (idSimilarity >= 0.8) score += 0.6;
-
-// Name Attribute Matching
-if (originalName.equals(candidateName)) score += 0.4;
-
-// Type Validation
-if (originalType.equals(candidateType)) score += 0.2;
-
-// Context Analysis
-if (parentElementMatches()) score += 0.1;
-```
-
-#### Smart Element Analysis
-- **Tag Name Validation**: Ensures element type consistency
-- **Attribute Comparison**: Matches key attributes across elements
-- **Position Context**: Considers element location in DOM hierarchy
-- **Visibility Checks**: Validates element is displayed and enabled
-- **Text Content Analysis**: Compares element text and labels
-
-### Healing Repository
-
-#### Automatic Candidate Storage
-The system maintains a JSON repository of discovered healing candidates:
-
-```json
-{
-  "id": "Username Field (Healed)",
-  "page": "LoginPage",
-  "originalLocator": {
-    "type": "id",
-    "value": "By.id: username"
-  },
-  "healedLocator": {
-    "type": "id", 
-    "value": "By.id: username-modified"
-  },
-  "confidence": 1.0,
-  "lastSeen": "2025-11-02T18:56:28",
-  "history": [
-    {
-      "eventType": "HEALING_CANDIDATE_DISCOVERED",
-      "confidence": 1.0,
-      "reason": "ID pattern match with 80% similarity"
-    }
-  ]
-}
-```
-
-#### Repository Benefits
-- **Fast Healing**: Previously discovered candidates are used immediately
-- **Learning System**: Repository improves over time with usage
-- **Audit Trail**: Complete history of healing activities
-- **Confidence Tracking**: Monitors healing success rates
-
-### Enhanced Login Verification
-
-#### Comprehensive Success Detection
-```java
-// Multi-phase verification system
-Phase 1: Message-Based Verification
-- Success/error message detection
-- Multiple ID and class fallbacks
-- Modified locator support
-
-Phase 2: URL-Based Verification  
-- Page redirection detection
-- URL pattern analysis
-- Title verification
-
-Phase 3: DOM State Verification
-- Login form visibility checks
-- Post-login element detection
-- User profile element discovery
-
-Phase 4: Form Field State Verification
-- Field clearing detection
-- Input value validation
-
-Phase 5: JavaScript Console Verification
-- Custom login status indicators
-- Browser console log analysis
-```
-
-#### Verification Example
-```java
-@Test
-public void testLoginWithComprehensiveVerification() {
-    // Enhanced verification automatically detects:
-    // ✅ Success message display
-    // ✅ URL redirection to dashboard
-    // ✅ Logout button appearance  
-    // ✅ Login form disappearance
-    // ✅ User profile elements
-    
-    LoginPage loginPage = new LoginPage(driver);
-    HomePage homePage = loginPage.login("testuser", "password123");
-    
-    // Verification runs automatically with detailed logging:
-    // 🎉 LOGIN SUCCESS: URL changed from login page
-    // 📍 Current URL: http://localhost:8080/products.html
-    // 🎉 LOGIN SUCCESS: Found post-login element 'logout-btn'
-    // ✅ FINAL RESULT: LOGIN SUCCESS DETECTED
-}
-```
-
-### Healing Test Examples
-
-#### Real Healing Demo
-```java
 mvn test -Dtest=RealHealingDemo#testCompleteLoginFlowWithHealing
 ```
 
-This test demonstrates:
-- Broken locator detection (`username` → `username-modified`)
-- Automatic healing candidate discovery
-- Comprehensive login verification
-- Repository candidate storage
-
-#### Healing Performance Metrics
-- **Detection Speed**: < 2 seconds for candidate discovery
-- **Success Rate**: 95%+ for common locator changes
-- **Confidence Accuracy**: 90%+ for score predictions
-- **Repository Growth**: Learns from every healing attempt
-
-### Troubleshooting Healing
-
-#### Enable Debug Logging
-```properties
-# log4j2.xml
-<Logger name="com.automation.healing" level="DEBUG"/>
-```
-
-#### Healing Diagnostics
+### Parallel Execution
 ```bash
-# View healing candidates discovered
-cat healing/locator_repository.json
-
-# Check healing suggestions  
-cat healing/healing_suggestions.json
-
-# Monitor healing logs
-tail -f logs/automation.log | grep "HEALING"
-```
-
-#### Common Healing Scenarios
-1. **ID Changes**: `username` → `username-v2` ✅ Healed
-2. **Class Updates**: `btn-primary` → `btn-primary-new` ✅ Healed  
-3. **Attribute Modifications**: `name="email"` → `name="user-email"` ✅ Healed
-4. **Structure Changes**: Element moves in DOM hierarchy ✅ Contextual healing
-5. **Dynamic IDs**: `element-123` → `element-456` ⚠️ Requires pattern learning
-
-### Best Practices for Healing
-
-#### Design Healing-Friendly Tests
-```java
-// Good: Use semantic locators that are likely to be stable
-By.id("username-field")
-By.name("username") 
-By.cssSelector("[data-testid='username']")
-
-// Avoid: Fragile locators that change frequently
-By.xpath("//div[3]/form[1]/input[2]")
-By.cssSelector("div.container > form > div:nth-child(2)")
-```
-
-#### Healing Configuration Tuning
-```properties
-# Conservative healing (high confidence required)
-healing.confidence.threshold=0.8
-healing.max.candidates=5
-
-# Aggressive healing (lower confidence, more candidates)
-healing.confidence.threshold=0.4
-healing.max.candidates=15
-```
-
-#### Monitor Healing Success
-- Review healing logs regularly
-- Analyze confidence scores and success rates
-- Update locator strategies based on healing patterns
-- Maintain repository hygiene by removing outdated entries
+mvn test -DsuiteXmlFile=src/test/resources/testng.xml
 ```
 
 ## 📊 Test Reporting
@@ -409,87 +157,80 @@ The report will open automatically in your browser showing:
 - Test execution summary with pass/fail statistics
 - Detailed test steps with screenshots
 - Error logs and stack traces
+- Self-healing events and suggestions
 - Test execution timeline
 - Environment information
-
-### View Surefire Reports
-```bash
-open target/surefire-reports/index.html
-```
-
-### Element Abstractions
-- `BaseElement` - Foundation class with common functionality
-- `Button` - Enhanced button interactions with retry logic
-- `TextBox` - Text input with validation and special key support
-- `Dropdown` - Full dropdown/select element support
-- `Link` - Link navigation and validation
-- `Checkbox` - Checkbox state management
-- `RadioButton` - Radio button group handling
-- `Label` - Label text and association validation
 
 ## 🏗 Framework Structure
 
 ```
-src/
-├── main/java/
-│   ├── com/automation/
-│   │   ├── config/
-│   │   │   └── ConfigManager.java          # Configuration management
-│   │   ├── core/
-│   │   │   └── DriverFactory.java          # WebDriver factory with browser setup
-│   │   ├── elements/
-│   │   │   ├── BaseElement.java            # Abstract element wrapper
-│   │   │   ├── Button.java                 # Button interactions
-│   │   │   ├── TextBox.java                # Input field operations
-│   │   │   ├── Dropdown.java               # Select element handling
-│   │   │   ├── Link.java                   # Link interactions
-│   │   │   ├── Checkbox.java               # Checkbox operations
-│   │   │   ├── Label.java                  # Text element reading
-│   │   │   └── RadioButton.java            # Radio button selection
-│   │   ├── healing/
-│   │   │   ├── HealingManager.java         # Core healing orchestration
-│   │   │   ├── HealingConfiguration.java   # Healing system configuration
-│   │   │   ├── SmartAnalyzer.java          # Fuzzy heuristic scoring algorithms
-│   │   │   ├── repository/
-│   │   │   │   ├── JsonLocatorRepository.java    # Healing candidate storage
-│   │   │   │   └── HealingSuggestionRepository.java # Healing suggestions
-│   │   │   ├── models/
-│   │   │   │   ├── CandidateLocator.java   # Healing candidate data model
-│   │   │   │   ├── LocatorEntry.java       # Repository entry model
-│   │   │   │   ├── LocatorInfo.java        # Locator information structure
-│   │   │   │   └── HealingSuggestion.java  # Healing suggestion model
+selenium-java-framework/
+├── src/
+│   ├── main/java/
+│   │   ├── com/automation/
+│   │   │   ├── config/
+│   │   │   │   └── ConfigManager.java          # Configuration management
+│   │   │   ├── core/
+│   │   │   │   └── DriverFactory.java          # WebDriver factory
+│   │   │   ├── elements/
+│   │   │   │   ├── BaseElement.java            # Abstract element wrapper
+│   │   │   │   ├── Button.java                 # Button interactions
+│   │   │   │   ├── TextBox.java                # Input field operations
+│   │   │   │   ├── Dropdown.java               # Select handling
+│   │   │   │   ├── Link.java                   # Link interactions
+│   │   │   │   ├── Checkbox.java               # Checkbox operations
+│   │   │   │   ├── Label.java                  # Text elements
+│   │   │   │   └── RadioButton.java            # Radio button selection
+│   │   │   ├── healing/                        # 🔧 Self-Healing System
+│   │   │   │   ├── HealingManager.java         # Core healing orchestration
+│   │   │   │   ├── HealingConfiguration.java   # Healing system config
+│   │   │   │   ├── analyzer/
+│   │   │   │   │   └── SmartAnalyzer.java      # Fuzzy heuristic algorithms
+│   │   │   │   ├── repository/
+│   │   │   │   │   ├── JsonLocatorRepository.java    # Candidate storage
+│   │   │   │   │   └── HealingSuggestionRepository.java # Suggestions
+│   │   │   │   ├── models/
+│   │   │   │   │   ├── CandidateLocator.java   # Healing candidate model
+│   │   │   │   │   ├── LocatorEntry.java       # Repository entry model
+│   │   │   │   │   ├── LocatorInfo.java        # Locator information
+│   │   │   │   │   └── HealingSuggestion.java  # Healing suggestion model
+│   │   │   │   ├── elements/                   # Healing-enabled elements
+│   │   │   │   │   ├── HealingBaseElement.java
+│   │   │   │   │   ├── HealingButton.java
+│   │   │   │   │   ├── HealingTextBox.java
+│   │   │   │   │   ├── HealingLabel.java
+│   │   │   │   │   └── HealingLink.java
+│   │   │   │   └── utils/
+│   │   │   │       ├── ElementAnalyzer.java    # DOM element analysis
+│   │   │   │       ├── LevenshteinDistance.java # String similarity
+│   │   │   │       └── DOMCapture.java         # Page structure capture
+│   │   │   ├── pages/
+│   │   │   │   ├── BasePage.java               # Common page functionality
+│   │   │   │   ├── LoginPage.java              # Login page object
+│   │   │   │   ├── HomePage.java               # Home page object
+│   │   │   │   └── healing/
+│   │   │   │       └── HealingLoginPage.java   # Healing-enabled login page
 │   │   │   └── utils/
-│   │   │       ├── ElementAnalyzer.java    # DOM element analysis
-│   │   │       ├── LevenshteinDistance.java # String similarity calculation
-│   │   │       └── DOMCapture.java         # Page structure capture
-│   │   ├── pages/
-│   │   │   ├── BasePage.java               # Common page functionality
-│   │   │   ├── LoginPage.java              # Login page object
-│   │   │   ├── HomePage.java               # Home page object
-│   │   │   ├── ProductsPage.java           # Products page object
-│   │   │   └── ContactPage.java            # Contact page object
-│   │   └── utils/
-│   │       ├── WaitHelper.java             # Custom wait strategies
-│   │       ├── RetryHelper.java            # Retry mechanism
-│   │       └── LoggerUtil.java             # Logging utilities
-├── test/java/
-│   ├── com/automation/
-│   │   ├── base/
-│   │   │   └── BaseTest.java               # Base test class with setup/teardown
-│   │   └── tests/
-│   │       ├── LoginTest.java              # Login functionality tests
-│   │       ├── ProductTest.java            # Product page tests
-│   │       ├── ContactTest.java            # Contact form tests
-│   │       └── healing/
-│   │           └── RealHealingDemo.java    # Self-healing demonstration tests
-├── healing/                                # Healing system data directory
-│   ├── locator_repository.json            # Discovered healing candidates
-│   └── healing_suggestions.json           # Healing suggestions history
-└── test/resources/
-    ├── config.properties                   # Test configuration
-    ├── log4j2.xml                         # Logging configuration
-    ├── allure.properties                  # Allure configuration
-    └── testng.xml                         # TestNG suite configuration
+│   │   │       ├── WaitHelper.java             # Custom wait strategies
+│   │   │       ├── RetryHelper.java            # Retry mechanism
+│   │   │       └── LoggerUtil.java             # Logging utilities
+│   └── test/java/
+│       ├── com/automation/
+│       │   ├── base/
+│       │   │   └── BaseTest.java               # Base test setup
+│       │   └── tests/
+│       │       ├── LoginTest.java              # Login functionality tests
+│       │       ├── ProductTest.java            # Product page tests
+│       │       └── healing/
+│       │           └── RealHealingDemo.java    # Self-healing demonstrations
+├── healing/                                    # 📁 Healing Data Directory
+│   ├── locator_repository.json                # Discovered healing candidates
+│   └── healing_suggestions.json               # Healing suggestions history
+└── src/test/resources/
+    ├── config.properties                       # Test configuration
+    ├── log4j2.xml                             # Logging configuration
+    ├── allure.properties                      # Allure configuration
+    └── testng.xml                             # TestNG suite configuration
 ```
 
 ## 🔧 Key Components
@@ -500,177 +241,399 @@ All interactions go through custom wrapper classes that provide:
 - **Retry Logic**: Failed operations are retried with configurable attempts
 - **Enhanced Logging**: All actions are logged with details
 - **Error Recovery**: Graceful handling of stale elements and timeouts
+- **Self-Healing**: Automatic element recovery when locators break
 
 Example usage:
 ```java
 // Instead of direct WebElement usage
 Button loginButton = new Button(driver.findElement(By.id("login")));
-loginButton.click(); // Automatically waits, retries, and logs
+loginButton.click(); // Automatically waits, retries, logs, and heals if needed
 
 TextBox usernameField = new TextBox(driver.findElement(By.name("username")));
-usernameField.type("admin"); // Clears, types, and verifies input
+usernameField.type("admin"); // Clears, types, verifies, and heals if needed
 ```
 
 ### Page Object Model
-Clean separation of page structure and test logic:
+Clean separation of page structure and test logic with healing support:
 ```java
 public class LoginPage extends BasePage {
     private Button loginButton = new Button(By.id("login"));
     private TextBox usernameField = new TextBox(By.name("username"));
     
     public HomePage login(String username, String password) {
-        usernameField.type(username);
-        passwordField.type(password);
-        loginButton.click();
+        usernameField.type(username);  // Self-healing enabled
+        passwordField.type(password);  // Self-healing enabled
+        loginButton.click();           // Self-healing enabled
         return new HomePage();
     }
 }
 ```
 
-### Configuration Management
-Centralized configuration with environment-specific overrides:
+## 🔧 Self-Healing System
+
+### Overview
+The framework features an intelligent self-healing system that automatically detects and recovers from broken locators. When an element cannot be found using its original locator, the system:
+
+1. **Analyzes the DOM** to find similar elements
+2. **Scores candidates** using fuzzy matching algorithms
+3. **Selects the best match** based on configurable confidence thresholds
+4. **Heals the test** by using the new locator
+5. **Stores suggestions** for manual review and permanent fixes
+
+### How It Works
+
+#### 1. Automatic Detection
 ```java
-@Test
-public void testLogin() {
-    String username = ConfigManager.getProperty("username");
-    String password = ConfigManager.getProperty("password");
-    // Test implementation
+// When this locator breaks:
+Button submitButton = new HealingButton(By.id("submit-btn"));
+
+// The system automatically:
+// - Scans for similar elements by text, attributes, position
+// - Calculates similarity scores using Levenshtein distance
+// - Finds the best replacement locator
+// - Continues test execution seamlessly
+```
+
+#### 2. Fuzzy Matching Algorithm
+The SmartAnalyzer uses multiple heuristics:
+- **Text Content Similarity**: Compares visible text using fuzzy string matching
+- **Attribute Analysis**: Matches class names, IDs, names, and other attributes
+- **DOM Position**: Considers element hierarchy and sibling relationships
+- **Visual Characteristics**: Analyzes size, visibility, and position
+
+#### 3. Confidence Scoring
+```java
+// Configuration in config.properties
+healing.confidence.threshold=0.5  // Minimum confidence to auto-heal
+healing.max.candidates=10         // Maximum candidates to analyze
+healing.mode=auto                 // auto, manual, or disabled
+```
+
+### Configuration Options
+
+#### Basic Setup
+```properties
+# Enable/disable self-healing
+healing.enabled=true
+
+# Healing modes:
+# - auto: Automatically heal and continue
+# - manual: Store suggestions for manual review
+# - disabled: No healing functionality
+healing.mode=auto
+
+# Confidence threshold (0.0 - 1.0)
+# Higher values = stricter matching
+healing.confidence.threshold=0.5
+
+# Maximum number of candidates to analyze
+healing.max.candidates=10
+
+# Repository settings
+healing.repository.path=healing/locator_repository.json
+healing.suggestions.path=healing/healing_suggestions.json
+```
+
+#### Advanced Configuration
+```java
+// Programmatic configuration
+HealingConfiguration config = new HealingConfiguration();
+config.setEnabled(true);
+config.setMode(HealingMode.AUTO);
+config.setConfidenceThreshold(0.7);
+config.setMaxCandidates(15);
+
+HealingManager.getInstance().updateConfiguration(config);
+```
+
+### Usage Examples
+
+#### Using Healing Elements
+```java
+// Replace regular elements with healing-enabled versions
+public class LoginPage extends BasePage {
+    // Regular (non-healing) elements
+    private Button regularButton = new Button(By.id("login"));
+    
+    // Self-healing elements
+    private HealingButton loginButton = new HealingButton(By.id("login"));
+    private HealingTextBox usernameField = new HealingTextBox(By.name("username"));
+    private HealingTextBox passwordField = new HealingTextBox(By.name("password"));
+    
+    public void login(String username, String password) {
+        usernameField.type(username);    // Auto-heals if locator breaks
+        passwordField.type(password);    // Auto-heals if locator breaks
+        loginButton.click();             // Auto-heals if locator breaks
+    }
 }
 ```
+
+### Best Practices
+
+#### 1. Gradual Adoption
+```java
+// Start with critical test flows
+public class CriticalUserJourney {
+    // Use healing elements for unstable locators
+    private HealingButton checkoutButton = new HealingButton(By.id("checkout"));
+    
+    // Keep regular elements for stable locators
+    private Button stableButton = new Button(By.id("stable-element"));
+}
+```
+
+#### 2. Review Healing Events
+Monitor healing activity through generated reports and logs.
+
+#### 3. Confidence Threshold Tuning
+```properties
+# For stable applications (fewer false positives)
+healing.confidence.threshold=0.8
+
+# For dynamic applications (more tolerance)
+healing.confidence.threshold=0.5
+```
+
+## 🧪 Test Application
+
+The framework includes a comprehensive test application for demonstrating and validating framework capabilities.
+
+### Features
+- **Multi-Page Structure**: Login, products, contact, and home pages
+- **Dynamic Elements**: Perfect for testing self-healing capabilities
+- **Form Interactions**: Various input types and validation scenarios
+- **Authentication Flow**: Complete login/logout functionality
+- **Responsive Design**: Mobile and desktop layouts
+
+### Quick Start
+```bash
+# Navigate to test application
+cd test-application
+
+# Install dependencies
+npm install
+
+# Start the test server
+npm start
+
+# Application will be available at http://localhost:3000
+```
+
+### Test Scenarios
+The application provides realistic scenarios for:
+- Login form automation with validation
+- Product catalog browsing and filtering
+- Contact form submissions
+- Navigation and menu interactions
+- Dynamic content loading
+- Error handling demonstrations
+
+## � Smart Locator Capture
+
+An intelligent browser extension for capturing robust element locators during manual testing.
+
+### Features
+- **Multi-Strategy Capture**: Generates multiple locator strategies (ID, CSS, XPath, text-based)
+- **Stability Scoring**: Rates locator reliability and suggests best options
+- **Healing Integration**: Seamlessly integrates with framework healing system
+- **Visual Feedback**: Highlights elements and shows locator preview
+- **Export Options**: Generate Page Object code directly
+
+### Installation
+```bash
+# Clone the extension
+git clone <smart-locator-repo>
+
+# Load in Chrome/Edge
+1. Open chrome://extensions/
+2. Enable "Developer mode"
+3. Click "Load unpacked"
+4. Select the extension folder
+
+# Extension will appear in browser toolbar
+```
+
+### Usage
+1. **Navigate to target page**
+2. **Click extension icon** to activate
+3. **Hover over elements** to see locator options
+4. **Click elements** to capture locators
+5. **Export** generated Page Object code
+6. **Import** into your framework
+
+### Benefits
+- Reduces time spent creating locators manually
+- Generates framework-compatible Page Objects
+- Suggests healing-friendly locator strategies
+- Provides immediate feedback on locator quality
 
 ## 🎯 Best Practices
 
-### Test Design
-- **Single Responsibility**: Each test method focuses on one specific functionality
-- **Independent Tests**: Tests can run independently without dependencies
-- **Data-Driven**: Use TestNG data providers for parameterized tests
-- **Assertions**: Use descriptive assertion messages for better failure analysis
-
-### Element Interactions
-- **Use Custom Wrappers**: Always use framework element classes instead of raw WebElement
-- **Explicit Waits**: Leverage built-in waiting mechanisms in element wrappers
-- **Page Objects**: Encapsulate page-specific logic in page object classes
-- **Locator Strategy**: Prefer ID > Name > CSS > XPath for element location
-
-### Reporting & Debugging
-- **Allure Annotations**: Use @Epic, @Feature, @Story for organized reporting
-- **Screenshots**: Automatic screenshot capture on test failures
-- **Detailed Logging**: Framework provides comprehensive operation logging
-- **Environment Info**: Test execution environment details in reports
-
-## 🔄 Authentication Support
-
-The framework includes built-in authentication helpers for applications using localStorage:
-
+### 1. Locator Strategy
 ```java
-@BeforeMethod
-public void setUp(Method method) {
-    super.setUp();
+// Prefer stable, semantic locators
+private HealingButton submitButton = new HealingButton(By.cssSelector("[data-testid='submit-btn']"));
+
+// Avoid fragile locators
+private HealingButton fragileButton = new HealingButton(By.xpath("//div[3]/form/button[2]"));
+```
+
+### 2. Page Object Design
+```java
+// Clean, maintainable page objects
+public class ProductPage extends BasePage {
+    // Group related elements
+    private HealingTextBox searchBox = new HealingTextBox(By.name("search"));
+    private HealingButton searchButton = new HealingButton(By.cssSelector(".search-btn"));
     
-    // For tests requiring authentication
-    if (method.getName().contains("Products")) {
-        setLoggedInUser("admin");
+    // Logical business methods
+    public SearchResults searchForProduct(String productName) {
+        searchBox.type(productName);
+        searchButton.click();
+        return new SearchResults();
     }
 }
+```
 
-@AfterMethod  
-public void tearDown() {
-    clearLoggedInUser();
-    super.tearDown();
+### 3. Test Structure
+```java
+@Test
+public void completeUserJourney() {
+    // Arrange
+    String username = ConfigManager.getProperty("username");
+    String password = ConfigManager.getProperty("password");
+    
+    // Act
+    LoginPage loginPage = new LoginPage();
+    HomePage homePage = loginPage.login(username, password);
+    ProductPage productPage = homePage.navigateToProducts();
+    
+    // Assert
+    Assert.assertTrue(productPage.isDisplayed());
 }
 ```
 
-## 🌐 Browser Configuration
+### 4. Self-Healing Configuration
+```properties
+# Production environment - strict healing
+healing.enabled=true
+healing.mode=auto
+healing.confidence.threshold=0.8
 
-### Chrome Options (Default)
-- Password manager disabled
-- Notification blocking
-- Popup prevention
-- Anti-automation detection disabled
-
-### Headless Mode Support
-```bash
-mvn test -Dheadless=true
+# Development environment - learning mode
+healing.enabled=true
+healing.mode=manual
+healing.confidence.threshold=0.5
 ```
-
-### Cross-Browser Testing
-The framework supports Chrome, Firefox, Edge, and Safari with consistent behavior across all browsers.
 
 ## 🔍 Troubleshooting
 
 ### Common Issues
 
-1. **ChromeDriver Issues**
-   - WebDriverManager automatically handles driver versions
-   - Ensure Chrome browser is installed and up-to-date
-
-2. **Test Failures Due to Timing**
-   - Increase wait timeouts in config.properties
-   - Use explicit waits for dynamic content
-
-3. **Self-Healing Issues**
-   - Enable healing debug logging: `<Logger name="com.automation.healing" level="DEBUG"/>`
-   - Check healing repository: `cat healing/locator_repository.json`
-   - Verify confidence threshold in config.properties
-   - Review healing suggestions: `cat healing/healing_suggestions.json`
-
-4. **Authentication Problems**
-   - Verify localStorage authentication helpers are used
-   - Check base_url configuration matches test application
-
-5. **Report Generation**
-   - Ensure Allure commandline is downloaded and extracted
-   - Run tests before generating reports
-
-6. **Healing Performance Issues**
-   - Reduce healing.max.candidates if discovery is slow
-   - Increase healing.confidence.threshold for more accurate results
-   - Clear healing repository if outdated: `rm healing/locator_repository.json`
-
-### Debug Mode
-Enable verbose logging by modifying log4j2.xml:
-```xml
-<Logger name="com.automation" level="DEBUG"/>
-```
-
-## 📈 Advanced Features
-
-### Parallel Execution
-Configure in testng.xml:
-```xml
-<suite name="ParallelTests" parallel="methods" thread-count="3">
-```
-
-### Retry Failed Tests
-Automatic retry mechanism for flaky tests:
+#### Tests Failing with Element Not Found
 ```java
-@Test(retryAnalyzer = RetryHelper.class)
-public void testMethod() {
+// Solution 1: Enable healing for unstable elements
+private HealingButton dynamicButton = new HealingButton(By.id("dynamic-btn"));
+
+// Solution 2: Increase wait timeouts
+@Test
+public void testWithCustomWait() {
+    WaitHelper.waitForElement(driver, By.id("slow-element"), Duration.ofSeconds(30));
+}
+
+// Solution 3: Use retry mechanism
+@Test(retryAnalyzer = RetryAnalyzer.class)
+public void flakyTest() {
     // Test implementation
 }
 ```
 
-### Environment-Specific Configuration
-Override properties:
+#### Self-Healing Not Working
+1. **Check Configuration**: Verify healing is enabled
+2. **Review Confidence Threshold**: Lower threshold for more tolerance
+3. **Increase Max Candidates**: Allow more alternatives to be analyzed
+4. **Check Logs**: Enable debug mode for detailed healing information
+
+#### Performance Issues
+```properties
+# Optimize healing performance
+healing.max.candidates=5           # Reduce candidate analysis
+healing.timeout.seconds=5          # Limit healing attempt time
+healing.cache.enabled=true         # Enable candidate caching
+```
+
+#### Browser Compatibility Issues
 ```bash
-mvn test -Dbase_url=http://staging.example.com
+# Update WebDriverManager
+mvn dependency:resolve
+
+# Clear browser data
+mvn clean test -Dwebdriver.chrome.whitelistedIps=
+
+# Run with specific browser version
+mvn test -Dwebdriver.chrome.version=120.0.6099.71
+```
+
+### Debug Mode
+```properties
+# Enable comprehensive logging
+logging.level.com.automation=DEBUG
+healing.debug.enabled=true
+allure.results.directory=target/allure-results
+```
+
+### Performance Monitoring
+```java
+@Test
+public void performanceAwareTest() {
+    long startTime = System.currentTimeMillis();
+    
+    // Test execution
+    loginPage.login("user", "password");
+    
+    long duration = System.currentTimeMillis() - startTime;
+    Assert.assertTrue("Test took too long", duration < 30000);
+}
 ```
 
 ## 🤝 Contributing
 
-1. Follow existing code patterns and conventions
-2. Add comprehensive logging to new components
-3. Include unit tests for utility classes
-4. Update documentation for new features
-5. Ensure cross-browser compatibility
+### Development Setup
+1. **Fork the repository**
+2. **Create feature branch**: `git checkout -b feature/new-feature`
+3. **Follow coding standards**: Use provided checkstyle configuration
+4. **Add tests**: Ensure new features have corresponding tests
+5. **Update documentation**: Keep README and guides current
+6. **Submit pull request**: Include detailed description and test results
 
-## 📄 License
+### Coding Standards
+- **Java**: Follow Google Java Style Guide
+- **Testing**: Maintain minimum 80% code coverage
+- **Documentation**: Use JavaDoc for public methods
+- **Commits**: Use conventional commit format
 
-This framework is open source and available under the MIT License.
+### Testing Guidelines
+```bash
+# Run all tests before submitting
+mvn clean test
+
+# Check code coverage
+mvn clean test jacoco:report
+
+# Run static analysis
+mvn checkstyle:check spotbugs:check
+```
 
 ---
 
-**Framework Version**: 2.0.0  
-**Last Updated**: November 2025  
-**Maintainer**: Selenium Automation Team  
-**New in v2.0**: Self-healing locator system with intelligent element recovery
+## 📞 Support
+
+- **GitHub Issues**: Report bugs and request features
+- **Documentation**: Comprehensive guides in `/docs` folder
+- **Examples**: Working examples in `/examples` folder
+- **Community**: Join discussions in GitHub Discussions
+
+---
+
+*Last Updated: January 2024*
+*Framework Version: 2.0*
