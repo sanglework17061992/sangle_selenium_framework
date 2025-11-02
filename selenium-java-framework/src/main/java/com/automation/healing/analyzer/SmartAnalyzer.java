@@ -6,6 +6,8 @@ import com.automation.healing.models.LocatorInfo;
 import com.automation.utils.LoggerUtil;
 
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 /**
@@ -56,17 +58,31 @@ public class SmartAnalyzer implements Analyzer {
         LoggerUtil.info("Found " + elements.size() + " elements to analyze");
         
         Map<String, Object> originalAttributes = originalEntry.getAttributesSnapshot();
+        LoggerUtil.info("🔍 Original attributes for comparison: " + originalAttributes);
         
         // Analyze each element
         for (Map<String, Object> element : elements) {
             try {
                 double score = calculateSimilarityScore(originalAttributes, element);
                 
-                if (score > 0.3) { // Only consider elements with reasonable similarity
+                // Special case: If we have no baseline data, use fuzzy matching
+                if (originalAttributes == null || originalAttributes.isEmpty()) {
+                    score = calculateFuzzyHeuristicScore(originalEntry, element);
+                    LoggerUtil.info("🔍 Using fuzzy heuristic for element: " + element + ", Score: " + score);
+                } else {
+                    LoggerUtil.info("🔍 Element: " + element + ", Score: " + score);
+                }
+                
+                if (score > 0.1) { // Lower threshold for debugging
                     CandidateLocator candidate = createCandidate(element, score, originalEntry);
                     if (candidate != null) {
                         candidates.add(candidate);
+                        LoggerUtil.info("✅ Added candidate with score " + score + ": " + candidate.toString());
+                    } else {
+                        LoggerUtil.debug("Created candidate was null for score " + score);
                     }
+                } else {
+                    LoggerUtil.info("❌ Score too low (" + score + ") for element: " + element);
                 }
             } catch (Exception e) {
                 LoggerUtil.error("Error analyzing element: " + e.getMessage(), e);
@@ -162,6 +178,114 @@ public class SmartAnalyzer implements Analyzer {
         totalChecks++;
         
         return Math.min(ATTRIBUTE_WEIGHT, score);
+    }
+    
+    /**
+     * Calculates fuzzy heuristic score when no baseline data is available
+     * Uses pattern matching and common element relationships
+     */
+    private double calculateFuzzyHeuristicScore(LocatorEntry originalEntry, Map<String, Object> candidateElement) {
+        try {
+            // Extract original locator info
+            String originalLocatorStr = originalEntry.getOriginalLocator().getValue();
+            Map<String, Object> candidateAttributes = extractElementAttributes(candidateElement);
+            
+            double score = 0.0;
+            
+            // Pattern 1: ID similarity (e.g., "username" -> "username-modified")
+            if (originalLocatorStr.contains("id")) {
+                String originalId = extractIdFromLocator(originalLocatorStr);
+                String candidateId = getStringValue(candidateAttributes, "id");
+                
+                if (originalId != null && candidateId != null) {
+                    double idSimilarity = calculateIdSimilarity(originalId, candidateId);
+                    if (idSimilarity > 0.5) {
+                        score += 0.6; // High score for ID patterns
+                        LoggerUtil.info("🎯 ID pattern match: " + originalId + " -> " + candidateId + " (similarity: " + idSimilarity + ")");
+                    }
+                }
+            }
+            
+            // Pattern 2: Common element types (input for username, etc.)
+            String tagName = getStringValue(candidateElement, "tagName");
+            if ("input".equals(tagName)) {
+                String type = getStringValue(candidateAttributes, "type");
+                String name = getStringValue(candidateAttributes, "name");
+                
+                // Look for username/email patterns
+                if (originalLocatorStr.toLowerCase().contains("username") || originalLocatorStr.toLowerCase().contains("user")) {
+                    if ("username".equals(name) || (name != null && name.toLowerCase().contains("user"))) {
+                        score += 0.4;
+                        LoggerUtil.info("🎯 Username pattern match via name attribute");
+                    }
+                    if ("text".equals(type) || "email".equals(type)) {
+                        score += 0.2;
+                        LoggerUtil.info("🎯 Text input type match");
+                    }
+                }
+            }
+            
+            // Pattern 3: Context-based scoring (form elements, etc.)
+            // Add more patterns as needed
+            
+            return Math.min(1.0, score);
+            
+        } catch (Exception e) {
+            LoggerUtil.error("Error in fuzzy heuristic scoring: " + e.getMessage(), e);
+            return 0.0;
+        }
+    }
+    
+    private String extractIdFromLocator(String locatorStr) {
+        // Extract ID from "By.id: someId" format
+        if (locatorStr.contains("id:")) {
+            String[] parts = locatorStr.split("id:");
+            if (parts.length > 1) {
+                return parts[1].trim();
+            }
+        }
+        return null;
+    }
+    
+    private double calculateIdSimilarity(String original, String candidate) {
+        if (original == null || candidate == null) return 0.0;
+        
+        // Check for common patterns like "username" -> "username-modified"
+        if (candidate.startsWith(original)) {
+            return 0.8; // High similarity if candidate starts with original
+        }
+        if (candidate.contains(original)) {
+            return 0.6; // Medium similarity if original is contained
+        }
+        if (original.contains(candidate)) {
+            return 0.6; // Medium similarity if candidate is contained in original
+        }
+        
+        // Levenshtein distance-based similarity
+        int distance = calculateLevenshteinDistance(original.toLowerCase(), candidate.toLowerCase());
+        int maxLen = Math.max(original.length(), candidate.length());
+        return 1.0 - (double) distance / maxLen;
+    }
+    
+    private int calculateLevenshteinDistance(String s1, String s2) {
+        int[][] dp = new int[s1.length() + 1][s2.length() + 1];
+        
+        for (int i = 0; i <= s1.length(); i++) {
+            for (int j = 0; j <= s2.length(); j++) {
+                if (i == 0) {
+                    dp[i][j] = j;
+                } else if (j == 0) {
+                    dp[i][j] = i;
+                } else {
+                    dp[i][j] = Math.min(
+                        dp[i - 1][j - 1] + (s1.charAt(i - 1) == s2.charAt(j - 1) ? 0 : 1),
+                        Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1)
+                    );
+                }
+            }
+        }
+        
+        return dp[s1.length()][s2.length()];
     }
     
     @Override
@@ -273,37 +397,55 @@ public class SmartAnalyzer implements Analyzer {
             return alternatives;
         }
         
+        // Get attributes from nested structure if present
+        Map<String, Object> attributes = extractElementAttributes(elementData);
+        
         // ID-based locator
-        String id = getStringValue(elementData, "id");
+        String id = getStringValue(attributes, "id");
         if (id != null && !id.isEmpty()) {
             alternatives.add("id=" + id);
             alternatives.add("xpath=//*[@id='" + id + "']");
         }
         
         // Name-based locator
-        String name = getStringValue(elementData, "name");
+        String name = getStringValue(attributes, "name");
         if (name != null && !name.isEmpty()) {
             alternatives.add("name=" + name);
             alternatives.add("xpath=//*[@name='" + name + "']");
         }
         
         // Class-based locator
-        String className = getStringValue(elementData, "className");
+        String className = getStringValue(attributes, "class");
         if (className != null && !className.isEmpty()) {
             alternatives.add("className=" + className.split("\\s+")[0]); // Use first class
             alternatives.add("css=." + className.replace(" ", "."));
         }
         
+        // Type-based locator (for input elements)
+        String type = getStringValue(attributes, "type");
+        String tagName = getStringValue(elementData, "tagName");
+        if (type != null && !type.isEmpty() && "input".equals(tagName)) {
+            alternatives.add("css=input[type='" + type + "']");
+            alternatives.add("xpath=//input[@type='" + type + "']");
+        }
+        
         // Text-based locator
         String textContent = getStringValue(elementData, "textContent");
         if (textContent != null && !textContent.isEmpty() && textContent.length() < 50) {
-            String tagName = getStringValue(elementData, "tagName");
             if (tagName != null) {
                 alternatives.add("xpath=//" + tagName.toLowerCase() + "[contains(text(),'" + textContent + "')]");
                 alternatives.add("xpath=//" + tagName.toLowerCase() + "[text()='" + textContent + "']");
             }
         }
         
+        // Placeholder-based locator (for input elements)
+        String placeholder = getStringValue(attributes, "placeholder");
+        if (placeholder != null && !placeholder.isEmpty() && "input".equals(tagName)) {
+            alternatives.add("xpath=//input[@placeholder='" + placeholder + "']");
+            alternatives.add("css=input[placeholder='" + placeholder + "']");
+        }
+        
+        LoggerUtil.debug("Generated " + alternatives.size() + " alternative locators for element");
         return alternatives;
     }
     
@@ -338,9 +480,8 @@ public class SmartAnalyzer implements Analyzer {
                 // Fallback: try to parse from page source
                 String pageSource = getStringValue(domSnapshot, "pageSource");
                 if (pageSource != null) {
-                    // For now, return empty list for page source
-                    // In a real implementation, you would parse the HTML
-                    LoggerUtil.warn("Page source parsing not implemented, using empty element list");
+                    LoggerUtil.info("Parsing elements from page source (elements list not available)");
+                    elements = parseElementsFromPageSource(pageSource);
                 }
             }
         } catch (Exception e) {
@@ -424,7 +565,36 @@ public class SmartAnalyzer implements Analyzer {
             return false;
         }
         
-        return originalValue.toString().equals(candidateValue.toString());
+        String originalStr = originalValue.toString();
+        String candidateStr = candidateValue.toString();
+        
+        // Exact match
+        if (originalStr.equals(candidateStr)) {
+            return true;
+        }
+        
+        // For ID attributes, allow fuzzy matching for similar values
+        if ("id".equals(attributeName)) {
+            // Check if one contains the other (e.g., "username" in "username-modified")
+            if (originalStr.length() >= 3 && candidateStr.length() >= 3) {
+                if (originalStr.contains(candidateStr) || candidateStr.contains(originalStr)) {
+                    return true;
+                }
+                
+                // Check for common prefixes/suffixes (at least 3 characters)
+                if (originalStr.length() >= 3 && candidateStr.length() >= 3) {
+                    String originalLower = originalStr.toLowerCase();
+                    String candidateLower = candidateStr.toLowerCase();
+                    
+                    // Check prefix match (e.g., "username" and "username-modified")
+                    if (originalLower.startsWith(candidateLower) || candidateLower.startsWith(originalLower)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        
+        return false;
     }
     
     private boolean attributesSimilar(Map<String, Object> original, Map<String, Object> candidate, String attributeName) {
@@ -461,5 +631,78 @@ public class SmartAnalyzer implements Analyzer {
             return Boolean.parseBoolean((String) value);
         }
         return defaultValue;
+    }
+    
+    private List<Map<String, Object>> parseElementsFromPageSource(String pageSource) {
+        List<Map<String, Object>> elements = new ArrayList<>();
+        
+        try {
+            // Use simple regex patterns to extract HTML elements
+            // Pattern to match HTML tags with attributes
+            Pattern elementPattern = Pattern.compile("<([a-zA-Z][a-zA-Z0-9]*)[^>]*>");
+            Matcher matcher = elementPattern.matcher(pageSource);
+            
+            while (matcher.find()) {
+                String fullTag = matcher.group(0);
+                String tagName = matcher.group(1).toLowerCase();
+                
+                // Only process form-related elements that could be locator targets
+                if (isRelevantElementForHealing(tagName)) {
+                    Map<String, Object> element = new HashMap<>();
+                    element.put("tagName", tagName);
+                    element.put("attributes", extractAttributesFromTag(fullTag));
+                    elements.add(element);
+                }
+            }
+            
+            LoggerUtil.debug("Extracted " + elements.size() + " relevant elements from page source");
+            return elements;
+        } catch (Exception e) {
+            LoggerUtil.error("Error parsing page source to elements", e);
+            return new ArrayList<>();
+        }
+    }
+    
+    private boolean isRelevantElementForHealing(String tagName) {
+        // Focus on interactive elements that are commonly used in automation
+        return tagName.equals("input") || tagName.equals("button") || 
+               tagName.equals("select") || tagName.equals("textarea") ||
+               tagName.equals("a") || tagName.equals("div") || 
+               tagName.equals("span") || tagName.equals("form");
+    }
+    
+    private Map<String, String> extractAttributesFromTag(String htmlTag) {
+        Map<String, String> attributes = new HashMap<>();
+        
+        try {
+            // Pattern to match attribute="value" or attribute='value'
+            Pattern attributePattern = Pattern.compile("([a-zA-Z-]+)\\s*=\\s*[\"']([^\"']*)[\"']");
+            Matcher matcher = attributePattern.matcher(htmlTag);
+            
+            while (matcher.find()) {
+                String attrName = matcher.group(1).toLowerCase();
+                String attrValue = matcher.group(2);
+                attributes.put(attrName, attrValue);
+            }
+            
+            // Also handle attributes without quotes (less common but possible)
+            Pattern unquotedPattern = Pattern.compile("([a-zA-Z-]+)\\s*=\\s*([^\\s>]+)");
+            Matcher unquotedMatcher = unquotedPattern.matcher(htmlTag);
+            
+            while (unquotedMatcher.find()) {
+                String attrName = unquotedMatcher.group(1).toLowerCase();
+                String attrValue = unquotedMatcher.group(2);
+                
+                // Only add if not already present (quoted attributes take precedence)
+                if (!attributes.containsKey(attrName) && !attrValue.startsWith("\"") && !attrValue.startsWith("'")) {
+                    attributes.put(attrName, attrValue);
+                }
+            }
+            
+        } catch (Exception e) {
+            LoggerUtil.error("Error extracting attributes from tag: " + htmlTag, e);
+        }
+        
+        return attributes;
     }
 }

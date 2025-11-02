@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suite name="HealingDemoSuite" verbose="1">
+    <parameter name="browser" value="chrome"/>
+    <parameter name="headless" value="false"/>
+    
+    <listeners>
+        <!-- Add the healing listener to automatically handle failures -->
+        <listener class-name="com.automation.healing.listener.HealingTestListener"/>
+    </listeners>
+    
+    <test name="SelfHealingLocatorDemo">
+        <parameter name="healing.enabled" value="true"/>
+        <parameter name="healing.mode" value="auto"/>
+        <parameter name="healing.confidence.threshold" value="0.75"/>
+        
+        <classes>
+            <class name="com.automation.tests.healing.HealingDemoTest">
+                <methods>
+                    <!-- Run tests in specific order to demonstrate healing progression -->
+                    <include name="testNormalLogin"/>
+                    <include name="testUsernameFieldHealing"/>
+                    <include name="testLoginButtonHealing"/>
+                    <include name="testMultipleElementHealing"/>
+                    <include name="testHealingStatistics"/>
+                    <include name="testHealingFailureScenario"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>

@@ -1,7 +1,6 @@
 package com.automation.healing.listeners;
 
 import com.automation.healing.HealingManager;
-import com.automation.healing.SmartHealingManager;
 import com.automation.utils.LoggerUtil;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
@@ -19,7 +18,7 @@ public class HealingTestListener implements ITestListener {
         try {
             // Initialize healing manager if not already done
             if (healingManager == null) {
-                healingManager = SmartHealingManager.getInstance();
+                healingManager = HealingManager.getInstance();
             }
             
             LoggerUtil.debug("Test started: " + result.getMethod().getMethodName());

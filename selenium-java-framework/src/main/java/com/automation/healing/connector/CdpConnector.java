@@ -1,5 +1,6 @@
 package com.automation.healing.connector;
 
+import org.openqa.selenium.WebDriver;
 import java.util.Map;
 
 /**
@@ -54,9 +55,10 @@ public interface CdpConnector {
     boolean isAvailable();
     
     /**
-     * Initializes the CDP connection
+     * Initializes the CDP connection with the provided WebDriver
+     * @param driver WebDriver instance to use for CDP connection
      */
-    void initialize();
+    void initialize(WebDriver driver);
     
     /**
      * Closes the CDP connection and cleans up resources

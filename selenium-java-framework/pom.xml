@@ -37,6 +37,13 @@
             <version>${selenium.version}</version>
         </dependency>
 
+        <!-- Chrome DevTools Protocol Support (closest to Chrome v141) -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-devtools-v119</artifactId>
+            <version>${selenium.version}</version>
+        </dependency>
+
         <!-- WebDriverManager for automatic driver management -->
         <dependency>
             <groupId>io.github.bonigarcia</groupId>

@@ -1,0 +1,167 @@
+[ {
+  "active" : true,
+  "id" : "Element (Healed)",
+  "page" : "DiscoveredViaHealing",
+  "originalLocator" : {
+    "cssSelector" : false,
+    "tagName" : false,
+    "partialLinkText" : false,
+    "id" : null,
+    "type" : "id",
+    "value" : "By.id: login-form",
+    "className" : null,
+    "linkText" : null,
+    "name" : null,
+    "xpath" : null
+  },
+  "attributesSnapshot" : {
+    "displayed" : true,
+    "text" : "Username:\nPassword:\nLogin",
+    "id" : "login-form",
+    "tagName" : "form",
+    "enabled" : true
+  },
+  "lastSeen" : "2025-11-02T18:56:26",
+  "history" : [ {
+    "healingEvent" : false,
+    "failureEvent" : false,
+    "creationEvent" : false,
+    "updateEvent" : false,
+    "timestamp" : "2025-11-02T18:56:26",
+    "eventType" : "HEALING_CANDIDATE_DISCOVERED",
+    "oldLocator" : null,
+    "newLocator" : null,
+    "confidence" : 0.6,
+    "reason" : "Discovered Healing Candidate (Score: 0.6)",
+    "testName" : null,
+    "success" : true
+  } ],
+  "isActive" : true,
+  "confidence" : 0.6
+}, {
+  "active" : true,
+  "id" : "Login Button (Healed)",
+  "page" : "DiscoveredViaHealing",
+  "originalLocator" : {
+    "cssSelector" : false,
+    "tagName" : false,
+    "partialLinkText" : false,
+    "id" : null,
+    "type" : "id",
+    "value" : "By.id: login-btn-modified",
+    "className" : null,
+    "linkText" : null,
+    "name" : null,
+    "xpath" : null
+  },
+  "attributesSnapshot" : {
+    "displayed" : true,
+    "text" : "Login",
+    "id" : "login-btn-modified",
+    "tagName" : "button",
+    "type" : "submit",
+    "class" : "btn",
+    "enabled" : true
+  },
+  "lastSeen" : "2025-11-02T18:56:26",
+  "history" : [ {
+    "healingEvent" : false,
+    "failureEvent" : false,
+    "creationEvent" : false,
+    "updateEvent" : false,
+    "timestamp" : "2025-11-02T18:56:26",
+    "eventType" : "HEALING_CANDIDATE_DISCOVERED",
+    "oldLocator" : null,
+    "newLocator" : null,
+    "confidence" : 0.6,
+    "reason" : "Discovered Healing Candidate (Score: 0.6)",
+    "testName" : null,
+    "success" : true
+  } ],
+  "isActive" : true,
+  "confidence" : 0.6
+}, {
+  "active" : true,
+  "id" : "Username Field (Healed)",
+  "page" : "DiscoveredViaHealing",
+  "originalLocator" : {
+    "cssSelector" : false,
+    "tagName" : false,
+    "partialLinkText" : false,
+    "id" : null,
+    "type" : "id",
+    "value" : "By.id: username-modified",
+    "className" : null,
+    "linkText" : null,
+    "name" : null,
+    "xpath" : null
+  },
+  "attributesSnapshot" : {
+    "displayed" : true,
+    "name" : "username",
+    "text" : "",
+    "id" : "username-modified",
+    "tagName" : "input",
+    "type" : "text",
+    "enabled" : true
+  },
+  "lastSeen" : "2025-11-02T18:56:26",
+  "history" : [ {
+    "healingEvent" : false,
+    "failureEvent" : false,
+    "creationEvent" : false,
+    "updateEvent" : false,
+    "timestamp" : "2025-11-02T18:56:26",
+    "eventType" : "HEALING_CANDIDATE_DISCOVERED",
+    "oldLocator" : null,
+    "newLocator" : null,
+    "confidence" : 1.0,
+    "reason" : "Discovered Healing Candidate (Score: 1.0)",
+    "testName" : null,
+    "success" : true
+  } ],
+  "isActive" : true,
+  "confidence" : 1.0
+}, {
+  "active" : true,
+  "id" : "Password Field (Healed)",
+  "page" : "DiscoveredViaHealing",
+  "originalLocator" : {
+    "cssSelector" : false,
+    "tagName" : false,
+    "partialLinkText" : false,
+    "id" : null,
+    "type" : "id",
+    "value" : "By.id: password_modified",
+    "className" : null,
+    "linkText" : null,
+    "name" : null,
+    "xpath" : null
+  },
+  "attributesSnapshot" : {
+    "displayed" : true,
+    "name" : "password",
+    "text" : "",
+    "id" : "password_modified",
+    "tagName" : "input",
+    "type" : "password",
+    "enabled" : true
+  },
+  "lastSeen" : "2025-11-02T18:56:26",
+  "history" : [ {
+    "healingEvent" : false,
+    "failureEvent" : false,
+    "creationEvent" : false,
+    "updateEvent" : false,
+    "timestamp" : "2025-11-02T18:56:26",
+    "eventType" : "HEALING_CANDIDATE_DISCOVERED",
+    "oldLocator" : null,
+    "newLocator" : null,
+    "confidence" : 0.6,
+    "reason" : "Discovered Healing Candidate (Score: 0.6)",
+    "testName" : null,
+    "success" : true
+  } ],
+  "isActive" : true,
+  "confidence" : 0.6
+} ]

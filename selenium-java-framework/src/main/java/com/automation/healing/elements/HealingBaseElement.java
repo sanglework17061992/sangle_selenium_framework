@@ -2,7 +2,6 @@ package com.automation.healing.elements;
 
 import com.automation.elements.BaseElement;
 import com.automation.healing.HealingManager;
-import com.automation.healing.SmartHealingManager;
 import com.automation.healing.HealingConfiguration;
 import com.automation.utils.LoggerUtil;
 import org.openqa.selenium.By;
@@ -25,7 +24,7 @@ public abstract class HealingBaseElement extends BaseElement {
     
     protected HealingBaseElement(WebDriver driver, By locator, String name, String pageName) {
         super(driver, locator, name);
-        this.healingManager = SmartHealingManager.getInstance();
+        this.healingManager = HealingManager.getInstance();
         this.config = HealingConfiguration.getInstance();
         this.pageName = pageName;
         this.elementName = name;

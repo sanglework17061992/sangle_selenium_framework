@@ -1,9 +1,9 @@
 package com.automation.healing.models;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,11 +32,19 @@ public class HealingEvent {
     private String action;
     
     @JsonProperty("timestamp")
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime timestamp;
+    private String timestamp;
     
     @JsonProperty("status")
     private String status; // applied, suggested, failed
+    
+    @JsonProperty("failed")
+    private boolean failed;
+    
+    @JsonProperty("successful")
+    private boolean successful;
+    
+    @JsonProperty("suggested")
+    private boolean suggested;
     
     @JsonProperty("artifacts")
     private Map<String, String> artifacts;
@@ -61,7 +69,7 @@ public class HealingEvent {
     
     // Constructors
     public HealingEvent() {
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
         this.artifacts = new HashMap<>();
     }
     
@@ -125,11 +133,11 @@ public class HealingEvent {
         this.action = action;
     }
     
-    public LocalDateTime getTimestamp() {
+    public String getTimestamp() {
         return timestamp;
     }
     
-    public void setTimestamp(LocalDateTime timestamp) {
+    public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
     }
     
@@ -215,6 +223,22 @@ public class HealingEvent {
     
     public boolean isFailed() {
         return "failed".equalsIgnoreCase(status);
+    }
+    
+    public void setSuccessful(boolean successful) {
+        this.successful = successful;
+    }
+    
+    public void setFailed(boolean failed) {
+        this.failed = failed;
+    }
+    
+    public boolean getSuggested() {
+        return suggested;
+    }
+    
+    public void setSuggested(boolean suggested) {
+        this.suggested = suggested;
     }
     
     public boolean isSuggested() {

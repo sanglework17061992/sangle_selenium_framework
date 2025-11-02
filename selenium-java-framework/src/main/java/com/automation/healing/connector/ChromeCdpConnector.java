@@ -30,19 +30,31 @@ public class ChromeCdpConnector implements CdpConnector {
     }
     
     @Override
-    public void initialize() {
+    public void initialize(WebDriver driver) {
         try {
             if (driver instanceof HasDevTools) {
-                devTools = ((HasDevTools) driver).getDevTools();
-                devTools.createSession();
-                isInitialized = true;
-                LoggerUtil.info("CDP connection initialized successfully");
+                HasDevTools hasDevTools = (HasDevTools) driver;
+                this.devTools = hasDevTools.getDevTools();
+                
+                // Suppress CDP version warnings for unsupported versions
+                System.setProperty("webdriver.chrome.silentOutput", "true");
+                
+                this.devTools.createSession();
+                this.isInitialized = true;
+                LoggerUtil.info("CDP connector initialized successfully with full support");
             } else {
-                LoggerUtil.warn("Driver does not support DevTools: " + driver.getClass().getSimpleName());
+                LoggerUtil.warn("CDP connector requires HasDevTools-capable driver, falling back to JavaScript execution");
+                this.isInitialized = false;
             }
         } catch (Exception e) {
-            LoggerUtil.error("Failed to initialize CDP connection: " + e.getMessage(), e);
-            isInitialized = false;
+            // Gracefully handle CDP version mismatch (common with newer Chrome versions)
+            String errorMsg = e.getMessage();
+            if (errorMsg != null && errorMsg.contains("no-op implementation")) {
+                LoggerUtil.info("CDP connector falling back to JavaScript execution (Chrome version not fully supported)");
+            } else {
+                LoggerUtil.warn("CDP connector initialization failed, using JavaScript fallback: " + e.getMessage());
+            }
+            this.isInitialized = false;
         }
     }
     

@@ -8,11 +8,26 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class LocatorInfo {
     
+    @JsonProperty("id")
+    private String id;
+    
     @JsonProperty("type")
     private String type;
     
     @JsonProperty("value")
     private String value;
+    
+    @JsonProperty("className")
+    private String className;
+    
+    @JsonProperty("linkText")
+    private String linkText;
+    
+    @JsonProperty("name")
+    private String name;
+    
+    @JsonProperty("xpath")
+    private String xpath;
     
     // Constructors
     public LocatorInfo() {}
@@ -22,7 +37,21 @@ public class LocatorInfo {
         this.value = value;
     }
     
+    public LocatorInfo(String id, String type, String value) {
+        this.id = id;
+        this.type = type;
+        this.value = value;
+    }
+    
     // Getters and Setters
+    public String getId() {
+        return id;
+    }
+    
+    public void setId(String id) {
+        this.id = id;
+    }
+    
     public String getType() {
         return type;
     }
@@ -37,6 +66,38 @@ public class LocatorInfo {
     
     public void setValue(String value) {
         this.value = value;
+    }
+    
+    public String getClassName() {
+        return className;
+    }
+    
+    public void setClassName(String className) {
+        this.className = className;
+    }
+    
+    public String getLinkText() {
+        return linkText;
+    }
+    
+    public void setLinkText(String linkText) {
+        this.linkText = linkText;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    public String getXpath() {
+        return xpath;
+    }
+    
+    public void setXpath(String xpath) {
+        this.xpath = xpath;
     }
     
     // Utility methods
