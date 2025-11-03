@@ -101,7 +101,7 @@ public abstract class HealingBaseElement extends BaseElement {
     public void triggerHealing() {
         if (config.isHealingEnabled()) {
             LoggerUtil.info("Manually triggering healing for element: " + name);
-            healingManager.healLocator(locator, "Manual trigger from element: " + name);
+            healingManager.healLocator(locator);
         } else {
             LoggerUtil.warn("Healing is disabled, cannot trigger healing for: " + name);
         }

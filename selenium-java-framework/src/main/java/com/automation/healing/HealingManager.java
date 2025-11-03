@@ -3,7 +3,11 @@ package com.automation.healing;
 import com.automation.healing.analyzer.Analyzer;
 import com.automation.healing.analyzer.SmartAnalyzer;
 import com.automation.healing.connector.SimpleDomConnector;
-import com.automation.healing.models.*;
+import com.automation.healing.models.CandidateLocator;
+import com.automation.healing.models.HealingEvent;
+import com.automation.healing.models.LocatorEntry;
+import com.automation.healing.models.LocatorHistoryEntry;
+import com.automation.healing.models.LocatorInfo;
 import com.automation.healing.repository.JsonLocatorRepository;
 import com.automation.healing.repository.LocatorRepository;
 import com.automation.healing.reporter.HealingReporter;
@@ -16,7 +20,11 @@ import org.openqa.selenium.WebElement;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
@@ -42,7 +50,6 @@ public class HealingManager {
     private String healingMode = AUTO_MODE;
     private double confidenceThreshold = 0.75;
     private int maxCandidates = 5;
-    private long healingTimeout = 10000; // 10 seconds
     
     // Statistics
     private final AtomicLong totalHealingAttempts = new AtomicLong(0);
@@ -50,9 +57,10 @@ public class HealingManager {
     private final AtomicLong failedHealings = new AtomicLong(0);
     private final AtomicLong suggestionsGenerated = new AtomicLong(0);
     
-    // Singleton instance
-    private static volatile HealingManager instance;
-    private static final Object LOCK = new Object();
+    // Singleton instance using initialization-on-demand holder pattern
+    private static class SingletonHolder {
+        private static final HealingManager INSTANCE = new HealingManager();
+    }
     
     // Constructor
     private HealingManager() {
@@ -63,14 +71,7 @@ public class HealingManager {
      * Gets the singleton instance of HealingManager
      */
     public static HealingManager getInstance() {
-        if (instance == null) {
-            synchronized (LOCK) {
-                if (instance == null) {
-                    instance = new HealingManager();
-                }
-            }
-        }
-        return instance;
+        return SingletonHolder.INSTANCE;
     }
     
     public void initialize(WebDriver driver) {
@@ -93,11 +94,11 @@ public class HealingManager {
             LoggerUtil.info("HealingManager initialized successfully");
         } catch (Exception e) {
             LoggerUtil.error("Failed to initialize HealingManager: " + e.getMessage(), e);
-            throw new RuntimeException("HealingManager initialization failed", e);
+            throw new HealingInitializationException("HealingManager initialization failed", e);
         }
     }
     
-    public Optional<WebElement> healAndRetry(By originalLocator, String action) {
+    public Optional<WebElement> healAndRetry(By originalLocator) {
         return healAndRetry(originalLocator, () -> {
             try {
                 return driver.findElement(originalLocator);
@@ -105,6 +106,12 @@ public class HealingManager {
                 return null;
             }
         });
+    }
+    
+    // Backward compatibility method - action parameter is ignored
+    @SuppressWarnings("java:S1172") // Unused parameter kept for API compatibility
+    public Optional<WebElement> healAndRetry(By originalLocator, String action) {
+        return healAndRetry(originalLocator);
     }
     
     public <T> Optional<T> healAndRetry(By originalLocator, Supplier<T> actionSupplier) {
@@ -125,7 +132,7 @@ public class HealingManager {
             
             // Capture DOM snapshot
             Map<String, Object> domSnapshot = captureDomSnapshot();
-            if (domSnapshot == null) {
+            if (domSnapshot.isEmpty()) {
                 LoggerUtil.warn("Failed to capture DOM snapshot, aborting healing");
                 return Optional.empty();
             }
@@ -174,7 +181,7 @@ public class HealingManager {
         }
     }
     
-    public List<CandidateLocator> healLocator(By originalLocator, String context) {
+    public List<CandidateLocator> healLocator(By originalLocator) {
         if (!isHealingEnabled() || driver == null) {
             return new ArrayList<>();
         }
@@ -183,7 +190,7 @@ public class HealingManager {
             LocatorEntry locatorEntry = getOrCreateLocatorEntry(originalLocator);
             Map<String, Object> domSnapshot = captureDomSnapshot();
             
-            if (domSnapshot == null) {
+            if (domSnapshot.isEmpty()) {
                 return new ArrayList<>();
             }
             
@@ -217,13 +224,7 @@ public class HealingManager {
             }
             
             // Capture current element attributes if possible
-            try {
-                WebElement element = driver.findElement(locator);
-                Map<String, Object> attributes = captureElementAttributes(element);
-                entry.updateAttributes(attributes);
-            } catch (Exception e) {
-                LoggerUtil.debug("Could not capture element attributes: " + e.getMessage());
-            }
+            captureAndUpdateElementAttributes(locator, entry);
             
             // Update entry
             entry.updateLastSeen();
@@ -270,15 +271,7 @@ public class HealingManager {
             }
             
             // Try to capture element attributes if the element exists
-            try {
-                WebElement element = driver.findElement(candidateBy);
-                Map<String, Object> attributes = captureElementAttributes(element);
-                entry.updateAttributes(attributes);
-                entry.setActive(true);
-            } catch (Exception e) {
-                LoggerUtil.debug("Could not verify candidate element: " + e.getMessage());
-                entry.setActive(false);
-            }
+            verifyCandidateElement(candidateBy, entry);
             
             // Update entry
             entry.updateLastSeen();
@@ -410,14 +403,15 @@ public class HealingManager {
     private Map<String, Object> captureDomSnapshot() {
         if (domConnector == null) {
             LoggerUtil.warn("DOM connector not available");
-            return null;
+            return new HashMap<>();
         }
         
         try {
-            return domConnector.captureDomSnapshot();
+            Map<String, Object> snapshot = domConnector.captureDomSnapshot();
+            return snapshot != null ? snapshot : new HashMap<>();
         } catch (Exception e) {
             LoggerUtil.error("Failed to capture DOM snapshot: " + e.getMessage(), e);
-            return null;
+            return new HashMap<>();
         }
     }
     
@@ -581,7 +575,25 @@ public class HealingManager {
         this.maxCandidates = Math.max(1, maxCandidates);
     }
     
-    public void setHealingTimeout(long timeout) {
-        this.healingTimeout = Math.max(1000, timeout);
+    private void captureAndUpdateElementAttributes(By locator, LocatorEntry entry) {
+        try {
+            WebElement element = driver.findElement(locator);
+            Map<String, Object> attributes = captureElementAttributes(element);
+            entry.updateAttributes(attributes);
+        } catch (Exception e) {
+            LoggerUtil.debug("Could not capture element attributes: " + e.getMessage());
+        }
+    }
+    
+    private void verifyCandidateElement(By candidateBy, LocatorEntry entry) {
+        try {
+            WebElement element = driver.findElement(candidateBy);
+            Map<String, Object> attributes = captureElementAttributes(element);
+            entry.updateAttributes(attributes);
+            entry.setActive(true);
+        } catch (Exception e) {
+            LoggerUtil.debug("Could not verify candidate element: " + e.getMessage());
+            entry.setActive(false);
+        }
     }
 }

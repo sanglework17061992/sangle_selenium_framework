@@ -7,7 +7,10 @@ import com.automation.utils.WaitUtil;
 import io.qameta.allure.Allure;
 import org.openqa.selenium.WebDriver;
 import org.testng.ITestResult;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 
 /**
  * BaseTest - moved to test sources. Handles driver lifecycle and common test setup/teardown

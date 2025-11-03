@@ -8,20 +8,20 @@
     "partialLinkText" : false,
     "id" : null,
     "type" : "id",
-    "value" : "By.id: //*[@id=\"login-title\"]",
+    "value" : "By.id: /html/body/div[1]/div[1]/div[1]",
     "className" : null,
     "linkText" : null,
     "name" : null,
     "xpath" : null
   },
   "attributesSnapshot" : { },
-  "lastSeen" : "2025-11-03T00:57:40",
+  "lastSeen" : "2025-11-03T18:57:28",
   "history" : [ {
     "healingEvent" : false,
     "failureEvent" : false,
     "creationEvent" : false,
     "updateEvent" : false,
-    "timestamp" : "2025-11-03T00:57:40",
+    "timestamp" : "2025-11-03T18:57:28",
     "eventType" : "HEALING_CANDIDATE_DISCOVERED",
     "oldLocator" : null,
     "newLocator" : null,
@@ -32,6 +32,48 @@
   } ],
   "isActive" : false,
   "confidence" : 0.6
+}, {
+  "active" : true,
+  "id" : "Username Field",
+  "page" : "LoginPage",
+  "originalLocator" : {
+    "cssSelector" : false,
+    "tagName" : false,
+    "partialLinkText" : false,
+    "id" : null,
+    "type" : "name",
+    "value" : "By.name: username",
+    "className" : null,
+    "linkText" : null,
+    "name" : null,
+    "xpath" : null
+  },
+  "attributesSnapshot" : {
+    "displayed" : true,
+    "name" : "username",
+    "text" : "",
+    "id" : "username-modified",
+    "tagName" : "input",
+    "type" : "text",
+    "enabled" : true
+  },
+  "lastSeen" : "2025-11-03T18:57:28",
+  "history" : [ {
+    "healingEvent" : false,
+    "failureEvent" : false,
+    "creationEvent" : false,
+    "updateEvent" : false,
+    "timestamp" : "2025-11-03T18:57:28",
+    "eventType" : "SUCCESSFUL_INTERACTION",
+    "oldLocator" : null,
+    "newLocator" : null,
+    "confidence" : 0.0,
+    "reason" : "Element found and interacted with successfully",
+    "testName" : null,
+    "success" : true
+  } ],
+  "isActive" : true,
+  "confidence" : 1.0
 }, {
   "active" : false,
   "id" : "Username Field (Healed)",
@@ -49,13 +91,13 @@
     "xpath" : null
   },
   "attributesSnapshot" : { },
-  "lastSeen" : "2025-11-03T00:57:40",
+  "lastSeen" : "2025-11-03T18:57:28",
   "history" : [ {
     "healingEvent" : false,
     "failureEvent" : false,
     "creationEvent" : false,
     "updateEvent" : false,
-    "timestamp" : "2025-11-03T00:57:40",
+    "timestamp" : "2025-11-03T18:57:28",
     "eventType" : "HEALING_CANDIDATE_DISCOVERED",
     "oldLocator" : null,
     "newLocator" : null,

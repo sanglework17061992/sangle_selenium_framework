@@ -1,6 +1,8 @@
 package com.automation.tests.healing;
 
-import org.testng.annotations.*;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -9,7 +11,14 @@ import com.automation.core.DriverFactory;
 import com.automation.healing.HealingManager;
 import com.automation.healing.HealingConfiguration;
 import com.automation.utils.LoggerUtil;
-import io.qameta.allure.*;
+import io.qameta.allure.Allure;
+import io.qameta.allure.Description;
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
+import io.qameta.allure.Step;
+import io.qameta.allure.Story;
 
 import java.util.Optional;
 
