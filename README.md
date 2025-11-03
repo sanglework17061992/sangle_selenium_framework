@@ -163,6 +163,307 @@ The report will open automatically in your browser showing:
 
 ## 🏗 Framework Structure
 
+### Architecture Overview
+
+```mermaid
+classDiagram
+    %% Core Framework Classes
+    class WebDriver {
+        <<interface>>
+    }
+    
+    class DriverFactory {
+        <<Factory>>
+        -driverThreadLocal: ThreadLocal~WebDriver~
+        +createDriver(browser: String, headless: boolean): WebDriver
+        +createDriver(): WebDriver
+        +getDriver(): WebDriver
+        +quitDriver(): void
+        +isDriverAvailable(): boolean
+        +restartDriver(): void
+        -createChromeDriver(headless: boolean): WebDriver
+        -createFirefoxDriver(headless: boolean): WebDriver
+        -createEdgeDriver(headless: boolean): WebDriver
+        -createSafariDriver(): WebDriver
+    }
+    
+    class ConfigManager {
+        <<Singleton>>
+        -instance: ConfigManager
+        -properties: Properties
+        +getInstance(): ConfigManager
+        +getProperty(key: String): String
+        +getBooleanProperty(key: String): boolean
+        +getBrowser(): String
+        +isHeadless(): boolean
+        +getBaseUrl(): String
+        +getExplicitWait(): int
+        +getRetryCount(): int
+    }
+    
+    %% Enums
+    class BrowserType {
+        <<enumeration>>
+        CHROME
+        FIREFOX
+        EDGE
+        SAFARI
+        OPERA
+        IE
+        +getIdentifier(): String
+        +getDisplayName(): String
+        +fromIdentifier(String): BrowserType
+    }
+    
+    %% Base Element Classes
+    class BaseElement {
+        <<abstract>>
+        #driver: WebDriver
+        #locator: By
+        #name: String
+        #waitHelper: WaitUtil
+        #retryCount: int
+        +BaseElement(driver: WebDriver, locator: By, name: String)
+        +getElement(): WebElement
+        +click(): void
+        +isDisplayed(): boolean
+        +isEnabled(): boolean
+        +getText(): String
+        +getAttribute(name: String): String
+        +waitForVisible(): void
+        +waitForClickable(): void
+        +scrollIntoView(): void
+    }
+    
+    class Button {
+        +Button(driver: WebDriver, locator: By, name: String)
+        +clickWithRetry(): void
+        +isEnabled(): boolean
+        +getButtonType(): String
+        +submit(): void
+        +doubleClick(): void
+        +rightClick(): void
+    }
+    
+    class TextBox {
+        +TextBox(driver: WebDriver, locator: By, name: String)
+        +type(text: String): void
+        +clear(): void
+        +clearAndType(text: String): void
+        +getValue(): String
+        +pressEnter(): void
+        +pressTab(): void
+        +selectAll(): void
+    }
+    
+    class Dropdown {
+        +Dropdown(driver: WebDriver, locator: By, name: String)
+        +selectByText(text: String): void
+        +selectByValue(value: String): void
+        +selectByIndex(index: int): void
+        +getSelectedText(): String
+        +getAllOptions(): List~String~
+        +isMultiSelect(): boolean
+    }
+    
+    %% Self-Healing System
+    class HealingBaseElement {
+        <<abstract>>
+        -healingManager: HealingManager
+        -config: HealingConfiguration
+        -pageName: String
+        -elementName: String
+        +HealingBaseElement(driver: WebDriver, locator: By, name: String, pageName: String)
+        +getElement(): WebElement
+        +triggerHealing(): void
+        +canBeHealed(): boolean
+        +getHealingStatistics(): Map~String,Object~
+    }
+    
+    class HealingButton {
+        -delegate: Button
+        +HealingButton(driver: WebDriver, locator: By, name: String, pageName: String)
+    }
+    
+    class HealingTextBox {
+        -delegate: TextBox
+        +HealingTextBox(driver: WebDriver, locator: By, name: String, pageName: String)
+    }
+    
+    %% Healing System Core
+    class HealingManager {
+        <<Singleton>>
+        -instance: HealingManager
+        -locatorRepository: LocatorRepository
+        -analyzer: Analyzer
+        -domConnector: SimpleDomConnector
+        +getInstance(): HealingManager
+        +initialize(driver: WebDriver): void
+        +healLocator(locator: By, context: String): Optional~By~
+        +healAndRetry(locator: By, actionSupplier: Supplier): Optional~String~
+        +recordSuccessfulInteraction(locator: By, elementName: String, pageName: String): void
+        +getHealingStatistics(): Map~String,Object~
+        +isHealingEnabled(): boolean
+    }
+    
+    class HealingConfiguration {
+        <<Singleton>>
+        -instance: HealingConfiguration
+        -enabled: boolean
+        -mode: HealingMode
+        -confidenceThreshold: double
+        -maxCandidates: int
+        +getInstance(): HealingConfiguration
+        +isHealingEnabled(): boolean
+        +getMode(): HealingMode
+        +getConfidenceThreshold(): double
+        +getMaxCandidates(): int
+    }
+    
+    class SimpleDomConnector {
+        -driver: WebDriver
+        +SimpleDomConnector(driver: WebDriver)
+        +captureDomSnapshot(): Map~String,Object~
+        +getBrowserInfo(): Map~String,Object~
+        -captureElementsViaJavaScript(): List~Map~
+        -captureElementsViaPageSource(): List~Map~
+    }
+    
+    %% Analyzer Interface and Implementation
+    class Analyzer {
+        <<interface>>
+        +findCandidates(entry: LocatorEntry, domSnapshot: Map, maxCandidates: int): List~CandidateLocator~
+        +calculateSimilarityScore(originalAttrs: Map, candidateElement: Map): double
+        +calculateAttributeSimilarity(originalAttrs: Map, candidateAttrs: Map): double
+    }
+    
+    class SmartAnalyzer {
+        -confidenceThreshold: double
+        +findCandidates(entry: LocatorEntry, domSnapshot: Map, maxCandidates: int): List~CandidateLocator~
+        +calculateSimilarityScore(originalAttrs: Map, candidateElement: Map): double
+        +calculateFuzzyHeuristicScore(entry: LocatorEntry, element: Map): double
+    }
+    
+    %% Repository Classes
+    class LocatorRepository {
+        <<interface>>
+        +saveLocatorEntry(entry: LocatorEntry): void
+        +findLocatorEntry(locator: By, pageName: String): Optional~LocatorEntry~
+        +saveHealingCandidate(suggestion: HealingSuggestion): void
+        +findHealingCandidates(locator: By): List~HealingSuggestion~
+    }
+    
+    class JsonLocatorRepository {
+        -locatorsFilePath: String
+        -suggestionsFilePath: String
+        -objectMapper: ObjectMapper
+        +JsonLocatorRepository()
+        +initialize(): void
+        +saveLocatorEntry(entry: LocatorEntry): void
+        +findLocatorEntry(locator: By, pageName: String): Optional~LocatorEntry~
+    }
+    
+    %% Page Object Classes
+    class BasePage {
+        <<abstract>>
+        #driver: WebDriver
+        #waitUtil: WaitUtil
+        +BasePage(driver: WebDriver)
+        +waitForPageLoad(): void
+        +getCurrentUrl(): String
+        +getTitle(): String
+        +navigateToUrl(url: String): void
+    }
+    
+    class LoginPage {
+        -usernameField: TextBox
+        -passwordField: TextBox
+        -loginButton: Button
+        +LoginPage(driver: WebDriver)
+        +navigateToLoginPage(): void
+        +login(username: String, password: String): void
+        +loginWithDemoCredentials(): void
+        +isOnLoginPage(): boolean
+    }
+    
+    class HealingLoginPage {
+        -usernameField: HealingTextBox
+        -passwordField: HealingTextBox
+        -loginButton: HealingButton
+        +HealingLoginPage(driver: WebDriver)
+        +login(username: String, password: String): void
+        +isSuccessMessageDisplayed(): boolean
+        +waitForLoginResult(timeoutSeconds: int): boolean
+    }
+    
+    %% Utility Classes
+    class WaitUtil {
+        -driver: WebDriver
+        -wait: WebDriverWait
+        +WaitUtil(driver: WebDriver, timeoutSeconds: int)
+        +waitForPresence(locator: By, elementName: String): WebElement
+        +waitForVisibility(locator: By, elementName: String): WebElement
+        +waitForClickability(locator: By, elementName: String): WebElement
+    }
+    
+    class RetryUtil {
+        <<Utility>>
+        +executeWithRetry(action: Supplier, elementName: String, actionDescription: String, maxRetries: int): T
+        +executeWithRetry(action: Runnable, elementName: String, actionDescription: String, maxRetries: int): void
+    }
+    
+    %% Relationships
+    DriverFactory --> BrowserType : uses
+    DriverFactory --> WebDriver : creates
+    
+    BaseElement --> WebDriver : uses
+    BaseElement --> WaitUtil : uses
+    BaseElement --> RetryUtil : uses
+    
+    Button --|> BaseElement : extends
+    TextBox --|> BaseElement : extends
+    Dropdown --|> BaseElement : extends
+    
+    HealingBaseElement --|> BaseElement : extends
+    HealingBaseElement --> HealingManager : uses
+    HealingBaseElement --> HealingConfiguration : uses
+    
+    HealingButton --|> HealingBaseElement : extends
+    HealingTextBox --|> HealingBaseElement : extends
+    
+    HealingButton --> Button : delegates
+    HealingTextBox --> TextBox : delegates
+    
+    HealingManager --> LocatorRepository : uses
+    HealingManager --> Analyzer : uses
+    HealingManager --> SimpleDomConnector : uses
+    
+    SmartAnalyzer ..|> Analyzer : implements
+    JsonLocatorRepository ..|> LocatorRepository : implements
+    
+    BasePage --> WebDriver : uses
+    BasePage --> WaitUtil : uses
+    LoginPage --|> BasePage : extends
+    HealingLoginPage --|> BasePage : extends
+    
+    LoginPage --> Button : uses
+    LoginPage --> TextBox : uses
+    
+    HealingLoginPage --> HealingButton : uses
+    HealingLoginPage --> HealingTextBox : uses
+```
+
+### Key Architecture Patterns
+
+- **🏭 Factory Pattern**: `DriverFactory` for WebDriver creation
+- **🔒 Singleton Pattern**: `ConfigManager`, `HealingManager`, `HealingConfiguration`
+- **📄 Page Object Model**: Clean separation of page structure and test logic
+- **🎭 Decorator Pattern**: Healing elements enhance base elements with self-healing capabilities
+- **📚 Repository Pattern**: `LocatorRepository` for data persistence
+- **🔧 Strategy Pattern**: `Analyzer` interface with `SmartAnalyzer` implementation
+
+### Directory Structure
+
 ```
 selenium-java-framework/
 ├── src/
