@@ -583,6 +583,33 @@ The framework features an intelligent self-healing system that automatically det
 
 ### How It Works
 
+#### Healing Workflow
+```mermaid
+graph TD
+    A[Original Locator Fails] --> B[Trigger Healing Process]
+    B --> C[Capture DOM Snapshot]
+    C --> D[Generate Candidate Locators]
+    D --> E[Score Each Candidate]
+    E --> F[Test Candidates by Score]
+    F --> G{Candidate Works?}
+    G -->|Yes| H[Execute Action & Record Success]
+    G -->|No| I[Try Next Candidate]
+    I --> J{More Candidates?}
+    J -->|Yes| F
+    J -->|No| K[Healing Failed - Use Fallback]
+    H --> L[Update Locator Repository]
+```
+
+**Workflow Explanation:**
+1. **📍 Original Locator Fails**: NoSuchElementException triggers healing
+2. **🔧 Trigger Healing Process**: System captures current element context
+3. **📸 Capture DOM Snapshot**: JavaScript extracts all page elements with attributes
+4. **🎯 Generate Candidate Locators**: AI-like analysis finds similar elements
+5. **📊 Score Each Candidate**: Multi-factor scoring (ID similarity, attributes, position)
+6. **🧪 Test Candidates by Score**: Attempts actions on highest-scored candidates first
+7. **✅ Execute Action & Record Success**: Working candidate performs original action
+8. **💾 Update Locator Repository**: Successful healing saved for future use
+
 #### 1. Automatic Detection
 ```java
 // When this locator breaks:
