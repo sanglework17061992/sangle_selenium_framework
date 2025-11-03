@@ -3,7 +3,7 @@ package com.automation.constants;
 /**
  * Constants for WebDriver options and browser configurations
  */
-public final class DriverConstants {
+public final class FrameworkConstants {
     
     // Chrome options
     public static final String NO_SANDBOX = "--no-sandbox";
@@ -49,7 +49,7 @@ public final class DriverConstants {
     // Dropdown actions
     public static final String DESELECT_ALL = "deselect all";
     
-    private DriverConstants() {
+    private FrameworkConstants() {
         // Utility class - prevent instantiation
     }
 }

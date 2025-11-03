@@ -1,6 +1,6 @@
 package com.automation.elements;
 
-import com.automation.constants.DriverConstants;
+import com.automation.constants.FrameworkConstants;
 import com.automation.utils.LoggerUtil;
 import com.automation.utils.RetryUtil;
 import org.openqa.selenium.By;
@@ -185,7 +185,7 @@ public class Dropdown extends BaseElement {
      */
     public void deselectAll() {
         long startTime = System.currentTimeMillis();
-        LoggerUtil.logActionStart(name, DriverConstants.DESELECT_ALL);
+        LoggerUtil.logActionStart(name, FrameworkConstants.DESELECT_ALL);
         
         RetryUtil.executeWithRetry(
             () -> {
@@ -197,12 +197,12 @@ public class Dropdown extends BaseElement {
                 }
             },
             name,
-            DriverConstants.DESELECT_ALL,
+            FrameworkConstants.DESELECT_ALL,
             retryCount
         );
         
         long duration = System.currentTimeMillis() - startTime;
-        LoggerUtil.logActionSuccess(name, DriverConstants.DESELECT_ALL, duration);
+        LoggerUtil.logActionSuccess(name, FrameworkConstants.DESELECT_ALL, duration);
     }
     
     /**

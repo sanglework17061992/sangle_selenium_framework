@@ -1,6 +1,6 @@
 package com.automation.pages;
 
-import com.automation.constants.DriverConstants;
+import com.automation.constants.FrameworkConstants;
 import com.automation.utils.LoggerUtil;
 import com.automation.elements.Button;
 import com.automation.elements.Label;
@@ -54,7 +54,7 @@ public class LoginPage extends BasePage {
     public void navigateToLoginPage() {
         String url = config.getBaseUrl() + "/" + PAGE_URL;
         driver.get(url);
-        LoggerUtil.logPageNavigation(DriverConstants.LOGIN_PAGE, url);
+        LoggerUtil.logPageNavigation(FrameworkConstants.LOGIN_PAGE, url);
         waitForPageLoad();
     }
     
@@ -75,10 +75,10 @@ public class LoginPage extends BasePage {
             
             boolean isOnPage = isCorrectUrl && hasTitleElement && hasCorrectTitle && 
                               hasUsernameField && hasPasswordField && hasLoginButton;
-            LoggerUtil.logPageValidation(DriverConstants.LOGIN_PAGE, isOnPage);
+            LoggerUtil.logPageValidation(FrameworkConstants.LOGIN_PAGE, isOnPage);
             return isOnPage;
         } catch (Exception e) {
-            LoggerUtil.logPageValidation(DriverConstants.LOGIN_PAGE, false);
+            LoggerUtil.logPageValidation(FrameworkConstants.LOGIN_PAGE, false);
             return false;
         }
     }

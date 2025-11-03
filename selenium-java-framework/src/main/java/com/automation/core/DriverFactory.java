@@ -1,6 +1,7 @@
 package com.automation.core;
 
-import com.automation.constants.DriverConstants;
+import com.automation.constants.FrameworkConstants;
+import com.automation.enums.BrowserType;
 import com.automation.exceptions.DriverCreationException;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
@@ -36,21 +37,23 @@ public class DriverFactory {
         WebDriver driver;
         
         try {
-            switch (browser.toLowerCase()) {
-                case "chrome":
+            BrowserType browserType = BrowserType.fromIdentifier(browser);
+            
+            switch (browserType) {
+                case CHROME:
                     driver = createChromeDriver(headless);
                     break;
-                case "firefox":
+                case FIREFOX:
                     driver = createFirefoxDriver(headless);
                     break;
-                case "edge":
+                case EDGE:
                     driver = createEdgeDriver(headless);
                     break;
-                case "safari":
+                case SAFARI:
                     driver = createSafariDriver();
                     break;
                 default:
-                    logger.warn("Unknown browser '{}', defaulting to Chrome", browser);
+                    logger.warn("Unsupported browser '{}', defaulting to Chrome", browserType.getDisplayName());
                     driver = createChromeDriver(headless);
             }
             
@@ -61,7 +64,21 @@ public class DriverFactory {
             // Store in ThreadLocal for thread-safe access
             driverThreadLocal.set(driver);
             
-            logger.info("Created {} driver (headless: {})", browser, headless);
+            logger.info("Created {} driver (headless: {})", browserType.getDisplayName(), headless);
+            return driver;
+            
+        } catch (IllegalArgumentException e) {
+            logger.warn("Unknown browser '{}', defaulting to Chrome. {}", browser, e.getMessage());
+            driver = createChromeDriver(headless);
+            
+            // Configure driver
+            driver.manage().window().maximize();
+            driver.manage().deleteAllCookies();
+            
+            // Store in ThreadLocal for thread-safe access
+            driverThreadLocal.set(driver);
+            
+            logger.info("Created Chrome driver (headless: {}) as fallback", headless);
             return driver;
             
         } catch (Exception e) {
@@ -113,8 +130,8 @@ public class DriverFactory {
         WebDriverManager.chromedriver().setup();
         
         ChromeOptions options = new ChromeOptions();
-        options.addArguments(DriverConstants.NO_SANDBOX);
-        options.addArguments(DriverConstants.DISABLE_DEV_SHM_USAGE);
+        options.addArguments(FrameworkConstants.NO_SANDBOX);
+        options.addArguments(FrameworkConstants.DISABLE_DEV_SHM_USAGE);
         options.addArguments("--disable-gpu");
         options.addArguments("--disable-extensions");
         options.addArguments("--disable-blink-features=AutomationControlled");
@@ -150,8 +167,8 @@ public class DriverFactory {
         options.setExperimentalOption("prefs", prefs);
         
         if (headless) {
-            options.addArguments(DriverConstants.HEADLESS);
-            options.addArguments(DriverConstants.WINDOW_SIZE);
+            options.addArguments(FrameworkConstants.HEADLESS);
+            options.addArguments(FrameworkConstants.WINDOW_SIZE);
         }
         
         return new ChromeDriver(options);
@@ -166,8 +183,8 @@ public class DriverFactory {
         WebDriverManager.firefoxdriver().setup();
         
         FirefoxOptions options = new FirefoxOptions();
-        options.addArguments(DriverConstants.NO_SANDBOX);
-        options.addArguments(DriverConstants.DISABLE_DEV_SHM_USAGE);
+        options.addArguments(FrameworkConstants.NO_SANDBOX);
+        options.addArguments(FrameworkConstants.DISABLE_DEV_SHM_USAGE);
         
         // Disable password manager and notifications for Firefox
         options.addPreference("signon.rememberSignons", false);
@@ -176,7 +193,7 @@ public class DriverFactory {
         options.addPreference("dom.push.enabled", false);
         
         if (headless) {
-            options.addArguments(DriverConstants.HEADLESS);
+            options.addArguments(FrameworkConstants.HEADLESS);
             options.addArguments("--width=1920");
             options.addArguments("--height=1080");
         }
@@ -193,8 +210,8 @@ public class DriverFactory {
         WebDriverManager.edgedriver().setup();
         
         EdgeOptions options = new EdgeOptions();
-        options.addArguments(DriverConstants.NO_SANDBOX);
-        options.addArguments(DriverConstants.DISABLE_DEV_SHM_USAGE);
+        options.addArguments(FrameworkConstants.NO_SANDBOX);
+        options.addArguments(FrameworkConstants.DISABLE_DEV_SHM_USAGE);
         options.addArguments("--disable-gpu");
         options.addArguments("--disable-extensions");
         
@@ -213,8 +230,8 @@ public class DriverFactory {
         options.setExperimentalOption("prefs", prefs);
         
         if (headless) {
-            options.addArguments(DriverConstants.HEADLESS);
-            options.addArguments(DriverConstants.WINDOW_SIZE);
+            options.addArguments(FrameworkConstants.HEADLESS);
+            options.addArguments(FrameworkConstants.WINDOW_SIZE);
         }
         
         return new EdgeDriver(options);

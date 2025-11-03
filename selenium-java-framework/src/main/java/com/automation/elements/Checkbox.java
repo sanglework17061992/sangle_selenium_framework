@@ -1,6 +1,6 @@
 package com.automation.elements;
 
-import com.automation.constants.DriverConstants;
+import com.automation.constants.FrameworkConstants;
 import com.automation.utils.LoggerUtil;
 import com.automation.utils.RetryUtil;
 import org.openqa.selenium.By;
@@ -22,7 +22,7 @@ public class Checkbox extends BaseElement {
      */
     public void check() {
         long startTime = System.currentTimeMillis();
-        LoggerUtil.logActionStart(name, DriverConstants.CHECK);
+        LoggerUtil.logActionStart(name, FrameworkConstants.CHECK);
         
         RetryUtil.executeWithRetry(
             () -> {
@@ -32,12 +32,12 @@ public class Checkbox extends BaseElement {
                 }
             },
             name,
-            DriverConstants.CHECK,
+            FrameworkConstants.CHECK,
             retryCount
         );
         
         long duration = System.currentTimeMillis() - startTime;
-        LoggerUtil.logActionSuccess(name, DriverConstants.CHECK, duration);
+        LoggerUtil.logActionSuccess(name, FrameworkConstants.CHECK, duration);
     }
     
     /**
@@ -45,7 +45,7 @@ public class Checkbox extends BaseElement {
      */
     public void uncheck() {
         long startTime = System.currentTimeMillis();
-        LoggerUtil.logActionStart(name, DriverConstants.UNCHECK);
+        LoggerUtil.logActionStart(name, FrameworkConstants.UNCHECK);
         
         RetryUtil.executeWithRetry(
             () -> {
@@ -55,12 +55,12 @@ public class Checkbox extends BaseElement {
                 }
             },
             name,
-            DriverConstants.UNCHECK,
+            FrameworkConstants.UNCHECK,
             retryCount
         );
         
         long duration = System.currentTimeMillis() - startTime;
-        LoggerUtil.logActionSuccess(name, DriverConstants.UNCHECK, duration);
+        LoggerUtil.logActionSuccess(name, FrameworkConstants.UNCHECK, duration);
     }
     
     /**
@@ -68,7 +68,7 @@ public class Checkbox extends BaseElement {
      */
     public void toggle() {
         long startTime = System.currentTimeMillis();
-        LoggerUtil.logActionStart(name, DriverConstants.TOGGLE);
+        LoggerUtil.logActionStart(name, FrameworkConstants.TOGGLE);
         
         RetryUtil.executeWithRetry(
             () -> {
@@ -76,12 +76,12 @@ public class Checkbox extends BaseElement {
                 element.click();
             },
             name,
-            DriverConstants.TOGGLE,
+            FrameworkConstants.TOGGLE,
             retryCount
         );
         
         long duration = System.currentTimeMillis() - startTime;
-        LoggerUtil.logActionSuccess(name, DriverConstants.TOGGLE, duration);
+        LoggerUtil.logActionSuccess(name, FrameworkConstants.TOGGLE, duration);
     }
     
     /**

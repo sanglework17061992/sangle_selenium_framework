@@ -1,6 +1,6 @@
 package com.automation.elements;
 
-import com.automation.constants.DriverConstants;
+import com.automation.constants.FrameworkConstants;
 import com.automation.utils.LoggerUtil;
 import com.automation.utils.RetryUtil;
 import org.openqa.selenium.By;
@@ -68,7 +68,7 @@ public class TextBox extends BaseElement {
      */
     public void clear() {
         long startTime = System.currentTimeMillis();
-        LoggerUtil.logActionStart(name, DriverConstants.CLEAR_TEXT);
+        LoggerUtil.logActionStart(name, FrameworkConstants.CLEAR_TEXT);
         
         RetryUtil.executeWithRetry(
             () -> {
@@ -76,12 +76,12 @@ public class TextBox extends BaseElement {
                 element.clear();
             },
             name,
-            DriverConstants.CLEAR_TEXT,
+            FrameworkConstants.CLEAR_TEXT,
             retryCount
         );
         
         long duration = System.currentTimeMillis() - startTime;
-        LoggerUtil.logActionSuccess(name, DriverConstants.CLEAR_TEXT, duration);
+        LoggerUtil.logActionSuccess(name, FrameworkConstants.CLEAR_TEXT, duration);
     }
     
     /**
@@ -114,7 +114,7 @@ public class TextBox extends BaseElement {
      */
     public void pressEnter() {
         long startTime = System.currentTimeMillis();
-        LoggerUtil.logActionStart(name, DriverConstants.PRESS_ENTER);
+        LoggerUtil.logActionStart(name, FrameworkConstants.PRESS_ENTER);
         
         RetryUtil.executeWithRetry(
             () -> {
@@ -122,12 +122,12 @@ public class TextBox extends BaseElement {
                 element.sendKeys(Keys.ENTER);
             },
             name,
-            DriverConstants.PRESS_ENTER,
+            FrameworkConstants.PRESS_ENTER,
             retryCount
         );
         
         long duration = System.currentTimeMillis() - startTime;
-        LoggerUtil.logActionSuccess(name, DriverConstants.PRESS_ENTER, duration);
+        LoggerUtil.logActionSuccess(name, FrameworkConstants.PRESS_ENTER, duration);
     }
     
     /**
@@ -135,7 +135,7 @@ public class TextBox extends BaseElement {
      */
     public void pressTab() {
         long startTime = System.currentTimeMillis();
-        LoggerUtil.logActionStart(name, DriverConstants.PRESS_TAB);
+        LoggerUtil.logActionStart(name, FrameworkConstants.PRESS_TAB);
         
         RetryUtil.executeWithRetry(
             () -> {
@@ -143,12 +143,12 @@ public class TextBox extends BaseElement {
                 element.sendKeys(Keys.TAB);
             },
             name,
-            DriverConstants.PRESS_TAB,
+            FrameworkConstants.PRESS_TAB,
             retryCount
         );
         
         long duration = System.currentTimeMillis() - startTime;
-        LoggerUtil.logActionSuccess(name, DriverConstants.PRESS_TAB, duration);
+        LoggerUtil.logActionSuccess(name, FrameworkConstants.PRESS_TAB, duration);
     }
     
     /**
@@ -156,7 +156,7 @@ public class TextBox extends BaseElement {
      */
     public void selectAll() {
         long startTime = System.currentTimeMillis();
-        LoggerUtil.logActionStart(name, DriverConstants.SELECT_ALL_TEXT);
+        LoggerUtil.logActionStart(name, FrameworkConstants.SELECT_ALL_TEXT);
         
         RetryUtil.executeWithRetry(
             () -> {
@@ -164,12 +164,12 @@ public class TextBox extends BaseElement {
                 element.sendKeys(Keys.CONTROL + "a");
             },
             name,
-            DriverConstants.SELECT_ALL_TEXT,
+            FrameworkConstants.SELECT_ALL_TEXT,
             retryCount
         );
         
         long duration = System.currentTimeMillis() - startTime;
-        LoggerUtil.logActionSuccess(name, DriverConstants.SELECT_ALL_TEXT, duration);
+        LoggerUtil.logActionSuccess(name, FrameworkConstants.SELECT_ALL_TEXT, duration);
     }
     
     /**

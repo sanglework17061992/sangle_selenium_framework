@@ -1,6 +1,6 @@
 package com.automation.elements;
 
-import com.automation.constants.DriverConstants;
+import com.automation.constants.FrameworkConstants;
 import com.automation.utils.LoggerUtil;
 import com.automation.utils.RetryUtil;
 import org.openqa.selenium.By;
@@ -22,7 +22,7 @@ public class Button extends BaseElement {
      */
     public void clickWithRetry() {
         long startTime = System.currentTimeMillis();
-        LoggerUtil.logActionStart(name, DriverConstants.CLICK_WITH_RETRY);
+        LoggerUtil.logActionStart(name, FrameworkConstants.CLICK_WITH_RETRY);
         
         RetryUtil.executeWithRetry(
             () -> {
@@ -48,12 +48,12 @@ public class Button extends BaseElement {
                 }
             },
             name,
-            DriverConstants.CLICK_WITH_RETRY,
+            FrameworkConstants.CLICK_WITH_RETRY,
             retryCount
         );
         
         long duration = System.currentTimeMillis() - startTime;
-        LoggerUtil.logActionSuccess(name, DriverConstants.CLICK_WITH_RETRY, duration);
+        LoggerUtil.logActionSuccess(name, FrameworkConstants.CLICK_WITH_RETRY, duration);
     }
     
     /**
@@ -97,7 +97,7 @@ public class Button extends BaseElement {
      */
     public void submit() {
         long startTime = System.currentTimeMillis();
-        LoggerUtil.logActionStart(name, DriverConstants.SUBMIT_FORM);
+        LoggerUtil.logActionStart(name, FrameworkConstants.SUBMIT_FORM);
         
         RetryUtil.executeWithRetry(
             () -> {
@@ -109,12 +109,12 @@ public class Button extends BaseElement {
                 }
             },
             name,
-            DriverConstants.SUBMIT_FORM,
+            FrameworkConstants.SUBMIT_FORM,
             retryCount
         );
         
         long duration = System.currentTimeMillis() - startTime;
-        LoggerUtil.logActionSuccess(name, DriverConstants.SUBMIT_FORM, duration);
+        LoggerUtil.logActionSuccess(name, FrameworkConstants.SUBMIT_FORM, duration);
     }
     
     /**
@@ -122,7 +122,7 @@ public class Button extends BaseElement {
      */
     public void doubleClick() {
         long startTime = System.currentTimeMillis();
-        LoggerUtil.logActionStart(name, DriverConstants.DOUBLE_CLICK);
+        LoggerUtil.logActionStart(name, FrameworkConstants.DOUBLE_CLICK);
         
         RetryUtil.executeWithRetry(
             () -> {
@@ -132,12 +132,12 @@ public class Button extends BaseElement {
                 actions.doubleClick(element).perform();
             },
             name,
-            DriverConstants.DOUBLE_CLICK,
+            FrameworkConstants.DOUBLE_CLICK,
             retryCount
         );
         
         long duration = System.currentTimeMillis() - startTime;
-        LoggerUtil.logActionSuccess(name, DriverConstants.DOUBLE_CLICK, duration);
+        LoggerUtil.logActionSuccess(name, FrameworkConstants.DOUBLE_CLICK, duration);
     }
     
     /**
@@ -145,7 +145,7 @@ public class Button extends BaseElement {
      */
     public void rightClick() {
         long startTime = System.currentTimeMillis();
-        LoggerUtil.logActionStart(name, DriverConstants.RIGHT_CLICK);
+        LoggerUtil.logActionStart(name, FrameworkConstants.RIGHT_CLICK);
         
         RetryUtil.executeWithRetry(
             () -> {
@@ -155,11 +155,11 @@ public class Button extends BaseElement {
                 actions.contextClick(element).perform();
             },
             name,
-            DriverConstants.RIGHT_CLICK,
+            FrameworkConstants.RIGHT_CLICK,
             retryCount
         );
         
         long duration = System.currentTimeMillis() - startTime;
-        LoggerUtil.logActionSuccess(name, DriverConstants.RIGHT_CLICK, duration);
+        LoggerUtil.logActionSuccess(name, FrameworkConstants.RIGHT_CLICK, duration);
     }
 }

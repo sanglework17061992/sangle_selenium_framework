@@ -1,6 +1,6 @@
 package com.automation.utils;
 
-import com.automation.constants.DriverConstants;
+import com.automation.constants.FrameworkConstants;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -25,47 +25,47 @@ public class WaitUtil {
     }
 
     public WebElement waitForVisibility(By locator, String elementName) {
-        LoggerUtil.logWait(elementName, DriverConstants.VISIBILITY, timeoutInSeconds);
+        LoggerUtil.logWait(elementName, FrameworkConstants.VISIBILITY, timeoutInSeconds);
         try {
             return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
         } catch (Exception e) {
-            LoggerUtil.logActionFailure(elementName, DriverConstants.WAIT_FOR_VISIBILITY, e);
+            LoggerUtil.logActionFailure(elementName, FrameworkConstants.WAIT_FOR_VISIBILITY, e);
             throw e;
         }
     }
 
     public WebElement waitForVisibility(WebElement element, String elementName) {
-        LoggerUtil.logWait(elementName, DriverConstants.VISIBILITY, timeoutInSeconds);
+        LoggerUtil.logWait(elementName, FrameworkConstants.VISIBILITY, timeoutInSeconds);
         try {
             return wait.until(ExpectedConditions.visibilityOf(element));
         } catch (Exception e) {
-            LoggerUtil.logActionFailure(elementName, DriverConstants.WAIT_FOR_VISIBILITY, e);
+            LoggerUtil.logActionFailure(elementName, FrameworkConstants.WAIT_FOR_VISIBILITY, e);
             throw e;
         }
     }
 
     public WebElement waitForClickability(By locator, String elementName) {
-        LoggerUtil.logWait(elementName, DriverConstants.CLICKABILITY, timeoutInSeconds);
+        LoggerUtil.logWait(elementName, FrameworkConstants.CLICKABILITY, timeoutInSeconds);
         try {
             return wait.until(ExpectedConditions.elementToBeClickable(locator));
         } catch (Exception e) {
-            LoggerUtil.logActionFailure(elementName, DriverConstants.WAIT_FOR_CLICKABILITY, e);
+            LoggerUtil.logActionFailure(elementName, FrameworkConstants.WAIT_FOR_CLICKABILITY, e);
             throw e;
         }
     }
 
     public WebElement waitForClickability(WebElement element, String elementName) {
-        LoggerUtil.logWait(elementName, DriverConstants.CLICKABILITY, timeoutInSeconds);
+        LoggerUtil.logWait(elementName, FrameworkConstants.CLICKABILITY, timeoutInSeconds);
         try {
             return wait.until(ExpectedConditions.elementToBeClickable(element));
         } catch (Exception e) {
-            LoggerUtil.logActionFailure(elementName, DriverConstants.WAIT_FOR_CLICKABILITY, e);
+            LoggerUtil.logActionFailure(elementName, FrameworkConstants.WAIT_FOR_CLICKABILITY, e);
             throw e;
         }
     }
 
     public WebElement waitForPresence(By locator, String elementName) {
-        LoggerUtil.logWait(elementName, DriverConstants.PRESENCE, timeoutInSeconds);
+        LoggerUtil.logWait(elementName, FrameworkConstants.PRESENCE, timeoutInSeconds);
         try {
             return wait.until(ExpectedConditions.presenceOfElementLocated(locator));
         } catch (Exception e) {
@@ -75,7 +75,7 @@ public class WaitUtil {
     }
 
     public boolean waitForInvisibility(By locator, String elementName) {
-        LoggerUtil.logWait(elementName, DriverConstants.INVISIBILITY, timeoutInSeconds);
+        LoggerUtil.logWait(elementName, FrameworkConstants.INVISIBILITY, timeoutInSeconds);
         try {
             return wait.until(ExpectedConditions.invisibilityOfElementLocated(locator));
         } catch (Exception e) {

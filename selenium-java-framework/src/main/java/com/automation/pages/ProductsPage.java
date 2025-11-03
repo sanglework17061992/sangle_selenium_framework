@@ -1,6 +1,6 @@
 package com.automation.pages;
 
-import com.automation.constants.DriverConstants;
+import com.automation.constants.FrameworkConstants;
 import com.automation.utils.LoggerUtil;
 import com.automation.elements.Button;
 import com.automation.elements.Label;
@@ -47,7 +47,7 @@ public class ProductsPage extends BasePage {
     public void navigateToProductsPage() {
         String url = config.getBaseUrl() + "/" + PAGE_URL;
         driver.get(url);
-        LoggerUtil.logPageNavigation(DriverConstants.PRODUCTS_PAGE, url);
+        LoggerUtil.logPageNavigation(FrameworkConstants.PRODUCTS_PAGE, url);
         waitForPageLoad();
     }
     
@@ -63,10 +63,10 @@ public class ProductsPage extends BasePage {
             boolean titleContainsProducts = getPageTitle().contains("Products"); // "Test App - Products"
             
             boolean isOnPage = isCorrectUrl && hasPageHeader && titleContainsProducts;
-            LoggerUtil.logPageValidation(DriverConstants.PRODUCTS_PAGE, isOnPage);
+            LoggerUtil.logPageValidation(FrameworkConstants.PRODUCTS_PAGE, isOnPage);
             return isOnPage;
         } catch (Exception e) {
-            LoggerUtil.logPageValidation(DriverConstants.PRODUCTS_PAGE, false);
+            LoggerUtil.logPageValidation(FrameworkConstants.PRODUCTS_PAGE, false);
             return false;
         }
     }

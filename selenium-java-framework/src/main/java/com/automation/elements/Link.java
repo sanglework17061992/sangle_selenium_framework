@@ -1,6 +1,6 @@
 package com.automation.elements;
 
-import com.automation.constants.DriverConstants;
+import com.automation.constants.FrameworkConstants;
 import com.automation.utils.LoggerUtil;
 import com.automation.utils.RetryUtil;
 import org.openqa.selenium.By;
@@ -56,7 +56,7 @@ public class Link extends BaseElement {
      */
     public void openInNewTab() {
         long startTime = System.currentTimeMillis();
-        LoggerUtil.logActionStart(name, DriverConstants.OPEN_IN_NEW_TAB);
+        LoggerUtil.logActionStart(name, FrameworkConstants.OPEN_IN_NEW_TAB);
         
         RetryUtil.executeWithRetry(
             () -> {
@@ -65,12 +65,12 @@ public class Link extends BaseElement {
                     .executeScript("window.open('" + href + "', '_blank');");
             },
             name,
-            DriverConstants.OPEN_IN_NEW_TAB,
+            FrameworkConstants.OPEN_IN_NEW_TAB,
             retryCount
         );
         
         long duration = System.currentTimeMillis() - startTime;
-        LoggerUtil.logActionSuccess(name, DriverConstants.OPEN_IN_NEW_TAB, duration);
+        LoggerUtil.logActionSuccess(name, FrameworkConstants.OPEN_IN_NEW_TAB, duration);
     }
     
     /**
@@ -87,7 +87,7 @@ public class Link extends BaseElement {
      */
     public void rightClick() {
         long startTime = System.currentTimeMillis();
-        LoggerUtil.logActionStart(name, DriverConstants.RIGHT_CLICK);
+        LoggerUtil.logActionStart(name, FrameworkConstants.RIGHT_CLICK);
         
         RetryUtil.executeWithRetry(
             () -> {
@@ -96,12 +96,12 @@ public class Link extends BaseElement {
                 actions.contextClick(getElement()).perform();
             },
             name,
-            DriverConstants.RIGHT_CLICK,
+            FrameworkConstants.RIGHT_CLICK,
             retryCount
         );
         
         long duration = System.currentTimeMillis() - startTime;
-        LoggerUtil.logActionSuccess(name, DriverConstants.RIGHT_CLICK, duration);
+        LoggerUtil.logActionSuccess(name, FrameworkConstants.RIGHT_CLICK, duration);
     }
     
     /**
