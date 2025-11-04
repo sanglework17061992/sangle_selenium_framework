@@ -139,3 +139,111 @@ await expectElement(textarea).toHaveValueContaining('partial');
 ```
 
 All assertions include automatic retry logic based on your `.env` configuration (`RETRY_COUNT` and `RETRY_INTERVAL`).
+
+## Allure Reporting
+
+The framework includes comprehensive Allure reporting for beautiful, interactive test reports with screenshots, test steps, and detailed execution information.
+
+### Running Tests with Allure Reports
+
+**Important Note**: Allure reporting works best in single-threaded mode. When running tests in parallel, Allure will show warnings but will still generate fallback console logging.
+
+```bash
+# Run tests with Allure reporting (single-threaded for best results)
+npm run test:allure
+
+# Run Allure demo (single-threaded)
+npm run test:allure-demo
+
+# Generate and open Allure report
+npm run report:allure
+```
+
+### Using Allure in Tests
+
+```typescript
+import { AllureReporter, AllureTestHooks } from './src/reporting';
+
+describe('My Test Suite', () => {
+  let driver: any;
+
+  before(async () => {
+    await AllureTestHooks.beforeAll();
+    driver = await DriverManager.getConfiguredDriver();
+    AllureTestHooks.setDriver(driver);
+  });
+
+  beforeEach(async () => {
+    await AllureTestHooks.beforeEach();
+  });
+
+  afterEach(async () => {
+    await AllureTestHooks.afterEach();
+  });
+
+  after(async () => {
+    await AllureTestHooks.afterAll();
+  });
+
+  it('should perform user login', async () => {
+    AllureReporter.description('Test user login functionality');
+    AllureReporter.severity('critical');
+    AllureReporter.tag('login');
+    AllureReporter.tag('smoke');
+
+    await AllureReporter.step('Navigate to login page', async () => {
+      await page.navigateToLogin();
+    });
+
+    await AllureReporter.step('Enter credentials', async () => {
+      await page.enterUsername('testuser');
+      await page.enterPassword('password123');
+    });
+
+    await AllureReporter.step('Submit login form', async () => {
+      await page.clickLogin();
+    });
+
+    await AllureReporter.step('Verify login success', async () => {
+      await expectElement(page.welcomeMessage).toBeVisible();
+    });
+
+    // Attach screenshot
+    await AllureReporter.attachScreenshot(driver, 'Login success');
+  });
+});
+```
+
+### Allure Features
+
+- **Test Steps**: Break down tests into logical steps with `AllureReporter.step()`
+- **Screenshots**: Automatic screenshots on test failures and manual capture
+- **Test Metadata**: Add descriptions, severity levels, tags, and owners
+- **Attachments**: Attach text, JSON, files, and custom data
+- **Environment Info**: Automatic environment configuration reporting
+- **Interactive Reports**: Beautiful web interface with filtering and search
+
+### Allure API Reference
+
+```typescript
+// Test metadata
+AllureReporter.description('Test description');
+AllureReporter.severity('blocker' | 'critical' | 'normal' | 'minor' | 'trivial');
+AllureReporter.tag('tag-name');
+AllureReporter.owner('developer-name');
+AllureReporter.parameter('param-name', 'param-value');
+
+// Test steps
+await AllureReporter.step('Step name', async () => {
+  // step implementation
+});
+
+// Attachments
+await AllureReporter.attachScreenshot(driver, 'Screenshot name');
+AllureReporter.attachText('Log name', 'Log content');
+AllureReporter.attachJSON('Data name', { key: 'value' });
+AllureReporter.attachFile('File name', '/path/to/file');
+
+// Logging
+AllureReporter.logAction('User action performed', { details: 'data' });
+```

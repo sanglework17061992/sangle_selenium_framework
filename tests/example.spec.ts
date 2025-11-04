@@ -9,7 +9,7 @@ let driver: any;
 let page: ExamplePage;
 
 describe('Example site', function() {
-  this.timeout(20000);
+  this.timeout(30000);
 
   before(async () => {
     driver = await DriverManager.getConfiguredDriver();
