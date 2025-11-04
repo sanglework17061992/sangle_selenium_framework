@@ -1,0 +1,61 @@
+[ {
+  "healed" : true,
+  "id" : "usernameField",
+  "name" : "Username Input Field",
+  "locatorType" : "name",
+  "locatorValue" : "username",
+  "page" : "LoginPage",
+  "description" : null,
+  "isHealed" : true,
+  "originalLocatorType" : "id",
+  "originalLocatorValue" : "username_broken",
+  "healedAt" : 1762250031642
+}, {
+  "healed" : false,
+  "id" : "loginButton",
+  "name" : "Login Submit Button",
+  "locatorType" : "id",
+  "locatorValue" : "login-btn",
+  "page" : "LoginPage",
+  "description" : null,
+  "isHealed" : false,
+  "originalLocatorType" : null,
+  "originalLocatorValue" : null,
+  "healedAt" : 0
+}, {
+  "healed" : false,
+  "id" : "forgotPasswordLink",
+  "name" : "Forgot Password Link",
+  "locatorType" : "linkText",
+  "locatorValue" : "Forgot Password?",
+  "page" : "LoginPage",
+  "description" : null,
+  "isHealed" : false,
+  "originalLocatorType" : null,
+  "originalLocatorValue" : null,
+  "healedAt" : 0
+}, {
+  "healed" : false,
+  "id" : "signupLink",
+  "name" : "Sign Up Link",
+  "locatorType" : "linkText",
+  "locatorValue" : "Sign Up",
+  "page" : "LoginPage",
+  "description" : null,
+  "isHealed" : false,
+  "originalLocatorType" : null,
+  "originalLocatorValue" : null,
+  "healedAt" : 0
+}, {
+  "healed" : true,
+  "id" : "passwordField",
+  "name" : "Password Input Field",
+  "locatorType" : "name",
+  "locatorValue" : "password",
+  "page" : "LoginPage",
+  "description" : null,
+  "isHealed" : true,
+  "originalLocatorType" : "id",
+  "originalLocatorValue" : "password_broken",
+  "healedAt" : 1762250075001
+} ]

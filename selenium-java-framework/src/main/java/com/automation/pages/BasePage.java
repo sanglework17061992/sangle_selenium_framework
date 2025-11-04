@@ -1,176 +1,80 @@
 package com.automation.pages;
 
-import com.automation.core.ConfigManager;
-import com.automation.utils.LoggerUtil;
-import com.automation.utils.WaitUtil;
+import com.automation.elements.Locator;
+import com.automation.elements.LocatorDefinition;
+import com.automation.elements.PageLocatorManager;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.JavascriptExecutor;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * BasePage - Base class for all page objects
- * Provides common functionality for all pages
+ * BasePage - Base class for page objects with JSON-based locator management
+ * Automatically loads locators from JSON files and provides easy access to PageObjectModel
  */
 public abstract class BasePage {
+    
     protected final WebDriver driver;
-    protected final ConfigManager config;
-    protected final WaitUtil waitHelper;
+    protected final String pageName;
+    protected final PageLocatorManager locatorManager;
+    protected final Map<String, Locator> locators;
     
-    protected BasePage(WebDriver driver) {
+    protected BasePage(WebDriver driver, String pageName) {
         this.driver = driver;
-        this.config = ConfigManager.getInstance();
-        this.waitHelper = new WaitUtil(driver, config.getExplicitWait());
+        this.pageName = pageName;
+        this.locatorManager = PageLocatorManager.getInstance();
+        this.locators = new HashMap<>();
+        
+        // Load all locators for this page
+        loadPageLocators();
     }
     
     /**
-     * Get current page title
-     * @return Page title
+     * Load locators from JSON file
      */
-    public String getPageTitle() {
-        return driver.getTitle();
+    private void loadPageLocators() {
+        Map<String, LocatorDefinition> definitions = locatorManager.getPageLocators(pageName);
+        
+        for (LocatorDefinition definition : definitions.values()) {
+            Locator locator = new Locator(driver, 
+                    locatorManager.createByLocator(definition), 
+                    definition.getName(), 
+                    definition.getPage(), 
+                    definition.getId());
+            
+            locators.put(definition.getId(), locator);
+        }
     }
     
     /**
-     * Get current page URL
-     * @return Current URL
+     * Get locator by element ID
      */
-    public String getCurrentUrl() {
-        return driver.getCurrentUrl();
+    protected Locator getLocator(String elementId) {
+        Locator locator = locators.get(elementId);
+        if (locator == null) {
+            throw new RuntimeException("Locator not found for element ID: " + elementId + " on page: " + pageName);
+        }
+        return locator;
     }
     
     /**
-     * Navigate to specific URL
-     * @param url URL to navigate to
+     * Check if locator exists
      */
-    public void navigateToUrl(String url) {
-        driver.get(url);
-        LoggerUtil.logPageNavigation("Unknown", url);
-        waitForPageLoad();
+    protected boolean hasLocator(String elementId) {
+        return locators.containsKey(elementId);
     }
     
     /**
-     * Refresh current page
+     * Get all locators for this page
      */
-    public void refreshPage() {
-        driver.navigate().refresh();
-        LoggerUtil.info("Page refreshed");
-        waitForPageLoad();
+    protected Map<String, Locator> getAllLocators() {
+        return new HashMap<>(locators);
     }
     
     /**
-     * Navigate back
+     * Get page name
      */
-    public void navigateBack() {
-        driver.navigate().back();
-        LoggerUtil.info("Navigated back");
-        waitForPageLoad();
-    }
-    
-    /**
-     * Navigate forward
-     */
-    public void navigateForward() {
-        driver.navigate().forward();
-        LoggerUtil.info("Navigated forward");
-        waitForPageLoad();
-    }
-    
-    /**
-     * Wait for page to load completely
-     */
-    public void waitForPageLoad() {
-        waitHelper.waitForCustomCondition(
-            webDriver -> ((JavascriptExecutor) webDriver)
-                .executeScript("return document.readyState").equals("complete"),
-            "page to load completely"
-        );
-    }
-    
-    /**
-     * Execute JavaScript
-     * @param script JavaScript to execute
-     * @return Result of script execution
-     */
-    public Object executeJavaScript(String script) {
-        return ((JavascriptExecutor) driver).executeScript(script);
-    }
-    
-    /**
-     * Execute JavaScript with arguments
-     * @param script JavaScript to execute
-     * @param args Arguments to pass to script
-     * @return Result of script execution
-     */
-    public Object executeJavaScript(String script, Object... args) {
-        return ((JavascriptExecutor) driver).executeScript(script, args);
-    }
-    
-    /**
-     * Scroll to top of page
-     */
-    public void scrollToTop() {
-        executeJavaScript("window.scrollTo(0, 0);");
-        LoggerUtil.info("Scrolled to top of page");
-    }
-    
-    /**
-     * Scroll to bottom of page
-     */
-    public void scrollToBottom() {
-        executeJavaScript("window.scrollTo(0, document.body.scrollHeight);");
-        LoggerUtil.info("Scrolled to bottom of page");
-    }
-    
-    /**
-     * Scroll by specified pixels
-     * @param x Horizontal scroll
-     * @param y Vertical scroll
-     */
-    public void scrollBy(int x, int y) {
-        executeJavaScript("window.scrollBy(" + x + ", " + y + ");");
-        LoggerUtil.info("Scrolled by x:" + x + ", y:" + y);
-    }
-    
-    /**
-     * Check if page contains specific text
-     * @param text Text to search for
-     * @return true if text is found on page
-     */
-    public boolean pageContainsText(String text) {
-        String pageSource = driver.getPageSource();
-        return pageSource.contains(text);
-    }
-    
-    /**
-     * Wait for page URL to contain specific text
-     * @param urlText Text that should be in URL
-     * @return true when URL contains text
-     */
-    public boolean waitForUrlContains(String urlText) {
-        return waitHelper.waitForUrlContains(urlText);
-    }
-    
-    /**
-     * Wait for page title to contain specific text
-     * @param titleText Text that should be in title
-     * @return true when title contains text
-     */
-    public boolean waitForTitleContains(String titleText) {
-        return waitHelper.waitForTitleContains(titleText);
-    }
-    
-    /**
-     * Get page load state
-     * @return Page ready state (loading, interactive, complete)
-     */
-    public String getPageLoadState() {
-        return (String) executeJavaScript("return document.readyState");
-    }
-    
-    /**
-     * Check if page is fully loaded
-     * @return true if page is complete
-     */
-    public boolean isPageLoaded() {
-        return "complete".equals(getPageLoadState());
+    public String getPageName() {
+        return pageName;
     }
 }
