@@ -646,11 +646,6 @@ public class Locator {
     private void loadHealedLocatorIfAvailable() {
         try {
             LocatorDefinition definition = pageLocatorManager.getLocatorDefinition(pageName, elementId);
-            LoggerUtil.info(String.format("DEBUG: %s.%s - definition=%s, isHealed=%s, locatorType=%s, locatorValue=%s", 
-                    pageName, elementId, definition != null ? "found" : "null", 
-                    definition != null ? definition.isHealed() : "N/A",
-                    definition != null ? definition.getLocatorType() : "N/A",
-                    definition != null ? definition.getLocatorValue() : "N/A"));
             if (definition != null && definition.isHealed()) {
                 By healedLocator = pageLocatorManager.createByLocator(definition);
                 if (healedLocator != null) {

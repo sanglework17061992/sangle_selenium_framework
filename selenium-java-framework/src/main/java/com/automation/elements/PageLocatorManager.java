@@ -195,8 +195,7 @@ public class PageLocatorManager {
      * Get locator definition with memory fallback for parallel execution
      */
     public LocatorDefinition getLocatorDefinition(String pageName, String elementId) {
-        // TEMPORARILY DISABLED: First check in-memory healed locators (for parallel CI/CD)
-        /*
+        // First check in-memory healed locators (for parallel CI/CD)
         Map<String, LocatorDefinition> memoryPageMap = inMemoryHealedLocators.get(pageName);
         if (memoryPageMap != null) {
             LocatorDefinition memoryDefinition = memoryPageMap.get(elementId);
@@ -204,7 +203,6 @@ public class PageLocatorManager {
                 return memoryDefinition;
             }
         }
-        */
         
         // Then check regular loaded locators
         Map<String, LocatorDefinition> pageMap = pageLocators.get(pageName);
