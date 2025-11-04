@@ -38,6 +38,54 @@ npm test
 ## How to add a new browser
 Register a new factory in `src/driver/DriverManager.ts` using `DriverManager.register('mybrowser', myFactory)`; `myFactory` must implement `build()` that returns a `ThenableWebDriver`.
 
+## Page Object Model
+
+Create page classes that extend `BasePage` and define element locators:
+
+```typescript
+import { BasePage } from './src/pages/BasePage';
+
+export class LoginPage extends BasePage {
+  // User-friendly locator declarations
+  usernameField = this.byId('username');
+  passwordField = this.byName('password');
+  loginButton = this.byCss('button[type="submit"]');
+  errorMessage = this.byXpath('//div[@class="error"]');
+
+  // Alternative shorthand syntax
+  // usernameField = this.id('username');
+  // passwordField = this.name('password');
+  // loginButton = this.css('button[type="submit"]');
+  // errorMessage = this.xpath('//div[@class="error"]');
+
+  async login(username: string, password: string) {
+    await this.usernameField.type(username);
+    await this.passwordField.type(password);
+    await this.loginButton.click();
+  }
+
+  async getErrorMessage() {
+    return await this.errorMessage.getText();
+  }
+}
+```
+
+### Available Locator Helpers
+
+- `byCss(selector)` / `css(selector)` - CSS selector
+- `byId(id)` / `id(id)` - Element ID
+- `byXpath(xpath)` / `xpath(xpath)` - XPath expression
+- `byName(name)` / `name(name)` - Name attribute
+- `byTag(tagName)` / `tag(tagName)` - Tag name
+- `byClass(className)` / `className(className)` - Class name
+
+### Legacy Locator Syntax (Still Supported)
+
+```typescript
+// Old verbose syntax (still works)
+usernameField = this.$({ using: 'css', value: 'input[name="username"]' });
+```
+
 ## Assertions
 
 The framework provides a modern Playwright-style fluent assertion API with automatic retry logic.
