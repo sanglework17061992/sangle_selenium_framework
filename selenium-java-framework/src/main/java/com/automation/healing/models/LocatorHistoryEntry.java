@@ -36,6 +36,18 @@ public class LocatorHistoryEntry {
     @JsonProperty("success")
     private boolean success;
     
+    @JsonProperty("healingEvent")
+    private boolean healingEvent;
+    
+    @JsonProperty("failureEvent") 
+    private boolean failureEvent;
+    
+    @JsonProperty("creationEvent")
+    private boolean creationEvent;
+    
+    @JsonProperty("updateEvent")
+    private boolean updateEvent;
+    
     // Constructors
     public LocatorHistoryEntry() {
         this.timestamp = LocalDateTime.now();
@@ -116,20 +128,52 @@ public class LocatorHistoryEntry {
         this.success = success;
     }
     
-    // Utility methods
     public boolean isHealingEvent() {
-        return "HEALED".equalsIgnoreCase(eventType);
+        return healingEvent;
+    }
+    
+    public void setHealingEvent(boolean healingEvent) {
+        this.healingEvent = healingEvent;
     }
     
     public boolean isFailureEvent() {
-        return "FAILED".equalsIgnoreCase(eventType);
+        return failureEvent;
+    }
+    
+    public void setFailureEvent(boolean failureEvent) {
+        this.failureEvent = failureEvent;
     }
     
     public boolean isCreationEvent() {
-        return "CREATED".equalsIgnoreCase(eventType);
+        return creationEvent;
+    }
+    
+    public void setCreationEvent(boolean creationEvent) {
+        this.creationEvent = creationEvent;
     }
     
     public boolean isUpdateEvent() {
+        return updateEvent;
+    }
+    
+    public void setUpdateEvent(boolean updateEvent) {
+        this.updateEvent = updateEvent;
+    }
+    
+    // Utility methods
+    public boolean isHealingEventByType() {
+        return "HEALED".equalsIgnoreCase(eventType);
+    }
+    
+    public boolean isFailureEventByType() {
+        return "FAILED".equalsIgnoreCase(eventType);
+    }
+    
+    public boolean isCreationEventByType() {
+        return "CREATED".equalsIgnoreCase(eventType);
+    }
+    
+    public boolean isUpdateEventByType() {
         return "UPDATED".equalsIgnoreCase(eventType);
     }
     

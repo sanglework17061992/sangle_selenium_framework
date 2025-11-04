@@ -101,7 +101,8 @@ public class HealingManager {
     public Optional<WebElement> healAndRetry(By originalLocator) {
         return healAndRetry(originalLocator, () -> {
             try {
-                return driver.findElement(originalLocator);
+                WebElement element = driver.findElement(originalLocator);
+                return element.isDisplayed() ? element : null;
             } catch (NoSuchElementException e) {
                 return null;
             }
@@ -117,6 +118,30 @@ public class HealingManager {
     public <T> Optional<T> healAndRetry(By originalLocator, Supplier<T> actionSupplier) {
         if (!isHealingEnabled() || driver == null) {
             return Optional.empty();
+        }
+        
+        // IMPORTANT: First try the original locator to see if it actually needs healing
+        try {
+            LoggerUtil.debug("Testing original locator before attempting healing: " + originalLocator);
+            WebElement element = driver.findElement(originalLocator);
+            if (element != null && element.isDisplayed()) {
+                LoggerUtil.debug("Original locator works fine, no healing needed: " + originalLocator);
+                // Record successful interaction for learning
+                recordSuccessfulInteraction(originalLocator, "Auto-detected", "UnknownPage");
+                
+                // Execute the action with the original locator
+                T result = actionSupplier.get();
+                if (result != null) {
+                    LoggerUtil.debug("Action executed successfully with original locator");
+                    return Optional.of(result);
+                }
+            }
+        } catch (NoSuchElementException | org.openqa.selenium.StaleElementReferenceException e) {
+            LoggerUtil.info("Original locator failed, starting healing process: " + e.getMessage());
+            // Continue to healing process below
+        } catch (Exception e) {
+            LoggerUtil.warn("Unexpected error with original locator, attempting healing: " + e.getMessage());
+            // Continue to healing process below
         }
         
         totalHealingAttempts.incrementAndGet();

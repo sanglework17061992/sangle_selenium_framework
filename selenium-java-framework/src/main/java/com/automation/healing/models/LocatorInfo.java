@@ -29,6 +29,15 @@ public class LocatorInfo {
     @JsonProperty("xpath")
     private String xpath;
     
+    @JsonProperty("cssSelector")
+    private String cssSelector;
+    
+    @JsonProperty("tagName")
+    private String tagName;
+    
+    @JsonProperty("partialLinkText")
+    private String partialLinkText;
+    
     // Constructors
     public LocatorInfo() {}
     
@@ -98,6 +107,30 @@ public class LocatorInfo {
     
     public void setXpath(String xpath) {
         this.xpath = xpath;
+    }
+    
+    public String getCssSelector() {
+        return cssSelector;
+    }
+    
+    public void setCssSelector(String cssSelector) {
+        this.cssSelector = cssSelector;
+    }
+    
+    public String getTagName() {
+        return tagName;
+    }
+    
+    public void setTagName(String tagName) {
+        this.tagName = tagName;
+    }
+    
+    public String getPartialLinkText() {
+        return partialLinkText;
+    }
+    
+    public void setPartialLinkText(String partialLinkText) {
+        this.partialLinkText = partialLinkText;
     }
     
     // Utility methods
