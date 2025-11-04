@@ -81,18 +81,18 @@ classDiagram
     }
 
     %% Relationships
-    ConfigLoader ||--o DriverManager : uses
-    ConfigLoader ||--o SanElement : uses
-    ConfigLoader ||--o ElementAssertions : uses
+    ConfigLoader --> DriverManager : uses
+    ConfigLoader --> SanElement : uses
+    ConfigLoader --> ElementAssertions : uses
 
-    DriverManager ||--o BrowserFactory : manages
+    DriverManager --> BrowserFactory : manages
     BrowserFactory <|.. DefaultChromeFactory : implements
     BrowserFactory <|.. DefaultFirefoxFactory : implements
 
-    SanElement ||--o ElementAssertions : wrapped by
+    SanElement --> ElementAssertions : wrapped by
 
     BasePage <|-- ExamplePage : extends
-    BasePage ||--o SanElement : creates
+    BasePage --> SanElement : creates
 
     %% Usage relationships
     ExamplePage ..> ElementAssertions : uses in tests
@@ -137,10 +137,10 @@ classDiagram
         +app: AppConfig
     }
 
-    ConfigLoader ||-- BrowserConfig : contains
-    ConfigLoader ||-- TimeoutConfig : contains
-    ConfigLoader ||-- TestConfig : contains
-    ConfigLoader ||-- AppConfig : contains
-    ConfigLoader ||-- FrameworkConfig : contains
+    ConfigLoader --> BrowserConfig : contains
+    ConfigLoader --> TimeoutConfig : contains
+    ConfigLoader --> TestConfig : contains
+    ConfigLoader --> AppConfig : contains
+    ConfigLoader --> FrameworkConfig : contains
 ```</content>
 <parameter name="filePath">/home/sangle/Documents/sangle_selenium_framework/CLASS_DIAGRAM.md
