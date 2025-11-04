@@ -1,9 +1,9 @@
 import { Builder, WebDriver } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 import firefox from 'selenium-webdriver/firefox.js';
-import { configLoader } from '../config/ConfigLoader';
+import { configLoader, BrowserType } from '../config/ConfigLoader';
 
-export type BrowserName = 'chrome' | 'firefox' | string;
+export type BrowserName = BrowserType | string;
 
 export interface BrowserFactory {
   build(options?: any): Promise<WebDriver>;

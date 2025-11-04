@@ -16,13 +16,34 @@ cp .env .env.local  # for local overrides
 
 ### Configuration Options
 
-- **Browser Settings**: `BROWSER`, `HEADLESS`, `NO_SANDBOX`, `CHROME_ARGS`, `FIREFOX_ARGS`
-- **Timeouts**: `DEFAULT_TIMEOUT`, `ELEMENT_TIMEOUT`, `PAGE_LOAD_TIMEOUT`
-- **Test Settings**: `ENVIRONMENT`, `RETRY_COUNT`, `RETRY_INTERVAL`, `PARALLEL`, `THREAD_COUNT`
-- **Application URLs**: `BASE_URL`, `LOGIN_URL`, `PRODUCTS_URL`
-- **Credentials**: `USERNAME`, `PASSWORD`
-- **Logging**: `LOG_LEVEL`, `LOG_FILE`
-- **Reporting**: `SCREENSHOT_ON_FAILURE`, `VIDEO_RECORDING`
+- **Browser Settings**:
+  - `BROWSER`: `chrome` or `firefox` (BrowserType enum)
+  - `HEADLESS`: `true` or `false`
+  - `NO_SANDBOX`: `true` or `false`
+  - `CHROME_ARGS`: Comma-separated Chrome arguments
+  - `FIREFOX_ARGS`: Comma-separated Firefox arguments
+- **Timeouts**:
+  - `DEFAULT_TIMEOUT`: Default timeout in milliseconds (5000)
+  - `ELEMENT_TIMEOUT`: Element wait timeout in milliseconds (10000)
+  - `PAGE_LOAD_TIMEOUT`: Page load timeout in milliseconds (30000)
+- **Test Settings**:
+  - `ENVIRONMENT`: `dev`, `qa`, `staging`, or `prod` (EnvironmentType enum)
+  - `RETRY_COUNT`: Number of retry attempts (3)
+  - `RETRY_INTERVAL`: Retry interval in milliseconds (500)
+  - `PARALLEL`: Enable parallel execution (`false`)
+  - `THREAD_COUNT`: Number of parallel threads (2)
+- **Application URLs**:
+  - `BASE_URL`: Base application URL
+  - `LOGIN_URL`: Login page URL
+  - `PRODUCTS_URL`: Products page URL
+  - `USERNAME`: Default test username
+  - `PASSWORD`: Default test password
+- **Logging**:
+  - `LOG_LEVEL`: `DEBUG`, `INFO`, `WARN`, or `ERROR` (LogLevel enum)
+  - `LOG_FILE`: Log file path
+- **Reporting**:
+  - `SCREENSHOT_ON_FAILURE`: Capture screenshots on failure
+  - `VIDEO_RECORDING`: Enable video recording
 
 ## Quick start
 1. Install dependencies:

@@ -5,8 +5,28 @@ import { config } from 'dotenv';
 // Load environment variables from .env file
 config();
 
+// Enums for type-safe configuration
+export enum BrowserType {
+  CHROME = 'chrome',
+  FIREFOX = 'firefox'
+}
+
+export enum EnvironmentType {
+  DEV = 'dev',
+  QA = 'qa',
+  STAGING = 'staging',
+  PROD = 'prod'
+}
+
+export enum LogLevel {
+  DEBUG = 'DEBUG',
+  INFO = 'INFO',
+  WARN = 'WARN',
+  ERROR = 'ERROR'
+}
+
 export interface BrowserConfig {
-  name: string;
+  name: BrowserType;
   headless: boolean;
   noSandbox: boolean;
   args: string[];
@@ -19,7 +39,7 @@ export interface TimeoutConfig {
 }
 
 export interface TestConfig {
-  environment: string;
+  environment: EnvironmentType;
   retryCount: number;
   retryInterval: number;
   parallel: boolean;
@@ -27,7 +47,7 @@ export interface TestConfig {
 }
 
 export interface LoggingConfig {
-  level: string;
+  level: LogLevel;
   file: string;
 }
 
@@ -84,15 +104,15 @@ export class ConfigLoader {
   }
 
   private loadBrowserConfig(): BrowserConfig {
-    const browserName = this.getEnvString('BROWSER', 'chrome');
+    const browserName = this.getEnvBrowserType('BROWSER', BrowserType.CHROME);
     const headless = this.getEnvBoolean('HEADLESS', false);
     const noSandbox = this.getEnvBoolean('NO_SANDBOX', true);
 
     let args: string[] = [];
-    if (browserName === 'chrome') {
+    if (browserName === BrowserType.CHROME) {
       const chromeArgs = this.getEnvString('CHROME_ARGS', '');
       args = chromeArgs ? chromeArgs.split(',') : [];
-    } else if (browserName === 'firefox') {
+    } else if (browserName === BrowserType.FIREFOX) {
       const firefoxArgs = this.getEnvString('FIREFOX_ARGS', '');
       args = firefoxArgs ? firefoxArgs.split(',') : [];
     }
@@ -115,7 +135,7 @@ export class ConfigLoader {
 
   private loadTestConfig(): TestConfig {
     return {
-      environment: this.getEnvString('ENVIRONMENT', 'qa'),
+      environment: this.getEnvEnvironmentType('ENVIRONMENT', EnvironmentType.QA),
       retryCount: this.getEnvNumber('RETRY_COUNT', 3),
       retryInterval: this.getEnvNumber('RETRY_INTERVAL', 500),
       parallel: this.getEnvBoolean('PARALLEL', false),
@@ -125,7 +145,7 @@ export class ConfigLoader {
 
   private loadLoggingConfig(): LoggingConfig {
     return {
-      level: this.getEnvString('LOG_LEVEL', 'INFO'),
+      level: this.getEnvLogLevel('LOG_LEVEL', LogLevel.INFO),
       file: this.getEnvString('LOG_FILE', './logs/test.log')
     };
   }
@@ -162,6 +182,30 @@ export class ConfigLoader {
     const value = process.env[key];
     if (!value) return defaultValue;
     return value.toLowerCase() === 'true';
+  }
+
+  private getEnvBrowserType(key: string, defaultValue: BrowserType): BrowserType {
+    const value = this.getEnvString(key, defaultValue);
+    const upperValue = value.toUpperCase();
+    return Object.values(BrowserType).includes(upperValue as BrowserType)
+      ? (upperValue as BrowserType)
+      : defaultValue;
+  }
+
+  private getEnvEnvironmentType(key: string, defaultValue: EnvironmentType): EnvironmentType {
+    const value = this.getEnvString(key, defaultValue);
+    const upperValue = value.toUpperCase();
+    return Object.values(EnvironmentType).includes(upperValue as EnvironmentType)
+      ? (upperValue as EnvironmentType)
+      : defaultValue;
+  }
+
+  private getEnvLogLevel(key: string, defaultValue: LogLevel): LogLevel {
+    const value = this.getEnvString(key, defaultValue);
+    const upperValue = value.toUpperCase();
+    return Object.values(LogLevel).includes(upperValue as LogLevel)
+      ? (upperValue as LogLevel)
+      : defaultValue;
   }
 
   /**
