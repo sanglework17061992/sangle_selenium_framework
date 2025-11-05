@@ -297,244 +297,138 @@ classDiagram
     ConfigLoader --> FrameworkConfig : contains
 ```
 
-## Configuration
+## Framework Overview
 
-The framework uses environment-based configuration via `.env` files. Copy the provided `.env` file and modify values for your environment:
+**SaniumTS** is a modern, TypeScript-based Selenium WebDriver testing framework designed for scalable, maintainable web automation testing. It provides a clean 4-layer architecture that separates user test code from framework internals.
 
-```bash
-cp .env .env.local  # for local overrides
-```
+### Key Features
 
-### Configuration Options
+- **🔧 Unified Element Wrapper**: `SanElement` handles both single elements and collections with auto-waiting
+- **✅ Fluent Assertions**: `SanAssertion` provides readable, retry-enabled assertions
+- **🌐 Browser Management**: `DriverManager` supports Chrome, Firefox, and custom browsers
+- **⚙️ Configuration-Driven**: Environment-based configuration with sensible defaults
+- **📊 Rich Reporting**: Allure integration for detailed test execution reports
+- **🔄 Auto-Retry Logic**: Built-in retry mechanisms for flaky elements and assertions
+- **📱 Page Object Model**: Clean abstraction for UI interactions
 
-- **Browser Settings**:
-  - `BROWSER`: `chrome` or `firefox` (BrowserType enum)
-  - `HEADLESS`: `true` or `false`
-  - `NO_SANDBOX`: `true` or `false`
-  - `CHROME_ARGS`: Comma-separated Chrome arguments
-  - `FIREFOX_ARGS`: Comma-separated Firefox arguments
-- **Timeouts**:
-  - `DEFAULT_TIMEOUT`: Default timeout in milliseconds (5000)
-  - `ELEMENT_TIMEOUT`: Element wait timeout in milliseconds (10000)
-  - `PAGE_LOAD_TIMEOUT`: Page load timeout in milliseconds (30000)
-- **Test Settings**:
-  - `ENVIRONMENT`: `dev`, `qa`, `staging`, or `prod` (EnvironmentType enum)
-  - `RETRY_COUNT`: Number of retry attempts (3)
-  - `RETRY_INTERVAL`: Retry interval in milliseconds (500)
-  - `PARALLEL`: Enable parallel execution (`false`)
-  - `THREAD_COUNT`: Number of parallel threads (2)
-- **Application URLs**:
-  - `BASE_URL`: Base application URL
-  - `LOGIN_URL`: Login page URL
-  - `PRODUCTS_URL`: Products page URL
-  - `USERNAME`: Default test username
-  - `PASSWORD`: Default test password
-- **Logging**:
-  - `LOG_LEVEL`: `DEBUG`, `INFO`, `WARN`, or `ERROR` (LogLevel enum)
-  - `LOG_FILE`: Log file path
-- **Reporting**:
-  - `SCREENSHOT_ON_FAILURE`: Capture screenshots on failure
-  - `VIDEO_RECORDING`: Enable video recording
+### Quick Start
 
-## Quick start
-1. Install dependencies:
-```bash
-npm install
-```
-2. Configure your environment in `.env` file
-3. Run tests:
-```bash
-npm test
-```
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-## How to add a new browser
-Register a new factory in `src/driver/DriverManager.ts` using `DriverManager.register('mybrowser', myFactory)`; `myFactory` must implement `build()` that returns a `ThenableWebDriver`.
+2. **Configure environment** (optional - uses sensible defaults):
+   ```bash
+   cp .env .env.local  # for custom configuration
+   ```
 
-## Page Object Model
+3. **Run tests**:
+   ```bash
+   npm test                    # Basic test run
+   npm run test:allure        # With Allure reporting
+   npm run test:allure-demo   # Demo with detailed reporting
+   ```
 
-Create page classes that extend `BasePage` and define element locators:
+### Core Components
 
+#### SanElement - Smart Element Interactions
 ```typescript
-import { BasePage } from './src/pages/BasePage';
+// Single element operations
+await element.click();
+await element.type('Hello World');
+await element.getText();
 
-export class LoginPage extends BasePage {
-  // User-friendly locator declarations
-  usernameField = this.byId('username');
-  passwordField = this.byName('password');
-  loginButton = this.byCss('button[type="submit"]');
-  errorMessage = this.byXpath('//div[@class="error"]');
+// Collection operations
+const count = await elements.count();
+const texts = await elements.getTexts();
 
-  // Alternative shorthand syntax
-  // usernameField = this.id('username');
-  // passwordField = this.name('password');
-  // loginButton = this.css('button[type="submit"]');
-  // errorMessage = this.xpath('//div[@class="error"]');
+// Advanced interactions
+await checkbox.check();
+await dropdown.selectByText('Option 1');
+await element.scrollIntoView();
+```
 
-  async login(username: string, password: string) {
-    await this.usernameField.type(username);
-    await this.passwordField.type(password);
-    await this.loginButton.click();
+#### SanAssertion - Fluent Test Assertions
+```typescript
+// Fluent assertion API with auto-retry
+await expectElement(loginButton).toBeVisible();
+await expectElement(usernameField).toHaveText('Welcome');
+await expectElement(errorMessage).toContainText('Invalid');
+```
+
+#### DriverManager - Browser Factory
+```typescript
+// Automatic browser setup
+const driver = await DriverManager.getConfiguredDriver();
+
+// Custom browser configuration
+const chromeDriver = await DriverManager.getDriver('chrome', { headless: true });
+```
+
+#### Page Object Model
+```typescript
+export class TodoPage extends BasePage {
+  todoInput = this.byCss('.new-todo');
+  todoList = this.byCss('.todo-list');
+
+  async addTodo(text: string) {
+    await this.todoInput.type(text);
+    await this.todoInput.pressEnter();
   }
 
-  async getErrorMessage() {
-    return await this.errorMessage.getText();
+  async getTodoCount() {
+    return await this.todoList.count();
   }
 }
 ```
 
-### Available Locator Helpers
+### Configuration
 
-- `byCss(selector)` / `css(selector)` - CSS selector
-- `byId(id)` / `id(id)` - Element ID
-- `byXpath(xpath)` / `xpath(xpath)` - XPath expression
-- `byName(name)` / `name(name)` - Name attribute
-- `byTag(tagName)` / `tag(tagName)` - Tag name
-- `byClass(className)` / `className(className)` - Class name
-
-### Legacy Locator Syntax (Still Supported)
-
-```typescript
-// Old verbose syntax (still works)
-usernameField = this.$({ using: 'css', value: 'input[name="username"]' });
-```
-
-## Assertions
-
-The framework provides a modern Playwright-style fluent assertion API with automatic retry logic.
-
-```typescript
-import { expectElement } from './src/assertion/FluentAssertions';
-
-// Text assertions
-await expectElement(page.title).toHaveText('Expected Title');
-await expectElement(page.description).toContainText('partial text');
-
-// Visibility assertions
-await expectElement(button).toBeVisible();
-await expectElement(loadingSpinner).toBeHidden();
-
-// State assertions
-await expectElement(submitButton).toBeEnabled();
-await expectElement(disabledButton).toBeDisabled();
-
-// Attribute assertions
-await expectElement(link).toHaveAttribute('href', 'https://example.com');
-await expectElement(input).toHaveAttributeContaining('class', 'form-control');
-
-// CSS class assertions
-await expectElement(button).toHaveClass('btn-primary');
-
-// Value assertions (for inputs)
-await expectElement(input).toHaveValue('expected value');
-await expectElement(textarea).toHaveValueContaining('partial');
-```
-
-All assertions include automatic retry logic based on your `.env` configuration (`RETRY_COUNT` and `RETRY_INTERVAL`).
-
-## Allure Reporting
-
-The framework includes comprehensive Allure reporting for beautiful, interactive test reports with screenshots, test steps, and detailed execution information.
-
-### Running Tests with Allure Reports
-
-**Important Note**: Allure reporting works best in single-threaded mode. When running tests in parallel, Allure will show warnings but will still generate fallback console logging.
+The framework uses environment-based configuration via `.env` files with sensible defaults:
 
 ```bash
-# Run tests with Allure reporting (single-threaded for best results)
+# Browser settings
+BROWSER=chrome
+HEADLESS=false
+
+# Timeouts (milliseconds)
+DEFAULT_TIMEOUT=5000
+ELEMENT_TIMEOUT=10000
+
+# Test settings
+ENVIRONMENT=qa
+RETRY_COUNT=3
+
+# Reporting
+SCREENSHOT_ON_FAILURE=true
+```
+
+### Allure Reporting
+
+Generate beautiful, interactive test reports:
+
+```bash
+# Run tests with reporting
 npm run test:allure
 
-# Run Allure demo (single-threaded)
-npm run test:allure-demo
-
-# Generate and open Allure report
+# View reports
 npm run report:allure
 ```
 
-### Using Allure in Tests
+### Architecture Benefits
 
-```typescript
-import { AllureReporter, AllureTestHooks } from './src/reporting';
+- **Separation of Concerns**: User tests isolated from framework internals
+- **Type Safety**: Full TypeScript support with IntelliSense
+- **Extensibility**: Easy to add new browsers, assertions, and page objects
+- **Maintainability**: Clean architecture with clear component responsibilities
+- **Reliability**: Auto-waiting and retry logic reduce test flakiness
 
-describe('My Test Suite', () => {
-  let driver: any;
+### Getting Help
 
-  before(async () => {
-    await AllureTestHooks.beforeAll();
-    driver = await DriverManager.getConfiguredDriver();
-    AllureTestHooks.setDriver(driver);
-  });
+- **Documentation**: Comprehensive README with examples
+- **Examples**: Working TodoMVC test suite included
+- **Configuration**: Environment-based with sensible defaults
+- **Extensibility**: Well-documented extension points
 
-  beforeEach(async () => {
-    await AllureTestHooks.beforeEach();
-  });
-
-  afterEach(async () => {
-    await AllureTestHooks.afterEach();
-  });
-
-  after(async () => {
-    await AllureTestHooks.afterAll();
-  });
-
-  it('should perform user login', async () => {
-    AllureReporter.description('Test user login functionality');
-    AllureReporter.severity('critical');
-    AllureReporter.tag('login');
-    AllureReporter.tag('smoke');
-
-    await AllureReporter.step('Navigate to login page', async () => {
-      await page.navigateToLogin();
-    });
-
-    await AllureReporter.step('Enter credentials', async () => {
-      await page.enterUsername('testuser');
-      await page.enterPassword('password123');
-    });
-
-    await AllureReporter.step('Submit login form', async () => {
-      await page.clickLogin();
-    });
-
-    await AllureReporter.step('Verify login success', async () => {
-      await expectElement(page.welcomeMessage).toBeVisible();
-    });
-
-    // Attach screenshot
-    await AllureReporter.attachScreenshot(driver, 'Login success');
-  });
-});
-```
-
-### Allure Features
-
-- **Test Steps**: Break down tests into logical steps with `AllureReporter.step()`
-- **Screenshots**: Automatic screenshots on test failures and manual capture
-- **Test Metadata**: Add descriptions, severity levels, tags, and owners
-- **Attachments**: Attach text, JSON, files, and custom data
-- **Environment Info**: Automatic environment configuration reporting
-- **Interactive Reports**: Beautiful web interface with filtering and search
-
-### Allure API Reference
-
-```typescript
-// Test metadata
-AllureReporter.description('Test description');
-AllureReporter.severity('blocker' | 'critical' | 'normal' | 'minor' | 'trivial');
-AllureReporter.tag('tag-name');
-AllureReporter.owner('developer-name');
-AllureReporter.parameter('param-name', 'param-value');
-
-// Test steps
-await AllureReporter.step('Step name', async () => {
-  // step implementation
-});
-
-// Attachments
-await AllureReporter.attachScreenshot(driver, 'Screenshot name');
-AllureReporter.attachText('Log name', 'Log content');
-AllureReporter.attachJSON('Data name', { key: 'value' });
-AllureReporter.attachFile('File name', '/path/to/file');
-
-// Logging
-AllureReporter.logAction('User action performed', { details: 'data' });
-```
+Ready to write reliable, maintainable web automation tests! 🚀

@@ -56,8 +56,6 @@ export interface ReportingConfig {
 
 export interface AppConfig {
   baseUrl: string;
-  loginUrl: string;
-  productsUrl: string;
   username: string;
   password: string;
 }
@@ -154,8 +152,6 @@ export class ConfigLoader {
   private loadAppConfig(): AppConfig {
     return {
       baseUrl: this.getEnvString('BASE_URL', 'https://example.com'),
-      loginUrl: this.getEnvString('LOGIN_URL', 'https://example.com/login'),
-      productsUrl: this.getEnvString('PRODUCTS_URL', 'https://example.com/products'),
       username: this.getEnvString('USERNAME', 'testuser'),
       password: this.getEnvString('PASSWORD', 'testpass123')
     };
