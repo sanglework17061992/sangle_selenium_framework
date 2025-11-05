@@ -7,9 +7,9 @@ export class TodoPage extends BasePage {
   newTodoInput = this.byCss('.new-todo');
   todoList = this.byCss('.todo-list');
   todoItems = this.byCss('.todo-list li');
-  todoItemsAll = this.byCssAll('.todo-list li');
+  todoItemsList = this.byCssAll('.todo-list li');
   todoLabels = this.byCss('.todo-list li label');
-  todoLabelsAll = this.byCssAll('.todo-list li label');
+  todoLabelsList = this.byCssAll('.todo-list li label');
   todoCheckboxes = this.byCss('.todo-list li .toggle');
   todoDeleteButtons = this.byCss('.todo-list li .destroy');
   todoCount = this.byCss('.todo-count');
@@ -49,7 +49,7 @@ export class TodoPage extends BasePage {
     });
 
     try {
-      return await this.todoItemsAll.count();
+      return await this.todoItemsList.count();
     } catch {
       return 0;
     }
@@ -61,7 +61,7 @@ export class TodoPage extends BasePage {
     });
 
     try {
-      const labels = await this.todoLabelsAll.getElements();
+      const labels = await this.todoLabelsList.getElements();
       const texts: string[] = [];
       for (const label of labels) {
         const textContent = await label.getAttribute('textContent') || await label.getText();
