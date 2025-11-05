@@ -327,7 +327,6 @@ classDiagram
    ```bash
    npm test                    # Basic test run
    npm run test:allure        # With Allure reporting
-   npm run test:allure-demo   # Demo with detailed reporting
    ```
 
 ### Core Components
