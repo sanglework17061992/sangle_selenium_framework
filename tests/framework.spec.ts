@@ -1,6 +1,5 @@
 import { expectElement } from '../src/assertion/FluentAssertions';
 import { SanElement } from '../src/core/SanElement';
-import { DriverManager } from '../src/driver/DriverManager';
 
 import { describe, it } from 'mocha';
 

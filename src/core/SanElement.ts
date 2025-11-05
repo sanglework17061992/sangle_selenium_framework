@@ -1,7 +1,7 @@
 import { By, ThenableWebDriver, WebElement, until } from 'selenium-webdriver';
 import { configLoader } from '../config/ConfigLoader';
 
-export type Locator = { using: 'css' | 'xpath' | 'id' | 'name' | 'tag' | 'class'; value: string };
+export type Locator = { using: 'css' | 'xpath' | 'id' | 'name' | 'class'; value: string };
 
 function toBy(locator: Locator) {
   switch (locator.using) {
@@ -9,16 +9,15 @@ function toBy(locator: Locator) {
     case 'xpath': return By.xpath(locator.value);
     case 'id': return By.id(locator.value);
     case 'name': return By.name(locator.value);
-    case 'tag': return By.tagName(locator.value);
     case 'class': return By.className(locator.value);
     default: throw new Error('Unsupported locator');
   }
 }
 
 export class SanElement {
-  private driver: ThenableWebDriver;
-  private locator: Locator;
-  private defaultTimeout: number;
+  private readonly driver: ThenableWebDriver;
+  private readonly locator: Locator;
+  private readonly defaultTimeout: number;
 
   constructor(driver: ThenableWebDriver, locator: Locator, defaultTimeout?: number) {
     this.driver = driver;
@@ -59,11 +58,12 @@ export class SanElement {
     return el.getAttribute(name);
   }
 
-  async isDisplayed(timeout?: number) {
+  async isDisplayed(timeout?: number): Promise<boolean> {
     try {
       const el = await this.findElement(timeout);
-      return el.isDisplayed();
-    } catch (err) {
+      return await el.isDisplayed();
+    } catch {
+      // Element is not displayed if it cannot be found or is not visible
       return false;
     }
   }

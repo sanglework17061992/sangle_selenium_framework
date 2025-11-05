@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { ConfigLoader } from '../config/ConfigLoader';
 
 /**
@@ -7,7 +7,7 @@ import { ConfigLoader } from '../config/ConfigLoader';
  * Provides enhanced test reporting with screenshots, steps, and attachments
  */
 export class AllureReporter {
-  private static config = ConfigLoader.getInstance().getConfig();
+  private static readonly config = ConfigLoader.getInstance().getConfig();
   private static allure: any = null;
   private static allureLoaded = false;
 
@@ -18,9 +18,15 @@ export class AllureReporter {
     // Check for parallel mode indicators
     const isParallel = process.env.MOCHA_WORKER_ID !== undefined ||
                       process.env.MOCHA_PARALLEL !== undefined ||
-                      process.argv.includes('--parallel');
+                      process.argv.includes('--parallel') ||
+                      process.argv.includes('--jobs') ||
+                      process.env.NODE_ENV === 'parallel';
 
     if (isParallel) {
+      console.warn('⚠️  Allure Reporter: Parallel mode detected. Allure Runtime API features disabled.');
+      console.warn('💡 To use Allure reporting features, run tests in single-threaded mode:');
+      console.warn('   npm run test:allure-demo  # or');
+      console.warn('   mocha --no-parallel your-test.spec.ts');
       return null; // Don't load Allure in parallel mode
     }
 
@@ -241,7 +247,8 @@ export class AllureReporter {
    */
   static logAction(action: string, details?: any): void {
     const timestamp = new Date().toISOString();
-    const logMessage = `[${timestamp}] ${action}${details ? ` - ${JSON.stringify(details)}` : ''}`;
+    const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+    const logMessage = `[${timestamp}] ${action}${detailsStr}`;
     console.log(logMessage);
     this.attachText('Test Log', logMessage);
   }

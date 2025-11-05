@@ -9,7 +9,6 @@ function toBy(locator) {
         case 'xpath': return selenium_webdriver_1.By.xpath(locator.value);
         case 'id': return selenium_webdriver_1.By.id(locator.value);
         case 'name': return selenium_webdriver_1.By.name(locator.value);
-        case 'tag': return selenium_webdriver_1.By.tagName(locator.value);
         case 'class': return selenium_webdriver_1.By.className(locator.value);
         default: throw new Error('Unsupported locator');
     }
@@ -51,9 +50,10 @@ class SanElement {
     async isDisplayed(timeout) {
         try {
             const el = await this.findElement(timeout);
-            return el.isDisplayed();
+            return await el.isDisplayed();
         }
-        catch (err) {
+        catch {
+            // Element is not displayed if it cannot be found or is not visible
             return false;
         }
     }

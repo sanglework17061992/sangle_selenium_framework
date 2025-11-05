@@ -29,10 +29,6 @@ export abstract class BasePage {
     return this.$({ using: 'name', value: name });
   }
 
-  protected byTag(tagName: string) {
-    return this.$({ using: 'tag', value: tagName });
-  }
-
   protected byClass(className: string) {
     return this.$({ using: 'class', value: className });
   }
@@ -42,6 +38,5 @@ export abstract class BasePage {
   protected id = this.byId.bind(this);
   protected xpath = this.byXpath.bind(this);
   protected name = this.byName.bind(this);
-  protected tag = this.byTag.bind(this);
   protected className = this.byClass.bind(this);
 }

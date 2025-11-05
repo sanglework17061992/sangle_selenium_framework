@@ -1,1 +1,8 @@
 node_modules
+
+# Allure reports and results (too heavy for git)
+allure-report/
+allure-results/
+
+# Build output
+dist/

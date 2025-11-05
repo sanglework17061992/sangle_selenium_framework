@@ -10,7 +10,7 @@ const mocha_1 = require("mocha");
 let driver;
 let page;
 (0, mocha_1.describe)('Example site', function () {
-    this.timeout(20000);
+    this.timeout(30000);
     (0, mocha_1.before)(async () => {
         driver = await DriverManager_1.default.getConfiguredDriver();
         page = new ExamplePage_1.ExamplePage(driver);
@@ -24,7 +24,7 @@ let page;
         // Playwright-style fluent assertions
         await (0, FluentAssertions_1.expectElement)(page.title).toHaveText('Example Domain');
         await (0, FluentAssertions_1.expectElement)(page.moreInfo).toBeVisible();
-        await (0, FluentAssertions_1.expectElement)(page.moreInfo).toHaveAttribute('href', 'https://www.iana.org/domains/example');
+        await (0, FluentAssertions_1.expectElement)(page.moreInfo).toHaveAttribute('href', 'https://iana.org/domains/example');
     });
     (0, mocha_1.it)('should demonstrate various assertion types', async () => {
         await page.open();
@@ -35,7 +35,7 @@ let page;
         await (0, FluentAssertions_1.expectElement)(page.title).toBeVisible();
         await (0, FluentAssertions_1.expectElement)(page.moreInfo).toBeVisible();
         // Attribute assertions
-        await (0, FluentAssertions_1.expectElement)(page.moreInfo).toHaveAttribute('href', 'https://www.iana.org/domains/example');
+        await (0, FluentAssertions_1.expectElement)(page.moreInfo).toHaveAttribute('href', 'https://iana.org/domains/example');
         await (0, FluentAssertions_1.expectElement)(page.moreInfo).toHaveAttributeContaining('href', 'iana.org');
     });
 });

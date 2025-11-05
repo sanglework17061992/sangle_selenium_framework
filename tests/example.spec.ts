@@ -1,7 +1,6 @@
 import DriverManager from '../src/driver/DriverManager';
 import { ExamplePage } from '../src/pages/ExamplePage';
 import { expectElement } from '../src/assertion/FluentAssertions';
-import { configLoader } from '../src/config/ConfigLoader';
 
 import { describe, it, before, after } from 'mocha';
 

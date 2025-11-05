@@ -5,8 +5,8 @@
   "scripts": {
     "build": "tsc",
     "test": "mocha -r ts-node/register tests/**/*.spec.ts --exit --grep 'Allure Report Demo' --invert",
-    "test:allure-demo": "mocha -r ts-node/register tests/allure-demo.spec.ts --exit --timeout 60000 --reporter spec",
-    "test:allure": "mocha -r ts-node/register tests/**/*.spec.ts --exit --reporter allure-mocha --timeout 60000",
+    "test:allure-demo": "mocha -r ts-node/register tests/allure-demo.spec.ts --exit --timeout 60000 --reporter spec --no-parallel",
+    "test:allure": "mocha -r ts-node/register tests/**/*.spec.ts --exit --reporter allure-mocha --timeout 60000 --no-parallel",
     "report:allure": "allure generate allure-results --clean && allure open",
     "lint": "eslint . --ext .ts"
   },

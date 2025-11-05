@@ -1,9 +1,29 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.configLoader = exports.ConfigLoader = void 0;
+exports.configLoader = exports.ConfigLoader = exports.LogLevel = exports.EnvironmentType = exports.BrowserType = void 0;
 const dotenv_1 = require("dotenv");
 // Load environment variables from .env file
 (0, dotenv_1.config)();
+// Enums for type-safe configuration
+var BrowserType;
+(function (BrowserType) {
+    BrowserType["CHROME"] = "chrome";
+    BrowserType["FIREFOX"] = "firefox";
+})(BrowserType || (exports.BrowserType = BrowserType = {}));
+var EnvironmentType;
+(function (EnvironmentType) {
+    EnvironmentType["DEV"] = "dev";
+    EnvironmentType["QA"] = "qa";
+    EnvironmentType["STAGING"] = "staging";
+    EnvironmentType["PROD"] = "prod";
+})(EnvironmentType || (exports.EnvironmentType = EnvironmentType = {}));
+var LogLevel;
+(function (LogLevel) {
+    LogLevel["DEBUG"] = "DEBUG";
+    LogLevel["INFO"] = "INFO";
+    LogLevel["WARN"] = "WARN";
+    LogLevel["ERROR"] = "ERROR";
+})(LogLevel || (exports.LogLevel = LogLevel = {}));
 /**
  * Configuration loader for the SaniumTS framework
  * Loads configuration from environment variables (.env file)
@@ -29,15 +49,15 @@ class ConfigLoader {
         };
     }
     loadBrowserConfig() {
-        const browserName = this.getEnvString('BROWSER', 'chrome');
+        const browserName = this.getEnvBrowserType('BROWSER', BrowserType.CHROME);
         const headless = this.getEnvBoolean('HEADLESS', false);
         const noSandbox = this.getEnvBoolean('NO_SANDBOX', true);
         let args = [];
-        if (browserName === 'chrome') {
+        if (browserName === BrowserType.CHROME) {
             const chromeArgs = this.getEnvString('CHROME_ARGS', '');
             args = chromeArgs ? chromeArgs.split(',') : [];
         }
-        else if (browserName === 'firefox') {
+        else if (browserName === BrowserType.FIREFOX) {
             const firefoxArgs = this.getEnvString('FIREFOX_ARGS', '');
             args = firefoxArgs ? firefoxArgs.split(',') : [];
         }
@@ -57,7 +77,7 @@ class ConfigLoader {
     }
     loadTestConfig() {
         return {
-            environment: this.getEnvString('ENVIRONMENT', 'qa'),
+            environment: this.getEnvEnvironmentType('ENVIRONMENT', EnvironmentType.QA),
             retryCount: this.getEnvNumber('RETRY_COUNT', 3),
             retryInterval: this.getEnvNumber('RETRY_INTERVAL', 500),
             parallel: this.getEnvBoolean('PARALLEL', false),
@@ -66,7 +86,7 @@ class ConfigLoader {
     }
     loadLoggingConfig() {
         return {
-            level: this.getEnvString('LOG_LEVEL', 'INFO'),
+            level: this.getEnvLogLevel('LOG_LEVEL', LogLevel.INFO),
             file: this.getEnvString('LOG_FILE', './logs/test.log')
         };
     }
@@ -100,6 +120,27 @@ class ConfigLoader {
         if (!value)
             return defaultValue;
         return value.toLowerCase() === 'true';
+    }
+    getEnvBrowserType(key, defaultValue) {
+        const value = this.getEnvString(key, defaultValue);
+        const upperValue = value.toUpperCase();
+        return Object.values(BrowserType).includes(upperValue)
+            ? upperValue
+            : defaultValue;
+    }
+    getEnvEnvironmentType(key, defaultValue) {
+        const value = this.getEnvString(key, defaultValue);
+        const upperValue = value.toUpperCase();
+        return Object.values(EnvironmentType).includes(upperValue)
+            ? upperValue
+            : defaultValue;
+    }
+    getEnvLogLevel(key, defaultValue) {
+        const value = this.getEnvString(key, defaultValue);
+        const upperValue = value.toUpperCase();
+        return Object.values(LogLevel).includes(upperValue)
+            ? upperValue
+            : defaultValue;
     }
     /**
      * Get the complete configuration
