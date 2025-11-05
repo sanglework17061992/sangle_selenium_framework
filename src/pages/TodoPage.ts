@@ -23,12 +23,7 @@ export class TodoPage extends BasePage {
   async open(): Promise<void> {
     const appConfig = configLoader.getAppConfig();
     await this.driver.get(appConfig.baseUrl);
-    
-    // Clear localStorage to ensure clean state
-    await this.driver.executeScript('window.localStorage.clear();');
-    
-    // Refresh to apply the cleared storage
-    await this.driver.navigate().refresh();
+    await this.refresh(); // This will clear localStorage and refresh
   }
 
   async refresh(): Promise<void> {
@@ -40,18 +35,10 @@ export class TodoPage extends BasePage {
   async addTodo(text: string): Promise<void> {
     if (AllureReporter.isEnabled()) {
       await AllureReporter.step(`Add todo item: "${text}"`, async () => {
-        await this.newTodoInput.type(text);
-
-        // Try using Actions API to send Enter key
-        const actions = this.driver.actions({ bridge: true });
-        await actions.sendKeys(Key.RETURN).perform();
+        await this.newTodoInput.typeAndSendKeys(text, Key.RETURN);
       });
     } else {
-      await this.newTodoInput.type(text);
-
-      // Try using Actions API to send Enter key
-      const actions = this.driver.actions({ bridge: true });
-      await actions.sendKeys(Key.RETURN).perform();
+      await this.newTodoInput.typeAndSendKeys(text, Key.RETURN);
     }
   }
 

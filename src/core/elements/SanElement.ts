@@ -48,6 +48,17 @@ export class SanElement {
     await el.sendKeys(text);
   }
 
+  async typeAndSendKeys(text: string, keys: string, timeout?: number) {
+    const el = await this.findElement(timeout);
+    await el.clear();
+    await el.sendKeys(text + keys);
+  }
+
+  async sendKeys(keys: string, timeout?: number) {
+    const el = await this.findElement(timeout);
+    await el.sendKeys(keys);
+  }
+
   async getText(timeout?: number) {
     const el = await this.findElement(timeout);
     return el.getText();
