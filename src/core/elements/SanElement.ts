@@ -1,4 +1,4 @@
-import { By, ThenableWebDriver, WebElement, until } from 'selenium-webdriver';
+import { By, ThenableWebDriver, WebElement, until, Actions } from 'selenium-webdriver';
 import { configLoader } from '../../config/ConfigLoader';
 
 export type Locator = { using: 'css' | 'xpath' | 'id' | 'name' | 'class'; value: string };
@@ -72,7 +72,6 @@ export class SanElement {
       const el = await this.findElement(timeout);
       return await el.isDisplayed();
     } catch {
-      // Element is not displayed if it cannot be found or is not visible
       return false;
     }
   }
@@ -90,6 +89,126 @@ export class SanElement {
   async submit(timeout?: number) {
     const el = await this.findElement(timeout);
     await el.submit();
+  }
+
+  // Checkbox methods
+  async check(timeout?: number) {
+    const el = await this.findElement(timeout);
+    const isChecked = await el.isSelected();
+    if (!isChecked) {
+      await el.click();
+    }
+  }
+
+  async uncheck(timeout?: number) {
+    const el = await this.findElement(timeout);
+    const isChecked = await el.isSelected();
+    if (isChecked) {
+      await el.click();
+    }
+  }
+
+  async isChecked(timeout?: number): Promise<boolean> {
+    try {
+      const el = await this.findElement(timeout);
+      return await el.isSelected();
+    } catch {
+      return false;
+    }
+  }
+
+  async toggle(timeout?: number) {
+    const el = await this.findElement(timeout);
+    await el.click();
+  }
+
+  // Mouse actions
+  async doubleClick(timeout?: number) {
+    const el = await this.findElement(timeout);
+    const actions = this.driver.actions({ bridge: true });
+    await actions.doubleClick(el).perform();
+  }
+
+  async rightClick(timeout?: number) {
+    const el = await this.findElement(timeout);
+    const actions = this.driver.actions({ bridge: true });
+    await actions.contextClick(el).perform();
+  }
+
+  async hover(timeout?: number) {
+    const el = await this.findElement(timeout);
+    const actions = this.driver.actions({ bridge: true });
+    await actions.move({ origin: el }).perform();
+  }
+
+  async dragAndDrop(target: SanElement, timeout?: number) {
+    const sourceEl = await this.findElement(timeout);
+    const targetEl = await target.findElement(timeout);
+    const actions = this.driver.actions({ bridge: true });
+    await actions.dragAndDrop(sourceEl, targetEl).perform();
+  }
+
+  // Select dropdown methods
+  async selectByValue(value: string, timeout?: number) {
+    const el = await this.findElement(timeout);
+    const select = require('selenium-webdriver').Select;
+    const selectElement = new select(el);
+    await selectElement.selectByValue(value);
+  }
+
+  async selectByText(text: string, timeout?: number) {
+    const el = await this.findElement(timeout);
+    const select = require('selenium-webdriver').Select;
+    const selectElement = new select(el);
+    await selectElement.selectByVisibleText(text);
+  }
+
+  async selectByIndex(index: number, timeout?: number) {
+    const el = await this.findElement(timeout);
+    const select = require('selenium-webdriver').Select;
+    const selectElement = new select(el);
+    await selectElement.selectByIndex(index);
+  }
+
+  async getSelectedValue(timeout?: number): Promise<string | null> {
+    const el = await this.findElement(timeout);
+    const select = require('selenium-webdriver').Select;
+    const selectElement = new select(el);
+    const selectedOption = await selectElement.getFirstSelectedOption();
+    return await selectedOption.getAttribute('value');
+  }
+
+  async getSelectedText(timeout?: number): Promise<string> {
+    const el = await this.findElement(timeout);
+    const select = require('selenium-webdriver').Select;
+    const selectElement = new select(el);
+    const selectedOption = await selectElement.getFirstSelectedOption();
+    return await selectedOption.getText();
+  }
+
+  // Scrolling
+  async scrollIntoView(timeout?: number) {
+    const el = await this.findElement(timeout);
+    await this.driver.executeScript('arguments[0].scrollIntoView(true);', el);
+  }
+
+  // Advanced waiting methods
+  async waitUntilVisible(timeout?: number) {
+    const by = toBy(this.locator);
+    const t = timeout ?? this.defaultTimeout;
+    await this.driver.wait(until.elementIsVisible(await this.driver.findElement(by)), t);
+  }
+
+  async waitUntilClickable(timeout?: number) {
+    const by = toBy(this.locator);
+    const t = timeout ?? this.defaultTimeout;
+    await this.driver.wait(until.elementIsEnabled(await this.driver.findElement(by)), t);
+  }
+
+  async waitUntilPresent(timeout?: number) {
+    const by = toBy(this.locator);
+    const t = timeout ?? this.defaultTimeout;
+    await this.driver.wait(until.elementLocated(by), t);
   }
 
   // Collection methods for handling multiple elements
