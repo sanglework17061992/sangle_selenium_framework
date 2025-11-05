@@ -30,6 +30,9 @@ export class TodoPage extends BasePage {
   todoCount = this.byCss('.todo-count');
   clearCompletedButton = this.byCss('.clear-completed');
 
+  // Toggle all checkbox (for bulk operations)
+  toggleAllCheckbox = this.byCss('.toggle-all');
+
   // Filter buttons
   allFilter = this.byCss('[href="#/"]');
   activeFilter = this.byCss('[href="#/active"]');
@@ -47,6 +50,9 @@ export class TodoPage extends BasePage {
 
   // Get todo delete button by text
   getTodoDeleteByText = (text: string) => this.byXpath(`//li[@data-testid="todo-item"]//label[contains(text(), "%s")]/following-sibling::button[@class="destroy"]`, text);
+
+  // Get todo label element by text (returns raw WebElement for complex operations)
+  getTodoLabelElement = (text: string) => this.byXpath(`//label[contains(text(), "${text}")]`).raw();
 
   async open(): Promise<void> {
     const appConfig = configLoader.getAppConfig();
@@ -111,7 +117,7 @@ export class TodoPage extends BasePage {
     async toggleTodo(text: string): Promise<void> {
     await AllureReporter.step(`Toggle todo completion: "${text}"`, async () => {
       // Find the checkbox and click it using JavaScript
-      const label = await this.byXpath(`//label[contains(text(), "${text}")]`).raw();
+      const label = await this.getTodoLabelElement(text);
       const li = await label.findElement(By.xpath('ancestor::li'));
       const checkbox = await li.findElement(By.css('input.toggle'));
       await checkbox.click();
@@ -123,7 +129,7 @@ export class TodoPage extends BasePage {
   async deleteTodo(text: string): Promise<void> {
     await AllureReporter.step(`Delete todo item: "${text}"`, async () => {
       // Find the label first, then find the li and delete button
-      const label = await this.byXpath(`//label[contains(text(), "${text}")]`).raw();
+      const label = await this.getTodoLabelElement(text);
       const li = await label.findElement(By.xpath('ancestor::li'));
       await this.driver.actions().move({ origin: li }).perform();
 
@@ -177,7 +183,7 @@ export class TodoPage extends BasePage {
     });
 
     try {
-      const label = await this.byXpath(`//label[contains(text(), "${text}")]`).raw();
+      const label = await this.getTodoLabelElement(text);
       const li = await label.findElement(By.xpath('ancestor::li'));
       const checkbox = await li.findElement(By.css('input.toggle'));
       return await checkbox.isSelected();
@@ -190,8 +196,7 @@ export class TodoPage extends BasePage {
     await AllureReporter.step('Mark all todo items as completed', async () => {
       // Try to find the "toggle all" checkbox in TodoMVC
       try {
-        const toggleAll = await this.driver.findElement(By.css('.toggle-all'));
-        await toggleAll.click();
+        await this.toggleAllCheckbox.click();
       } catch {
         // If no toggle all, mark each individually
         const todos = await this.getTodoTexts();
