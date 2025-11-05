@@ -1,96 +1,155 @@
-# SaniumTS Selenium Framework - Layer Architecture
+# SaniumTS Selenium Framework - 4-Layer Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    🧪 TEST LAYER                            │
-│  - test files (.spec.ts)                                    │
-│  - Mocha test runner                                        │
-│  - Test configuration                                       │
+│                    👤 USER LAYER                           │
+│  - Test files (.spec.ts)                                    │
+│  - Page Objects (TodoPage, LoginPage, etc.)                │
+│  - Test suites and scenarios                               │
+│  - Business logic test implementations                     │
 └─────────────────────┬───────────────────────────────────────┘
                       │ uses
 ┌─────────────────────▼───────────────────────────────────────┐
-│                 📄 PAGE OBJECT LAYER                       │
-│  - BasePage (abstract base class)                          │
-│  - ExamplePage (concrete implementation)                   │
-│  - Page-specific element definitions                       │
-└─────────────────────┬───────────────────────────────────────┘
-                      │ uses
-┌─────────────────────▼───────────────────────────────────────┐
-│                🔍 ASSERTION LAYER                          │
-│  - ElementAssertions (fluent API)                          │
-│  - expectElement() wrapper function                        │
-│  - Retry logic with configurable timeouts                  │
-└─────────────────────┬───────────────────────────────────────┘
-                      │ uses
-┌─────────────────────▼───────────────────────────────────────┐
-│                  🎯 CORE LAYER                             │
-│  - SanElement (web element wrapper)                        │
-│  - Auto-wait functionality                                  │
-│  - Element interactions (click, type, getText, etc.)       │
-└─────────────────────┬───────────────────────────────────────┘
-                      │ uses
-┌─────────────────────▼───────────────────────────────────────┐
-│                 🚗 DRIVER LAYER                            │
-│  - DriverManager (factory registry)                        │
-│  - BrowserFactory implementations                          │
-│  - Chrome, Firefox, and custom browser support             │
-└─────────────────────┬───────────────────────────────────────┘
-                      │ uses
-┌─────────────────────▼───────────────────────────────────────┐
-│               ⚙️ CONFIGURATION LAYER                       │
-│  - ConfigLoader (singleton)                                │
-│  - .env file parsing                                       │
-│  - Typed configuration interfaces                          │
+│                 � EMBEDDED FRAMEWORK LAYER               │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ SanElement: Web element wrapper with auto-wait     │   │
+│  │ - Single element: click(), type(), getText()       │   │
+│  │ - Collections: count(), getTexts(), getElements()  │   │
+│  │ - Advanced: check(), doubleClick(), selectByText() │   │
+│  └─────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ DriverManager: Browser driver factory              │   │
+│  │ - Chrome, Firefox, Edge browser support            │   │
+│  │ - Headless mode configuration                       │   │
+│  │ - Driver lifecycle management                       │   │
+│  └─────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ SanAssertion: Fluent assertion library             │   │
+│  │ - expectElement() with retry logic                 │   │
+│  │ - Fluent API: .toBeVisible(), .toHaveText()        │   │
+│  │ - Configurable timeouts and retry attempts         │   │
+│  └─────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ ConfigLoader: Configuration management             │   │
+│  │ - .env file parsing                                 │   │
+│  │ - Browser, timeout, and app configurations         │   │
+│  │ - Singleton pattern for global access              │   │
+│  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Layer Dependencies
+## Layer Responsibilities
+
+### � User Layer
+**What users write and maintain:**
+- Test specifications (`.spec.ts` files)
+- Page Object classes extending `BasePage`
+- Test scenarios and business logic
+- Custom assertions and helpers
+
+### 🔧 Embedded Framework Layer
+**Framework components (pre-built):**
+- **`SanElement`**: Unified element wrapper for single & collection operations
+- **`DriverManager`**: Browser driver factory and lifecycle management
+- **`SanAssertion`**: Fluent assertion API with retry logic
+- **`ConfigLoader`**: Configuration management from environment files
+
+## Data Flow Architecture
 
 ```
-Test Layer → Page Object Layer → Assertion Layer → Core Layer → Driver Layer → Configuration Layer
+┌─────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Config    │───▶│  DriverManager  │───▶│   SanElement    │
+│  (.env)     │    │  (Browser)      │    │  (Elements)     │
+└─────────────┘    └─────────────────┘    └─────────────────┘
+       ▲                     ▲                     ▲
+       │                     │                     │
+┌─────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│SanAssertion │◀───│   Page Objects  │◀───│     Tests       │
+│ (Fluent API)│    │  (User Code)    │    │  (User Code)    │
+└─────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-## Key Classes by Layer
+## Component Interactions
 
-### Configuration Layer
-- `ConfigLoader` - Singleton configuration manager
-- `BrowserConfig`, `TimeoutConfig`, `TestConfig`, `AppConfig` - Configuration interfaces
+### SanElement (Core Element Wrapper)
+```typescript
+// Single element operations
+await element.click();
+await element.type('text');
+await element.getText();
 
-### Driver Layer
-- `DriverManager` - Browser driver factory registry
-- `BrowserFactory` - Interface for browser implementations
-- `DefaultChromeFactory`, `DefaultFirefoxFactory` - Concrete browser factories
+// Collection operations
+const count = await elements.count();
+const texts = await elements.getTexts();
 
-### Core Layer
-- `SanElement` - Web element wrapper with auto-wait
-- `Locator` - Element locator interface
+// Advanced operations
+await checkbox.check();
+await element.doubleClick();
+await dropdown.selectByText('Option');
+```
 
-### Assertion Layer
-- `ElementAssertions` - Fluent assertion API
-- `expectElement()` - Factory function for assertions
+### DriverManager (Browser Management)
+```typescript
+// Browser initialization
+const driver = await DriverManager.getDriver('chrome');
 
-### Page Object Layer
-- `BasePage` - Abstract base class for page objects
-- `ExamplePage` - Concrete page implementation
+// Headless mode
+const headlessDriver = await DriverManager.getDriver('chrome', true);
+```
 
-### Test Layer
-- `*.spec.ts` files - Test specifications
-- Mocha test framework integration
+### SanAssertion (Fluent Assertions)
+```typescript
+// Fluent assertion API
+await expectElement(loginButton).toBeVisible();
+await expectElement(usernameField).toHaveText('Welcome');
+await expectElement(errorMessage).toContainText('Invalid');
+```
 
-## Data Flow
+### ConfigLoader (Configuration)
+```typescript
+// Access configurations
+const browserConfig = configLoader.getBrowserConfig();
+const timeoutConfig = configLoader.getTimeoutConfig();
+const appConfig = configLoader.getAppConfig();
+```
 
-1. **Configuration** loads from `.env` file
-2. **Driver Manager** creates browser instance using config
-3. **Page Objects** initialize with driver and define elements
-4. **SanElement** wraps web elements with auto-wait functionality
-5. **Assertions** provide fluent API for element verification
-6. **Tests** use page objects and assertions to verify behavior
+## Framework Benefits
 
-## Benefits of Layered Architecture
+### For Users 👤
+- **Simple API**: Focus on test logic, not browser automation details
+- **Auto-waiting**: Elements automatically wait to be ready
+- **Fluent Assertions**: Readable, chainable assertion syntax
+- **Type Safety**: Full TypeScript support with IntelliSense
 
-- **Separation of Concerns**: Each layer has a specific responsibility
-- **Testability**: Each layer can be tested independently
-- **Maintainability**: Changes in one layer don't affect others
-- **Extensibility**: New browsers, assertions, or pages can be added easily
-- **Configuration**: Behavior can be modified without code changes</content>
+### For Framework 🔧
+- **Modular Design**: Each component has single responsibility
+- **Extensible**: Easy to add new browsers, assertions, or element methods
+- **Configurable**: Behavior modified via configuration files
+- **Maintainable**: Clear separation between user code and framework code
+
+## Usage Example
+
+```typescript
+// User Layer - Test Code
+describe('Todo App', () => {
+  let todoPage: TodoPage;
+
+  beforeEach(async () => {
+    // Embedded Layer - Framework handles browser setup
+    const driver = await DriverManager.getDriver('chrome');
+    todoPage = new TodoPage(driver);
+    await todoPage.open();
+  });
+
+  it('should add todo item', async () => {
+    // Embedded Layer - SanElement handles element interactions
+    await todoPage.addTodo('Buy groceries');
+
+    // Embedded Layer - SanAssertion handles verifications
+    await expectElement(todoPage.todoItemsList).toHaveCount(1);
+  });
+});
+```
+
+This 4-layer architecture provides a clean separation between user-written test code and the embedded framework components, making the framework both powerful and easy to use! 🚀</content>
 <parameter name="filePath">/home/sangle/Documents/sangle_selenium_framework/FRAMEWORK_ARCHITECTURE.md
