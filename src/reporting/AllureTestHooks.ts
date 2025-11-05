@@ -1,9 +1,5 @@
 import { AllureReporter } from '../reporting/AllureReporter';
 
-/**
- * Test hooks for Allure reporting integration
- * Automatically sets up environment and handles screenshots
- */
 export class AllureTestHooks {
   private static driver: any = null;
 
@@ -25,7 +21,6 @@ export class AllureTestHooks {
    * Setup hook to run before each test
    */
   static async beforeEach(): Promise<void> {
-    // Add test start timestamp
     AllureReporter.parameter('Test Start', new Date().toISOString());
   }
 
@@ -35,7 +30,6 @@ export class AllureTestHooks {
   static async afterEach(): Promise<void> {
     try {
       if (this.driver) {
-        // Attach screenshot after each test (optional, can be configured)
         await AllureReporter.attachScreenshot(this.driver, 'Test Completion Screenshot');
       }
     } catch (error) {

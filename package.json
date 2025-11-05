@@ -4,7 +4,7 @@
   "type": "commonjs",
   "scripts": {
     "build": "tsc",
-    "test": "mocha -r ts-node/register tests/**/*.spec.ts --exit --grep 'Allure Report Demo' --invert",
+    "test": "mocha -r ts-node/register tests/**/*.spec.ts --exit --no-parallel",
     "test:allure": "mocha -r ts-node/register tests/**/*.spec.ts --exit --reporter allure-mocha --timeout 60000 --no-parallel",
     "report:allure": "allure generate allure-results --clean && allure open",
     "lint": "eslint . --ext .ts"

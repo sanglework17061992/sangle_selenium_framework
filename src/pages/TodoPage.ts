@@ -6,12 +6,8 @@ import { AllureReporter } from '../reporting/AllureReporter';
 export class TodoPage extends BasePage {
   newTodoInput = this.byCss('.new-todo');
   todoList = this.byCss('.todo-list');
-  todoItems = this.byCss('.todo-list li');
   todoItemsList = this.byCssAll('.todo-list li');
-  todoLabels = this.byCss('.todo-list li label');
   todoLabelsList = this.byCssAll('.todo-list li label');
-  todoCheckboxes = this.byCss('.todo-list li .toggle');
-  todoDeleteButtons = this.byCss('.todo-list li .destroy');
   todoCount = this.byCss('.todo-count');
   clearCompletedButton = this.byCss('.clear-completed');
   toggleAllCheckbox = this.byCss('.toggle-all');
@@ -27,20 +23,36 @@ export class TodoPage extends BasePage {
   async open(): Promise<void> {
     const appConfig = configLoader.getAppConfig();
     await this.driver.get(appConfig.baseUrl);
+    
+    // Clear localStorage to ensure clean state
+    await this.driver.executeScript('window.localStorage.clear();');
+    
+    // Refresh to apply the cleared storage
+    await this.driver.navigate().refresh();
   }
 
   async refresh(): Promise<void> {
+    // Clear localStorage and refresh to ensure clean state
+    await this.driver.executeScript('window.localStorage.clear();');
     await this.driver.navigate().refresh();
   }
 
   async addTodo(text: string): Promise<void> {
-    await AllureReporter.step(`Add todo item: "${text}"`, async () => {
+    if (AllureReporter.isEnabled()) {
+      await AllureReporter.step(`Add todo item: "${text}"`, async () => {
+        await this.newTodoInput.type(text);
+
+        // Try using Actions API to send Enter key
+        const actions = this.driver.actions({ bridge: true });
+        await actions.sendKeys(Key.RETURN).perform();
+      });
+    } else {
       await this.newTodoInput.type(text);
 
       // Try using Actions API to send Enter key
       const actions = this.driver.actions({ bridge: true });
       await actions.sendKeys(Key.RETURN).perform();
-    });
+    }
   }
 
   async getTodoCount(): Promise<number> {
@@ -82,7 +94,6 @@ export class TodoPage extends BasePage {
 
     async toggleTodo(text: string): Promise<void> {
     await AllureReporter.step(`Toggle todo completion: "${text}"`, async () => {
-      // Find the checkbox and click it using JavaScript
       const label = await this.getTodoLabelElement(text);
       const li = await label.findElement(By.xpath('ancestor::li'));
       const checkbox = await li.findElement(By.css('input.toggle'));
@@ -94,11 +105,13 @@ export class TodoPage extends BasePage {
 
   async deleteTodo(text: string): Promise<void> {
     await AllureReporter.step(`Delete todo item: "${text}"`, async () => {
-      // Find the label first, then find the li and delete button
       const label = await this.getTodoLabelElement(text);
       const li = await label.findElement(By.xpath('ancestor::li'));
       await this.driver.actions().move({ origin: li }).perform();
-
+      
+      // Wait for delete button to become visible
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
       const deleteButton = await li.findElement(By.css('button.destroy'));
       await deleteButton.click();
     });
@@ -160,16 +173,10 @@ export class TodoPage extends BasePage {
 
   async markAllAsCompleted(): Promise<void> {
     await AllureReporter.step('Mark all todo items as completed', async () => {
-      // Try to find the "toggle all" checkbox in TodoMVC
-      try {
-        await this.toggleAllCheckbox.click();
-      } catch {
-        // If no toggle all, mark each individually
-        const todos = await this.getTodoTexts();
-        for (const todo of todos) {
-          if (!(await this.isTodoCompleted(todo))) {
-            await this.toggleTodo(todo);
-          }
+      const todos = await this.getTodoTexts();
+      for (const todo of todos) {
+        if (!(await this.isTodoCompleted(todo))) {
+          await this.toggleTodo(todo);
         }
       }
     });

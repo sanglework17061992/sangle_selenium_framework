@@ -1,14 +1,11 @@
 import { ThenableWebDriver } from 'selenium-webdriver';
 import SanElement, { Locator } from '../core/elements/SanElement';
-import WaitHelper from '../helpers/WaitHelper';
 
 export abstract class BasePage {
   protected driver: ThenableWebDriver;
-  protected wait: WaitHelper;
 
   constructor(driver: ThenableWebDriver) {
     this.driver = driver;
-    this.wait = new WaitHelper(driver);
   }
 
   protected $(locator: Locator) {

@@ -2,19 +2,23 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { ConfigLoader } from '../config/ConfigLoader';
 
-/**
- * Allure reporting utilities for SaniumTS framework
- * Provides enhanced test reporting with screenshots, steps, and attachments
- */
 export class AllureReporter {
   private static readonly config = ConfigLoader.getInstance().getConfig();
   private static allure: any = null;
   private static allureLoaded = false;
 
-  /**
+    /**
    * Get Allure instance (lazy loading to avoid parallel mode issues)
    */
   private static getAllure(): any {
+    // Check if allure-mocha reporter is being used
+    const isAllureReporter = process.argv.includes('--reporter') &&
+                            process.argv.includes('allure-mocha');
+    
+    if (!isAllureReporter) {
+      return null; // Don't load Allure unless allure-mocha reporter is used
+    }
+
     // Check for parallel mode indicators
     const isParallel = process.env.MOCHA_WORKER_ID !== undefined ||
                       process.env.MOCHA_PARALLEL !== undefined ||
@@ -25,7 +29,6 @@ export class AllureReporter {
     if (isParallel) {
       console.warn('  Allure Reporter: Parallel mode detected. Allure Runtime API features disabled.');
       console.warn('  To use Allure reporting features, run tests in single-threaded mode:');
-      console.warn('  npm run test:allure-demo  # or');
       console.warn('  mocha --no-parallel your-test.spec.ts');
       return null; // Don't load Allure in parallel mode
     }
@@ -65,12 +68,22 @@ export class AllureReporter {
       // Allure is available - execute action and wrap in step
       try {
         await action();
-        allure.step(name, () => {}); // Empty step for reporting
+        allure.step(name, () => {});
       } catch (error) {
         allure.step(name, () => { throw error; });
         throw error;
       }
     }
+  }
+
+  /**
+   * Check if Allure reporting is enabled
+   */
+  static isEnabled(): boolean {
+    // Check if allure-mocha reporter is being used
+    const isAllureReporter = process.argv.includes('--reporter') &&
+                            process.argv.includes('allure-mocha');
+    return isAllureReporter && this.getAllure() !== null;
   }
 
   /**

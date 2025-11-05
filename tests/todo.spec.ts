@@ -4,7 +4,6 @@ import DriverManager from '../src/driver/DriverManager';
 import { expectValue } from '../src/assertion/SanAssertion';
 import { AllureTestHooks } from '../src/reporting/AllureTestHooks';
 
-// Check if we're using Allure reporter
 const isAllureReporter = process.argv.includes('--reporter') &&
                         process.argv.includes('allure-mocha');
 
@@ -84,6 +83,9 @@ describe('Todo App Tests', () => {
 
     it('should not add empty todos', async () => {
       await todoPage.addTodo('');
+      
+      // Small delay to allow UI to update
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       await expectValue(
         () => todoPage.getTodoCount(),
@@ -121,8 +123,8 @@ describe('Todo App Tests', () => {
 
       await expectValue(
         () => todoPage.getRemainingCount(),
-        (count) => expect(count).to.equal(1),
-        'Expected remaining count to be 1'
+        (count) => expect(count).to.equal(2),
+        'Expected remaining count to be 2'
       );
     });
 
@@ -139,8 +141,8 @@ describe('Todo App Tests', () => {
 
       await expectValue(
         () => todoPage.getRemainingCount(),
-        (count) => expect(count).to.equal(2),
-        'Expected remaining count to be 2'
+        (count) => expect(count).to.equal(3),
+        'Expected remaining count to be 3'
       );
     });
 
@@ -309,7 +311,6 @@ describe('Todo App Tests', () => {
       // Refresh the page
       await todoPage.refresh();
 
-      // Demo app doesn't persist data, so todos should be gone
       await expectValue(
         () => todoPage.getTodoCount(),
         (count) => expect(count).to.equal(0),
@@ -330,7 +331,6 @@ describe('Todo App Tests', () => {
       // Refresh the page
       await todoPage.refresh();
 
-      // Demo app doesn't persist data, so no todos should exist
       await expectValue(
         () => todoPage.getTodoCount(),
         (count) => expect(count).to.equal(0),

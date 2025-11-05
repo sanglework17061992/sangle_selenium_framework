@@ -248,7 +248,7 @@ export class ConfigLoader {
   }
 
   /**
-   * Reload configuration (useful for dynamic config changes)
+   * Reload configuration
    */
   reload(): void {
     this.config = this.loadConfiguration();
