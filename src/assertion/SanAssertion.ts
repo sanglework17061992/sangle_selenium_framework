@@ -5,10 +5,6 @@ import { expect } from 'chai';
 const testConfig = configLoader.getTestConfig();
 const defaultRetryTimeout = testConfig.retryCount * testConfig.retryInterval;
 
-/**
- * Fluent assertion wrapper for SanElement
- * Provides Playwright-style assertions with retry logic
- */
 export class ElementAssertions {
   private readonly element: SanElement;
   private readonly timeout: number;

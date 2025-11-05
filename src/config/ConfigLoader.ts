@@ -71,10 +71,6 @@ export interface FrameworkConfig {
   app: AppConfig;
 }
 
-/**
- * Configuration loader for the SaniumTS framework
- * Loads configuration from environment variables (.env file)
- */
 export class ConfigLoader {
   private static instance: ConfigLoader;
   private config: FrameworkConfig;
