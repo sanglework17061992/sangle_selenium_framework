@@ -1,5 +1,6 @@
 import { ThenableWebDriver } from 'selenium-webdriver';
 import SanElement, { Locator } from '../core/elements/SanElement';
+import SanElements from '../core/elements/SanElements';
 import WaitHelper from '../helpers/WaitHelper';
 
 export abstract class BasePage {
@@ -13,6 +14,10 @@ export abstract class BasePage {
 
   protected $(locator: Locator) {
     return new SanElement(this.driver, locator);
+  }
+
+  protected $$(locator: Locator) {
+    return new SanElements(this.driver, locator);
   }
 
   // User-friendly locator helper methods
@@ -44,6 +49,16 @@ export abstract class BasePage {
 
   protected byClass(className: string) {
     return this.$({ using: 'class', value: className });
+  }
+
+  // Multiple elements helpers
+  protected byCssAll(selector: string) {
+    return this.$$({ using: 'css', value: selector });
+  }
+
+  protected byXpathAll(xpath: string, ...params: string[]) {
+    const formattedXpath = params.length > 0 ? this.formatXpath(xpath, params) : xpath;
+    return this.$$({ using: 'xpath', value: formattedXpath });
   }
 
   // Shorthand aliases for common selectors

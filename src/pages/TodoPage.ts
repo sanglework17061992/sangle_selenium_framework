@@ -77,8 +77,7 @@ export class TodoPage extends BasePage {
     });
 
     try {
-      const items = await this.driver.findElements(By.css('.todo-list li'));
-      return items.length;
+      return await this.byCssAll('.todo-list li').count();
     } catch {
       return 0;
     }
@@ -90,7 +89,7 @@ export class TodoPage extends BasePage {
     });
 
     try {
-      const labels = await this.driver.findElements(By.css('.todo-list li label'));
+      const labels = await this.byCssAll('.todo-list li label').getElements();
       const texts: string[] = [];
       for (const label of labels) {
         const textContent = await label.getAttribute('textContent') || await label.getText();
@@ -112,7 +111,7 @@ export class TodoPage extends BasePage {
     async toggleTodo(text: string): Promise<void> {
     await AllureReporter.step(`Toggle todo completion: "${text}"`, async () => {
       // Find the checkbox and click it using JavaScript
-      const label = await this.driver.findElement(By.xpath(`//label[contains(text(), "${text}")]`));
+      const label = await this.byXpath(`//label[contains(text(), "${text}")]`).raw();
       const li = await label.findElement(By.xpath('ancestor::li'));
       const checkbox = await li.findElement(By.css('input.toggle'));
       await checkbox.click();
@@ -124,7 +123,7 @@ export class TodoPage extends BasePage {
   async deleteTodo(text: string): Promise<void> {
     await AllureReporter.step(`Delete todo item: "${text}"`, async () => {
       // Find the label first, then find the li and delete button
-      const label = await this.driver.findElement(By.xpath(`//label[contains(text(), "${text}")]`));
+      const label = await this.byXpath(`//label[contains(text(), "${text}")]`).raw();
       const li = await label.findElement(By.xpath('ancestor::li'));
       await this.driver.actions().move({ origin: li }).perform();
 
@@ -178,7 +177,7 @@ export class TodoPage extends BasePage {
     });
 
     try {
-      const label = await this.driver.findElement(By.xpath(`//label[contains(text(), "${text}")]`));
+      const label = await this.byXpath(`//label[contains(text(), "${text}")]`).raw();
       const li = await label.findElement(By.xpath('ancestor::li'));
       const checkbox = await li.findElement(By.css('input.toggle'));
       return await checkbox.isSelected();
