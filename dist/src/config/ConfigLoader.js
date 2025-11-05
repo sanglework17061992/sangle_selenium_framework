@@ -112,8 +112,8 @@ class ConfigLoader {
         const value = process.env[key];
         if (!value)
             return defaultValue;
-        const parsed = parseInt(value, 10);
-        return isNaN(parsed) ? defaultValue : parsed;
+        const parsed = Number.parseInt(value, 10);
+        return Number.isNaN(parsed) ? defaultValue : parsed;
     }
     getEnvBoolean(key, defaultValue) {
         const value = process.env[key];

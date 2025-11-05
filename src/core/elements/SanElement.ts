@@ -1,5 +1,5 @@
 import { By, ThenableWebDriver, WebElement, until } from 'selenium-webdriver';
-import { configLoader } from '../config/ConfigLoader';
+import { configLoader } from '../../config/ConfigLoader';
 
 export type Locator = { using: 'css' | 'xpath' | 'id' | 'name' | 'class'; value: string };
 

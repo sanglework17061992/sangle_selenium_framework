@@ -1,4 +1,4 @@
-import { SanElement } from '../core/SanElement';
+import { SanElement } from '../core/elements/SanElement';
 import { configLoader } from '../config/ConfigLoader';
 import { expect } from 'chai';
 
@@ -10,8 +10,8 @@ const defaultRetryTimeout = testConfig.retryCount * testConfig.retryInterval;
  * Provides Playwright-style assertions with retry logic
  */
 export class ElementAssertions {
-  private element: SanElement;
-  private timeout: number;
+  private readonly element: SanElement;
+  private readonly timeout: number;
 
   constructor(element: SanElement, timeout?: number) {
     this.element = element;
@@ -148,8 +148,39 @@ export class ElementAssertions {
 
 /**
  * Create fluent assertions for a SanElement
- * Usage: expect(element).toHaveText('expected')
+ * Usage: expectElement(element).toHaveText('expected')
  */
 export function expectElement(element: SanElement, timeout?: number): ElementAssertions {
   return new ElementAssertions(element, timeout);
+}
+
+/**
+ * Retry assertion for values with configurable timeout
+ * Provides retry logic similar to element assertions for value-based assertions
+ * Usage: await expectValue(() => getTodoCount(), (count) => expect(count).to.equal(1), 'Expected todo count to be 1')
+ */
+export async function expectValue<T>(
+  actualValueFn: () => Promise<T> | T,
+  assertionFn: (value: T) => void,
+  errorMessage: string,
+  timeout?: number
+): Promise<void> {
+  const actualTimeout = timeout ?? defaultRetryTimeout;
+  const start = Date.now();
+  let lastErr: any = null;
+
+  while (Date.now() - start < actualTimeout) {
+    try {
+      const value = await actualValueFn();
+      assertionFn(value);
+      return;
+    } catch (err) {
+      lastErr = err;
+      await new Promise(r => setTimeout(r, testConfig.retryInterval));
+    }
+  }
+
+  const error = lastErr || new Error('Assertion timed out');
+  error.message = `${errorMessage}\n${error.message}`;
+  throw error;
 }

@@ -1,5 +1,4 @@
 import { AllureReporter } from '../reporting/AllureReporter';
-import { DriverManager } from '../driver/DriverManager';
 
 /**
  * Test hooks for Allure reporting integration

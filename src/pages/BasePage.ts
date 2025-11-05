@@ -1,11 +1,14 @@
 import { ThenableWebDriver } from 'selenium-webdriver';
-import SanElement, { Locator } from '../core/SanElement';
+import SanElement, { Locator } from '../core/elements/SanElement';
+import WaitHelper from '../helpers/WaitHelper';
 
 export abstract class BasePage {
   protected driver: ThenableWebDriver;
+  protected wait: WaitHelper;
 
   constructor(driver: ThenableWebDriver) {
     this.driver = driver;
+    this.wait = new WaitHelper(driver);
   }
 
   protected $(locator: Locator) {
@@ -21,8 +24,18 @@ export abstract class BasePage {
     return this.$({ using: 'id', value: id });
   }
 
-  protected byXpath(xpath: string) {
-    return this.$({ using: 'xpath', value: xpath });
+  protected byXpath(xpath: string, ...params: string[]) {
+    const formattedXpath = params.length > 0 ? this.formatXpath(xpath, params) : xpath;
+    return this.$({ using: 'xpath', value: formattedXpath });
+  }
+
+  private formatXpath(xpath: string, params: string[]): string {
+    let result = xpath;
+    for (const param of params) {
+      // Replace %s placeholders with actual parameters
+      result = result.replace('%s', param);
+    }
+    return result;
   }
 
   protected byName(name: string) {

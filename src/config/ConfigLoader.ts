@@ -1,5 +1,3 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import { config } from 'dotenv';
 
 // Load environment variables from .env file
@@ -174,8 +172,8 @@ export class ConfigLoader {
   private getEnvNumber(key: string, defaultValue: number): number {
     const value = process.env[key];
     if (!value) return defaultValue;
-    const parsed = parseInt(value, 10);
-    return isNaN(parsed) ? defaultValue : parsed;
+    const parsed = Number.parseInt(value, 10);
+    return Number.isNaN(parsed) ? defaultValue : parsed;
   }
 
   private getEnvBoolean(key: string, defaultValue: boolean): boolean {

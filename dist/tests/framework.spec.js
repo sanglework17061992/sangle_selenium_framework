@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const FluentAssertions_1 = require("../src/assertion/FluentAssertions");
-const SanElement_1 = require("../src/core/SanElement");
+const SanElement_1 = require("../src/core/elements/SanElement");
 const mocha_1 = require("mocha");
 (0, mocha_1.describe)('Framework Tests', function () {
     this.timeout(10000);

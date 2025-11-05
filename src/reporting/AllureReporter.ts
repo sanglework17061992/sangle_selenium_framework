@@ -47,13 +47,30 @@ export class AllureReporter {
   /**
    * Add a test step to Allure report
    */
-  static step(name: string, action: () => Promise<void> | void): Promise<void> {
+  static async step(name: string, action: () => Promise<void> | void): Promise<void> {
     const allure = this.getAllure();
     if (!allure) {
       console.log(`[STEP] ${name}`);
-      return Promise.resolve(action());
+      try {
+        const result = action();
+        if (result instanceof Promise) {
+          await result;
+        }
+        return;
+      } catch (error) {
+        console.error(`Action failed:`, error);
+        throw error;
+      }
+    } else {
+      // Allure is available - execute action and wrap in step
+      try {
+        await action();
+        allure.step(name, () => {}); // Empty step for reporting
+      } catch (error) {
+        allure.step(name, () => { throw error; });
+        throw error;
+      }
     }
-    return allure.step(name, action);
   }
 
   /**

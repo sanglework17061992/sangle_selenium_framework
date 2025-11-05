@@ -1,41 +1,9 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ExamplePage = void 0;
 const BasePage_1 = require("./BasePage");
 const ConfigLoader_1 = require("../config/ConfigLoader");
+const selenium_webdriver_1 = require("selenium-webdriver");
 class ExamplePage extends BasePage_1.BasePage {
     constructor() {
         super(...arguments);
@@ -59,6 +27,17 @@ class ExamplePage extends BasePage_1.BasePage {
         // Complex cases - XPath when CSS isn't sufficient
         this.submitButton = this.byXpath('//button[@type="submit"]');
         this.loadingSpinner = this.byXpath('//div[contains(@class, "loading")]');
+        // ==========================================
+        // DYNAMIC XPATH EXAMPLES: Parameterized XPath
+        // ==========================================
+        // Dynamic XPath with single parameter
+        this.categoryLink = (categoryName) => this.byXpath("//a[contains(text(), '%s')]", categoryName);
+        // Dynamic XPath with multiple parameters
+        this.productCard = (category, productName) => this.byXpath("//div[@class='%s']//h3[text()='%s']", category, productName);
+        // Dynamic XPath for table rows
+        this.tableRow = (rowIndex) => this.byXpath("//table//tr[%s]", rowIndex);
+        // Dynamic XPath for form fields by label
+        this.formField = (fieldLabel) => this.byXpath("//label[text()='%s']/following-sibling::input", fieldLabel);
     }
     async open() {
         const appConfig = ConfigLoader_1.configLoader.getAppConfig();
@@ -94,9 +73,44 @@ class ExamplePage extends BasePage_1.BasePage {
     async resetPassword() {
         await this.forgotPasswordLink.click();
     }
+    // ==========================================
+    // DYNAMIC XPATH USAGE EXAMPLES
+    // ==========================================
+    async clickCategory(categoryName) {
+        const categoryElement = this.categoryLink(categoryName);
+        await categoryElement.click();
+    }
+    async getProductPrice(category, productName) {
+        // Navigate to price element relative to product card
+        const priceElement = this.byXpath("//div[@class='%s']//h3[text()='%s']/following-sibling::span[@class='price']", category, productName);
+        return await priceElement.getText();
+    }
+    async selectTableRow(rowIndex) {
+        const rowElement = this.tableRow(rowIndex.toString());
+        await rowElement.click();
+    }
+    async fillFormField(fieldLabel, value) {
+        const fieldElement = this.formField(fieldLabel);
+        await fieldElement.type(value);
+    }
+    // ==========================================
+    // WAIT HELPER USAGE EXAMPLES
+    // ==========================================
+    async waitForPageToLoad() {
+        await this.wait.waitForPageLoad();
+    }
+    async waitForAjaxRequests() {
+        await this.wait.waitForAjaxComplete();
+    }
+    async waitForSuccessMessage() {
+        await this.wait.waitForTextInElement(selenium_webdriver_1.By.css('.success-message'), 'Login successful');
+    }
+    async waitForUrlChange(expectedUrlPart) {
+        await this.wait.waitForUrlToContain(expectedUrlPart);
+    }
     async waitForLoadingToComplete() {
-        const { By, until } = await Promise.resolve().then(() => __importStar(require('selenium-webdriver')));
-        await this.driver.wait(until.elementIsNotVisible(await this.driver.findElement(By.xpath('//div[contains(@class, "loading")]'))), 10000);
+        // Use WaitHelper for more reliable waiting
+        await this.wait.waitForLoadingSpinner();
     }
 }
 exports.ExamplePage = ExamplePage;
