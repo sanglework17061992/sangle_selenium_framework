@@ -1,6 +1,5 @@
 import { ThenableWebDriver } from 'selenium-webdriver';
 import SanElement, { Locator } from '../core/elements/SanElement';
-import SanElements from '../core/elements/SanElements';
 import WaitHelper from '../helpers/WaitHelper';
 
 export abstract class BasePage {
@@ -17,7 +16,7 @@ export abstract class BasePage {
   }
 
   protected $$(locator: Locator) {
-    return new SanElements(this.driver, locator);
+    return new SanElement(this.driver, locator);
   }
 
   // User-friendly locator helper methods
