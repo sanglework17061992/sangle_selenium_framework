@@ -4,54 +4,24 @@ import { By, Key } from 'selenium-webdriver';
 import { AllureReporter } from '../reporting/AllureReporter';
 
 export class TodoPage extends BasePage {
-  // ==========================================
-  // TODO APP ELEMENTS
-  // ==========================================
-
-  // Input field for new todos
   newTodoInput = this.byCss('.new-todo');
-
-  // Todo list container
   todoList = this.byCss('.todo-list');
-
-  // Todo items
   todoItems = this.byCss('.todo-list li');
-
-  // Todo item labels
+  todoItemsAll = this.byCssAll('.todo-list li');
   todoLabels = this.byCss('.todo-list li label');
-
-  // Todo item checkboxes
+  todoLabelsAll = this.byCssAll('.todo-list li label');
   todoCheckboxes = this.byCss('.todo-list li .toggle');
-
-  // Todo item delete buttons
   todoDeleteButtons = this.byCss('.todo-list li .destroy');
-
-  // Footer elements
   todoCount = this.byCss('.todo-count');
   clearCompletedButton = this.byCss('.clear-completed');
-
-  // Toggle all checkbox (for bulk operations)
   toggleAllCheckbox = this.byCss('.toggle-all');
-
-  // Filter buttons
   allFilter = this.byCss('[href="#/"]');
   activeFilter = this.byCss('[href="#/active"]');
   completedFilter = this.byCss('[href="#/completed"]');
 
-  // ==========================================
-  // DYNAMIC XPATH FOR COMPLEX SCENARIOS
-  // ==========================================
-
-  // Get todo item by text content
   getTodoByText = (text: string) => this.byXpath(`//li[@data-testid="todo-item"]//label[contains(text(), "%s")]`, text);
-
-  // Get todo checkbox by text
   getTodoCheckboxByText = (text: string) => this.byXpath(`//label[contains(text(), "%s")]/preceding-sibling::input[@class="toggle"]`, text);
-
-  // Get todo delete button by text
   getTodoDeleteByText = (text: string) => this.byXpath(`//li[@data-testid="todo-item"]//label[contains(text(), "%s")]/following-sibling::button[@class="destroy"]`, text);
-
-  // Get todo label element by text (returns raw WebElement for complex operations)
   getTodoLabelElement = (text: string) => this.byXpath(`//label[contains(text(), "${text}")]`).raw();
 
   async open(): Promise<void> {
@@ -62,10 +32,6 @@ export class TodoPage extends BasePage {
   async refresh(): Promise<void> {
     await this.driver.navigate().refresh();
   }
-
-  // ==========================================
-  // TODO APP METHODS
-  // ==========================================
 
   async addTodo(text: string): Promise<void> {
     await AllureReporter.step(`Add todo item: "${text}"`, async () => {
@@ -83,7 +49,7 @@ export class TodoPage extends BasePage {
     });
 
     try {
-      return await this.byCssAll('.todo-list li').count();
+      return await this.todoItemsAll.count();
     } catch {
       return 0;
     }
@@ -95,7 +61,7 @@ export class TodoPage extends BasePage {
     });
 
     try {
-      const labels = await this.byCssAll('.todo-list li label').getElements();
+      const labels = await this.todoLabelsAll.getElements();
       const texts: string[] = [];
       for (const label of labels) {
         const textContent = await label.getAttribute('textContent') || await label.getText();
