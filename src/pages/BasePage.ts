@@ -63,4 +63,10 @@ export abstract class BasePage {
   protected xpath = this.byXpath.bind(this);
   protected name = this.byName.bind(this);
   protected className = this.byClass.bind(this);
+
+  async refresh(): Promise<void> {
+    // Clear localStorage and refresh to ensure clean state
+    await this.driver.executeScript('window.localStorage.clear();');
+    await this.driver.navigate().refresh();
+  }
 }

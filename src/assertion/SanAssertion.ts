@@ -120,6 +120,71 @@ export class ElementAssertions {
   }
 
   /**
+   * Assert that the element does not have the exact text
+   */
+  async toNotHaveText(expectedText: string): Promise<void> {
+    await this.retryAssert(async () => {
+      const actualText = await this.element.getText();
+      expect(actualText.trim()).to.not.equal(expectedText);
+    }, `Expected element not to have text "${expectedText}"`);
+  }
+
+  /**
+   * Assert that the element does not contain the specified text
+   */
+  async toNotContainText(expectedSubstring: string): Promise<void> {
+    await this.retryAssert(async () => {
+      const actualText = await this.element.getText();
+      expect(actualText.trim()).to.not.include(expectedSubstring);
+    }, `Expected element not to contain text "${expectedSubstring}"`);
+  }
+
+  /**
+   * Assert that the element does not have the specified attribute with the expected value
+   */
+  async toNotHaveAttribute(attributeName: string, expectedValue: string): Promise<void> {
+    await this.retryAssert(async () => {
+      const actualValue = await this.element.getAttribute(attributeName);
+      expect(actualValue).to.not.equal(expectedValue);
+    }, `Expected element not to have attribute "${attributeName}" with value "${expectedValue}"`);
+  }
+
+  /**
+   * Assert that the element does not have the specified attribute containing the expected value
+   */
+  async toNotHaveAttributeContaining(attributeName: string, expectedSubstring: string): Promise<void> {
+    await this.retryAssert(async () => {
+      const actualValue = await this.element.getAttribute(attributeName);
+      expect(actualValue).to.not.include(expectedSubstring);
+    }, `Expected element not to have attribute "${attributeName}" containing "${expectedSubstring}"`);
+  }
+
+  /**
+   * Assert that the element does not have the specified CSS class
+   */
+  async toNotHaveClass(className: string): Promise<void> {
+    await this.retryAssert(async () => {
+      const classAttribute = await this.element.getAttribute('class');
+      const classes = classAttribute ? classAttribute.split(/\s+/) : [];
+      expect(classes).to.not.include(className);
+    }, `Expected element not to have CSS class "${className}"`);
+  }
+
+  /**
+   * Assert that the element's value attribute does not equal the expected value
+   */
+  async toNotHaveValue(expectedValue: string): Promise<void> {
+    await this.toNotHaveAttribute('value', expectedValue);
+  }
+
+  /**
+   * Assert that the element's value attribute does not contain the expected substring
+   */
+  async toNotHaveValueContaining(expectedSubstring: string): Promise<void> {
+    await this.toNotHaveAttributeContaining('value', expectedSubstring);
+  }
+
+  /**
    * Retry assertion with configurable timeout and interval
    */
   private async retryAssert(assertFn: () => Promise<void>, errorMessage: string): Promise<void> {
@@ -151,32 +216,24 @@ export function expectElement(element: SanElement, timeout?: number): ElementAss
 }
 
 /**
- * Retry assertion for values with configurable timeout
- * Provides retry logic similar to element assertions for value-based assertions
+ * Non-retry assertion for values
+ * Performs a one-time assertion on the provided value function
  * Usage: await expectValue(() => getTodoCount(), (count) => expect(count).to.equal(1), 'Expected todo count to be 1')
  */
 export async function expectValue<T>(
   actualValueFn: () => Promise<T> | T,
   assertionFn: (value: T) => void,
-  errorMessage: string,
-  timeout?: number
+  errorMessage: string
 ): Promise<void> {
-  const actualTimeout = timeout ?? defaultRetryTimeout;
-  const start = Date.now();
-  let lastErr: any = null;
-
-  while (Date.now() - start < actualTimeout) {
-    try {
-      const value = await actualValueFn();
-      assertionFn(value);
-      return;
-    } catch (err) {
-      lastErr = err;
-      await new Promise(r => setTimeout(r, testConfig.retryInterval));
+  try {
+    const value = await actualValueFn();
+    assertionFn(value);
+  } catch (err) {
+    const error = new Error(errorMessage);
+    if (err instanceof Error) {
+      error.message += `\n${err.message}`;
     }
+    throw error;
   }
-
-  const error = lastErr || new Error('Assertion timed out');
-  error.message = `${errorMessage}\n${error.message}`;
-  throw error;
 }
+

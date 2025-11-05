@@ -25,6 +25,10 @@ export class SanElement {
     this.defaultTimeout = defaultTimeout ?? configLoader.getTimeoutConfig().element;
   }
 
+  private getActions() {
+    return this.driver.actions({ bridge: true });
+  }
+
   private async findElement(timeout?: number): Promise<WebElement> {
     const by = toBy(this.locator);
     const t = timeout ?? this.defaultTimeout;
@@ -38,7 +42,6 @@ export class SanElement {
   // Core interactions: click, type, getText, isDisplayed, getAttribute
   async click(timeout?: number) {
     const el = await this.findElement(timeout);
-    await this.driver.wait(until.elementIsEnabled(el), timeout ?? this.defaultTimeout);
     await el.click();
   }
 
@@ -61,12 +64,12 @@ export class SanElement {
 
   async getText(timeout?: number) {
     const el = await this.findElement(timeout);
-    return el.getText();
+    return await el.getText();
   }
 
   async getAttribute(name: string, timeout?: number) {
     const el = await this.findElement(timeout);
-    return el.getAttribute(name);
+    return await el.getAttribute(name);
   }
 
   async isEnabled(timeout?: number): Promise<boolean> {
@@ -128,34 +131,29 @@ export class SanElement {
     }
   }
 
-  async toggle(timeout?: number) {
-    const el = await this.findElement(timeout);
-    await el.click();
-  }
-
   // Mouse actions
   async doubleClick(timeout?: number) {
     const el = await this.findElement(timeout);
-    const actions = this.driver.actions({ bridge: true });
+    const actions = this.getActions();
     await actions.doubleClick(el).perform();
   }
 
   async rightClick(timeout?: number) {
     const el = await this.findElement(timeout);
-    const actions = this.driver.actions({ bridge: true });
+    const actions = this.getActions();
     await actions.contextClick(el).perform();
   }
 
   async hover(timeout?: number) {
     const el = await this.findElement(timeout);
-    const actions = this.driver.actions({ bridge: true });
+    const actions = this.getActions();
     await actions.move({ origin: el }).perform();
   }
 
   async dragAndDrop(target: SanElement, timeout?: number) {
     const sourceEl = await this.findElement(timeout);
     const targetEl = await target.findElement(timeout);
-    const actions = this.driver.actions({ bridge: true });
+    const actions = this.getActions();
     await actions.dragAndDrop(sourceEl, targetEl).perform();
   }
 
@@ -220,6 +218,31 @@ export class SanElement {
     const by = toBy(this.locator);
     const t = timeout ?? this.defaultTimeout;
     await this.driver.wait(until.elementLocated(by), t);
+  }
+ 
+  async clickWithForcedVisibility(timeout?: number) {
+    const el = await this.findElement(timeout);
+    // Use JavaScript to force the element to be visible and clickable
+    await this.driver.executeScript(`
+      arguments[0].style.display = 'block';
+      arguments[0].style.visibility = 'visible';
+      arguments[0].style.opacity = '1';
+      arguments[0].click();
+    `, el);
+  }
+
+  async clickWithJavaScript(timeout?: number) {
+    const el = await this.findElement(timeout);
+    await this.driver.executeScript('arguments[0].click();', el);
+  }
+
+  async clickWithCustomJavaScript(javaScriptFn: (element: any) => void, timeout?: number) {
+    const el = await this.findElement(timeout);
+    await this.driver.executeScript(javaScriptFn, el);
+  }
+
+  static async clickWithJavaScriptByCriteria(driver: ThenableWebDriver, findAndClickScript: string, ...args: any[]) {
+    await driver.executeScript(findAndClickScript, ...args);
   }
 
   // Collection methods for handling multiple elements

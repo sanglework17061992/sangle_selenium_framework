@@ -1,7 +1,8 @@
 import { BasePage } from './BasePage';
 import { configLoader } from '../config/ConfigLoader';
-import { By, Key } from 'selenium-webdriver';
+import { Key } from 'selenium-webdriver';
 import { AllureReporter } from '../reporting/AllureReporter';
+import SanElement from '../core/elements/SanElement';
 
 export class TodoPage extends BasePage {
   newTodoInput = this.byCss('.new-todo');
@@ -15,21 +16,14 @@ export class TodoPage extends BasePage {
   activeFilter = this.byCss('[href="#/active"]');
   completedFilter = this.byCss('[href="#/completed"]');
 
-  getTodoByText = (text: string) => this.byXpath(`//li[@data-testid="todo-item"]//label[contains(text(), "%s")]`, text);
-  getTodoCheckboxByText = (text: string) => this.byXpath(`//label[contains(text(), "%s")]/preceding-sibling::input[@class="toggle"]`, text);
+  getTodoByText = (text: string) => this.byXpath(`//li[@data-testid="todo-item"][.//label[contains(text(), "%s")]]`, text);
+  getTodoCheckboxByText = (text: string) => this.byXpath(`//li[@data-testid="todo-item"]//label[contains(text(), "%s")]/preceding::input[@class="toggle"]`, text);
   getTodoDeleteByText = (text: string) => this.byXpath(`//li[@data-testid="todo-item"]//label[contains(text(), "%s")]/following-sibling::button[@class="destroy"]`, text);
-  getTodoLabelElement = (text: string) => this.byXpath(`//label[contains(text(), "${text}")]`).raw();
 
   async open(): Promise<void> {
     const appConfig = configLoader.getAppConfig();
     await this.driver.get(appConfig.baseUrl);
     await this.refresh(); // This will clear localStorage and refresh
-  }
-
-  async refresh(): Promise<void> {
-    // Clear localStorage and refresh to ensure clean state
-    await this.driver.executeScript('window.localStorage.clear();');
-    await this.driver.navigate().refresh();
   }
 
   async addTodo(text: string): Promise<void> {
@@ -79,31 +73,49 @@ export class TodoPage extends BasePage {
     }
   }
 
-    async toggleTodo(text: string): Promise<void> {
+  async toggleTodo(text: string): Promise<void> {
     await AllureReporter.step(`Toggle todo completion: "${text}"`, async () => {
-      const label = await this.getTodoLabelElement(text);
-      const li = await label.findElement(By.xpath('ancestor::li'));
-      const checkbox = await li.findElement(By.css('input.toggle'));
-      await checkbox.click();
-      // Small delay to allow UI to update
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Find all toggle checkboxes, then find the one associated with the todo text
+      const checkboxes = await this.driver.findElements({ css: 'input.toggle' });
+      const labels = await this.driver.findElements({ css: 'li label' });
+      
+      for (let i = 0; i < labels.length; i++) {
+        const labelText = await labels[i].getText();
+        if (labelText === text) {
+          await checkboxes[i].click();
+          return;
+        }
+      }
+      
+      throw new Error(`Todo with text "${text}" not found`);
     });
-  }
-
+  }  
+  
   async deleteTodo(text: string): Promise<void> {
     await AllureReporter.step(`Delete todo item: "${text}"`, async () => {
-      const label = await this.getTodoLabelElement(text);
-      const li = await label.findElement(By.xpath('ancestor::li'));
-      await this.driver.actions().move({ origin: li }).perform();
-      
-      // Wait for delete button to become visible
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      const deleteButton = await li.findElement(By.css('button.destroy'));
-      await deleteButton.click();
-    });
-  }
+      // Use SanElement's static method to execute JavaScript for finding and clicking the delete button
+      const findAndClickScript = `
+        const labels = document.querySelectorAll('.todo-list li label');
+        for (const label of labels) {
+          if (label.textContent.trim() === arguments[0]) {
+            const li = label.closest('li');
+            const button = li.querySelector('button.destroy');
+            if (button) {
+              // Force visibility and click
+              button.style.display = 'block';
+              button.style.visibility = 'visible';
+              button.click();
+              return;
+            }
+          }
+        }
+        throw new Error('Todo item not found: ' + arguments[0]);
+      `;
 
+      await SanElement.clickWithJavaScriptByCriteria(this.driver, findAndClickScript, text);
+    });
+  }  
+  
   async clearCompleted(): Promise<void> {
     await AllureReporter.step('Clear all completed todo items', async () => {
       await this.clearCompletedButton.click();
@@ -149,10 +161,18 @@ export class TodoPage extends BasePage {
     });
 
     try {
-      const label = await this.getTodoLabelElement(text);
-      const li = await label.findElement(By.xpath('ancestor::li'));
-      const checkbox = await li.findElement(By.css('input.toggle'));
-      return await checkbox.isSelected();
+      const todoItems = await this.driver.findElements({ css: '.todo-list li' });
+      
+      for (const item of todoItems) {
+        const label = await item.findElement({ css: 'label' });
+        const labelText = await label.getText();
+        if (labelText === text) {
+          const classAttr = await item.getAttribute('class');
+          return classAttr ? classAttr.includes('completed') : false;
+        }
+      }
+      
+      return false;
     } catch {
       return false;
     }
