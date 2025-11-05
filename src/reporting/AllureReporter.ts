@@ -23,10 +23,10 @@ export class AllureReporter {
                       process.env.NODE_ENV === 'parallel';
 
     if (isParallel) {
-      console.warn('⚠️  Allure Reporter: Parallel mode detected. Allure Runtime API features disabled.');
-      console.warn('💡 To use Allure reporting features, run tests in single-threaded mode:');
-      console.warn('   npm run test:allure-demo  # or');
-      console.warn('   mocha --no-parallel your-test.spec.ts');
+      console.warn('  Allure Reporter: Parallel mode detected. Allure Runtime API features disabled.');
+      console.warn('  To use Allure reporting features, run tests in single-threaded mode:');
+      console.warn('  npm run test:allure-demo  # or');
+      console.warn('  mocha --no-parallel your-test.spec.ts');
       return null; // Don't load Allure in parallel mode
     }
 
