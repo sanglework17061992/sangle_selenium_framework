@@ -1,8 +1,6 @@
-import { expect } from 'chai';
+import { expectValue } from '../src/assertion/SanAssertion';
 import { TodoPage } from '../src/pages/TodoPage';
 import DriverManager from '../src/driver/DriverManager';
-import { expectValue } from '../src/assertion/SanAssertion';
-import { AllureTestHooks } from '../src/reporting/AllureTestHooks';
 import { BaseTest } from './BaseTest';
 
 const isAllureReporter = process.argv.includes('--reporter') &&
@@ -31,11 +29,7 @@ describe('Todo App - Todo Count', () => {
     it('should display correct count for single todo', async () => {
       await baseTest.todoPage.addTodo('Buy groceries');
 
-      await expectValue(
-        () => baseTest.todoPage.getRemainingCount(),
-        (count) => expect(count).to.equal(1),
-        'Expected remaining count to be 1 for single todo'
-      );
+      expectValue(await baseTest.todoPage.getRemainingCount()).toBe(1);
     });
 
     it('should display correct count after completing todos', async () => {
@@ -43,11 +37,7 @@ describe('Todo App - Todo Count', () => {
       await baseTest.todoPage.addTodo('Walk the dog');
       await baseTest.todoPage.toggleTodo('Buy groceries');
 
-      await expectValue(
-        () => baseTest.todoPage.getRemainingCount(),
-        (count) => expect(count).to.equal(1),
-        'Expected remaining count to be 1 after completing one todo'
-      );
+      expectValue(await baseTest.todoPage.getRemainingCount()).toBe(1);
     });
 
     it('should display correct count after deleting todos', async () => {
@@ -55,11 +45,7 @@ describe('Todo App - Todo Count', () => {
       await baseTest.todoPage.addTodo('Walk the dog');
       await baseTest.todoPage.deleteTodo('Buy groceries');
 
-      await expectValue(
-        () => baseTest.todoPage.getRemainingCount(),
-        (count) => expect(count).to.equal(1),
-        'Expected remaining count to be 1 after deleting one todo'
-      );
+      expectValue(await baseTest.todoPage.getRemainingCount()).toBe(1);
     });
   });
 });

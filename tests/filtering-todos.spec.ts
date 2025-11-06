@@ -1,8 +1,6 @@
-import { expect } from 'chai';
+import { expectValue } from '../src/assertion/SanAssertion';
 import { TodoPage } from '../src/pages/TodoPage';
 import DriverManager from '../src/driver/DriverManager';
-import { expectValue } from '../src/assertion/SanAssertion';
-import { AllureTestHooks } from '../src/reporting/AllureTestHooks';
 import { BaseTest } from './BaseTest';
 
 const isAllureReporter = process.argv.includes('--reporter') &&
@@ -39,43 +37,23 @@ describe('Todo App - Filtering Todos', () => {
     it('should show all todos by default', async () => {
       await baseTest.todoPage.filterAll();
 
-      await expectValue(
-        () => baseTest.todoPage.getTodoCount(),
-        (count) => expect(count).to.equal(3),
-        'Expected to show all 3 todos when filtered to all'
-      );
+      expectValue(await baseTest.todoPage.getTodoCount()).toBe(3);
     });
 
     it('should show only active todos', async () => {
       await baseTest.todoPage.filterActive();
 
-      await expectValue(
-        () => baseTest.todoPage.getTodoCount(),
-        (count) => expect(count).to.equal(2),
-        'Expected to show 2 active todos'
-      );
+      expectValue(await baseTest.todoPage.getTodoCount()).toBe(2);
 
-      await expectValue(
-        () => baseTest.todoPage.getTodoTexts(),
-        (texts) => expect(texts).to.have.members(['Buy groceries', 'Clean the house']),
-        'Expected to show only active todo texts'
-      );
+      expectValue(await baseTest.todoPage.getTodoTexts()).toHaveMembers(['Buy groceries', 'Clean the house']);
     });
 
     it('should show only completed todos', async () => {
       await baseTest.todoPage.filterCompleted();
 
-      await expectValue(
-        () => baseTest.todoPage.getTodoCount(),
-        (count) => expect(count).to.equal(1),
-        'Expected to show 1 completed todo'
-      );
+      expectValue(await baseTest.todoPage.getTodoCount()).toBe(1);
 
-      await expectValue(
-        () => baseTest.todoPage.getTodoTexts(),
-        (texts) => expect(texts).to.have.members(['Walk the dog']),
-        'Expected to show only completed todo text'
-      );
+      expectValue(await baseTest.todoPage.getTodoTexts()).toHaveMembers(['Walk the dog']);
     });
   });
 });

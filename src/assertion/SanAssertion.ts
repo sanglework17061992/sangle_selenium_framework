@@ -1,6 +1,6 @@
 import { SanElement } from '../core/elements/SanElement';
 import { configLoader } from '../config/ConfigLoader';
-import { expect } from 'chai';
+import { AssertHelper } from '../helpers/AssertHelper';
 
 const testConfig = configLoader.getTestConfig();
 const defaultRetryTimeout = testConfig.retryCount * testConfig.retryInterval;
@@ -20,7 +20,7 @@ export class ElementAssertions {
   async toHaveText(expectedText: string): Promise<void> {
     await this.retryAssert(async () => {
       const actualText = await this.element.getText();
-      expect(actualText.trim()).to.equal(expectedText);
+      AssertHelper.equal(actualText.trim(), expectedText);
     }, `Expected element to have text "${expectedText}"`);
   }
 
@@ -30,7 +30,7 @@ export class ElementAssertions {
   async toContainText(expectedSubstring: string): Promise<void> {
     await this.retryAssert(async () => {
       const actualText = await this.element.getText();
-      expect(actualText.trim()).to.include(expectedSubstring);
+      AssertHelper.include(actualText.trim(), expectedSubstring);
     }, `Expected element to contain text "${expectedSubstring}"`);
   }
 
@@ -40,7 +40,7 @@ export class ElementAssertions {
   async toHaveAttribute(attributeName: string, expectedValue: string): Promise<void> {
     await this.retryAssert(async () => {
       const actualValue = await this.element.getAttribute(attributeName);
-      expect(actualValue).to.equal(expectedValue);
+      AssertHelper.equal(actualValue, expectedValue);
     }, `Expected element to have attribute "${attributeName}" with value "${expectedValue}"`);
   }
 
@@ -50,7 +50,7 @@ export class ElementAssertions {
   async toHaveAttributeContaining(attributeName: string, expectedSubstring: string): Promise<void> {
     await this.retryAssert(async () => {
       const actualValue = await this.element.getAttribute(attributeName);
-      expect(actualValue).to.include(expectedSubstring);
+      AssertHelper.include(actualValue, expectedSubstring);
     }, `Expected element to have attribute "${attributeName}" containing "${expectedSubstring}"`);
   }
 
@@ -60,7 +60,7 @@ export class ElementAssertions {
   async toBeVisible(): Promise<void> {
     await this.retryAssert(async () => {
       const isVisible = await this.element.isDisplayed();
-      expect(isVisible).to.be.true;
+      AssertHelper.isTrue(isVisible);
     }, 'Expected element to be visible');
   }
 
@@ -70,7 +70,7 @@ export class ElementAssertions {
   async toBeHidden(): Promise<void> {
     await this.retryAssert(async () => {
       const isVisible = await this.element.isDisplayed();
-      expect(isVisible).to.be.false;
+      AssertHelper.isFalse(isVisible);
     }, 'Expected element to be hidden');
   }
 
@@ -80,7 +80,7 @@ export class ElementAssertions {
   async toBeEnabled(): Promise<void> {
     await this.retryAssert(async () => {
       const isEnabled = await (await this.element.raw()).isEnabled();
-      expect(isEnabled).to.be.true;
+      AssertHelper.isTrue(isEnabled);
     }, 'Expected element to be enabled');
   }
 
@@ -90,7 +90,7 @@ export class ElementAssertions {
   async toBeDisabled(): Promise<void> {
     await this.retryAssert(async () => {
       const isEnabled = await (await this.element.raw()).isEnabled();
-      expect(isEnabled).to.be.false;
+      AssertHelper.isFalse(isEnabled);
     }, 'Expected element to be disabled');
   }
 
@@ -101,7 +101,7 @@ export class ElementAssertions {
     await this.retryAssert(async () => {
       const classAttribute = await this.element.getAttribute('class');
       const classes = classAttribute ? classAttribute.split(/\s+/) : [];
-      expect(classes).to.include(className);
+      AssertHelper.include(classes, className);
     }, `Expected element to have CSS class "${className}"`);
   }
 
@@ -125,7 +125,7 @@ export class ElementAssertions {
   async toNotHaveText(expectedText: string): Promise<void> {
     await this.retryAssert(async () => {
       const actualText = await this.element.getText();
-      expect(actualText.trim()).to.not.equal(expectedText);
+      AssertHelper.notEqual(actualText.trim(), expectedText);
     }, `Expected element not to have text "${expectedText}"`);
   }
 
@@ -135,7 +135,7 @@ export class ElementAssertions {
   async toNotContainText(expectedSubstring: string): Promise<void> {
     await this.retryAssert(async () => {
       const actualText = await this.element.getText();
-      expect(actualText.trim()).to.not.include(expectedSubstring);
+      AssertHelper.notInclude(actualText.trim(), expectedSubstring);
     }, `Expected element not to contain text "${expectedSubstring}"`);
   }
 
@@ -145,7 +145,7 @@ export class ElementAssertions {
   async toNotHaveAttribute(attributeName: string, expectedValue: string): Promise<void> {
     await this.retryAssert(async () => {
       const actualValue = await this.element.getAttribute(attributeName);
-      expect(actualValue).to.not.equal(expectedValue);
+      AssertHelper.notEqual(actualValue, expectedValue);
     }, `Expected element not to have attribute "${attributeName}" with value "${expectedValue}"`);
   }
 
@@ -155,7 +155,7 @@ export class ElementAssertions {
   async toNotHaveAttributeContaining(attributeName: string, expectedSubstring: string): Promise<void> {
     await this.retryAssert(async () => {
       const actualValue = await this.element.getAttribute(attributeName);
-      expect(actualValue).to.not.include(expectedSubstring);
+      AssertHelper.notInclude(actualValue, expectedSubstring);
     }, `Expected element not to have attribute "${attributeName}" containing "${expectedSubstring}"`);
   }
 
@@ -166,7 +166,7 @@ export class ElementAssertions {
     await this.retryAssert(async () => {
       const classAttribute = await this.element.getAttribute('class');
       const classes = classAttribute ? classAttribute.split(/\s+/) : [];
-      expect(classes).to.not.include(className);
+      AssertHelper.notInclude(classes, className);
     }, `Expected element not to have CSS class "${className}"`);
   }
 
@@ -216,24 +216,121 @@ export function expectElement(element: SanElement, timeout?: number): ElementAss
 }
 
 /**
- * Non-retry assertion for values
- * Performs a one-time assertion on the provided value function
- * Usage: await expectValue(() => getTodoCount(), (count) => expect(count).to.equal(1), 'Expected todo count to be 1')
+ * Non-retry assertion for values - synchronous like Playwright's expect
+ * Performs immediate assertions on resolved values
+ * Usage: expectValue(await getTodoCount()).toBe(3)
  */
-export async function expectValue<T>(
-  actualValueFn: () => Promise<T> | T,
-  assertionFn: (value: T) => void,
-  errorMessage: string
-): Promise<void> {
-  try {
-    const value = await actualValueFn();
-    assertionFn(value);
-  } catch (err) {
-    const error = new Error(errorMessage);
-    if (err instanceof Error) {
-      error.message += `\n${err.message}`;
+export function expectValue<T>(actualValue: T) {
+  return {
+    toBe: (expected: T, message?: string) => {
+      try {
+        AssertHelper.equal(actualValue, expected);
+      } catch (err) {
+        const error = new Error(message || `Expected ${actualValue} to equal ${expected}`);
+        if (err instanceof Error) {
+          error.message += `\n${err.message}`;
+        }
+        throw error;
+      }
+    },
+
+    toEqual: (expected: T, message?: string) => {
+      try {
+        AssertHelper.equal(actualValue, expected);
+      } catch (err) {
+        const error = new Error(message || `Expected ${actualValue} to equal ${expected}`);
+        if (err instanceof Error) {
+          error.message += `\n${err.message}`;
+        }
+        throw error;
+      }
+    },
+
+    toNotBe: (expected: T, message?: string) => {
+      try {
+        AssertHelper.notEqual(actualValue, expected);
+      } catch (err) {
+        const error = new Error(message || `Expected ${actualValue} not to equal ${expected}`);
+        if (err instanceof Error) {
+          error.message += `\n${err.message}`;
+        }
+        throw error;
+      }
+    },
+
+    toInclude: (expected: any, message?: string) => {
+      try {
+        AssertHelper.include(actualValue as any, expected);
+      } catch (err) {
+        const error = new Error(message || `Expected ${actualValue} to include ${expected}`);
+        if (err instanceof Error) {
+          error.message += `\n${err.message}`;
+        }
+        throw error;
+      }
+    },
+
+    toNotInclude: (expected: any, message?: string) => {
+      try {
+        AssertHelper.notInclude(actualValue as any, expected);
+      } catch (err) {
+        const error = new Error(message || `Expected ${actualValue} not to include ${expected}`);
+        if (err instanceof Error) {
+          error.message += `\n${err.message}`;
+        }
+        throw error;
+      }
+    },
+
+    toHaveMembers: (expected: any[], message?: string) => {
+      try {
+        AssertHelper.hasMembers(actualValue as any[], expected);
+      } catch (err) {
+        const error = new Error(message || `Expected ${actualValue} to have members ${expected}`);
+        if (err instanceof Error) {
+          error.message += `\n${err.message}`;
+        }
+        throw error;
+      }
+    },
+
+    toBeTrue: (message?: string) => {
+      try {
+        AssertHelper.isTrue(actualValue);
+      } catch (err) {
+        const error = new Error(message || `Expected ${actualValue} to be true`);
+        if (err instanceof Error) {
+          error.message += `\n${err.message}`;
+        }
+        throw error;
+      }
+    },
+
+    toBeFalse: (message?: string) => {
+      try {
+        AssertHelper.isFalse(actualValue);
+      } catch (err) {
+        const error = new Error(message || `Expected ${actualValue} to be false`);
+        if (err instanceof Error) {
+          error.message += `\n${err.message}`;
+        }
+        throw error;
+      }
     }
-    throw error;
-  }
+  };
 }
+
+/**
+ * Assertion functions for use with expectValue
+ * These provide a clean API without exposing AssertHelper directly
+ */
+export const assertions = {
+  equal: (expected: any) => (actual: any) => AssertHelper.equal(actual, expected),
+  notEqual: (expected: any) => (actual: any) => AssertHelper.notEqual(actual, expected),
+  include: (expected: any) => (actual: any) => AssertHelper.include(actual, expected),
+  notInclude: (expected: any) => (actual: any) => AssertHelper.notInclude(actual, expected),
+  hasMembers: (expected: any[]) => (actual: any[]) => AssertHelper.hasMembers(actual, expected),
+  isTrue: (actual: any) => AssertHelper.isTrue(actual),
+  isFalse: (actual: any) => AssertHelper.isFalse(actual),
+};
 

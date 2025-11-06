@@ -1,19 +1,22 @@
 import { ThenableWebDriver } from 'selenium-webdriver';
 import SanElement, { Locator } from '../core/elements/SanElement';
+import { DriverContext } from '../driver/DriverManager';
 
 export abstract class BasePage {
   protected driver: ThenableWebDriver;
 
   constructor(driver: ThenableWebDriver) {
     this.driver = driver;
+    // Set the driver in the central context for SanElement instances
+    DriverContext.setDriver(driver);
   }
 
   protected $(locator: Locator) {
-    return new SanElement(this.driver, locator);
+    return new SanElement(locator);
   }
 
   protected $$(locator: Locator) {
-    return new SanElement(this.driver, locator);
+    return new SanElement(locator);
   }
 
   // User-friendly locator helper methods
@@ -68,5 +71,10 @@ export abstract class BasePage {
     // Clear localStorage and refresh to ensure clean state
     await this.driver.executeScript('window.localStorage.clear();');
     await this.driver.navigate().refresh();
+  }
+
+  async open(url: string): Promise<void> {
+    await this.driver.get(url);
+    await this.refresh(); // This will clear localStorage and refresh for clean state
   }
 }

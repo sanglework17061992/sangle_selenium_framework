@@ -1,5 +1,6 @@
 import { By, ThenableWebDriver, WebElement, until } from 'selenium-webdriver';
 import { configLoader } from '../../config/ConfigLoader';
+import { DriverContext } from '../../driver/DriverManager';
 
 export type Locator = { using: 'css' | 'xpath' | 'id' | 'name' | 'class'; value: string };
 
@@ -15,14 +16,16 @@ function toBy(locator: Locator) {
 }
 
 export class SanElement {
-  private readonly driver: ThenableWebDriver;
   private readonly locator: Locator;
   private readonly defaultTimeout: number;
 
-  constructor(driver: ThenableWebDriver, locator: Locator, defaultTimeout?: number) {
-    this.driver = driver;
+  constructor(locator: Locator, defaultTimeout?: number) {
     this.locator = locator;
     this.defaultTimeout = defaultTimeout ?? configLoader.getTimeoutConfig().element;
+  }
+
+  private get driver(): ThenableWebDriver {
+    return DriverContext.getDriver();
   }
 
   private getActions() {
@@ -41,35 +44,53 @@ export class SanElement {
 
   // Core interactions: click, type, getText, isDisplayed, getAttribute
   async click(timeout?: number) {
-    const el = await this.findElement(timeout);
-    await el.click();
+    try {
+      const el = await this.findElement(timeout);
+      await el.click();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to click element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
+    }
   }
 
-  async type(text: string, timeout?: number) {
-    const el = await this.findElement(timeout);
-    await el.clear();
-    await el.sendKeys(text);
-  }
-
-  async typeAndSendKeys(text: string, keys: string, timeout?: number) {
-    const el = await this.findElement(timeout);
-    await el.clear();
-    await el.sendKeys(text + keys);
-  }
-
-  async sendKeys(keys: string, timeout?: number) {
-    const el = await this.findElement(timeout);
-    await el.sendKeys(keys);
+  async type(text?: string, keys?: string, timeout?: number) {
+    try {
+      const keysToSend = (text || '') + (keys || '');
+      if (keysToSend) {
+        await this.typeKeys(keysToSend, timeout);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      let operation: string;
+      if (text && keys) {
+        operation = `type text "${text}" and press keys "${keys}"`;
+      } else if (text) {
+        operation = `type text "${text}"`;
+      } else {
+        operation = `send keys "${keys}"`;
+      }
+      throw new Error(`Failed to ${operation} into element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
+    }
   }
 
   async getText(timeout?: number) {
-    const el = await this.findElement(timeout);
-    return await el.getText();
+    try {
+      const el = await this.findElement(timeout);
+      return await el.getText();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to get text from element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
+    }
   }
 
   async getAttribute(name: string, timeout?: number) {
-    const el = await this.findElement(timeout);
-    return await el.getAttribute(name);
+    try {
+      const el = await this.findElement(timeout);
+      return await el.getAttribute(name);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to get attribute "${name}" from element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
+    }
   }
 
   async isEnabled(timeout?: number): Promise<boolean> {
@@ -96,13 +117,23 @@ export class SanElement {
   }
 
   async clear(timeout?: number) {
-    const el = await this.findElement(timeout);
-    await el.clear();
+    try {
+      const el = await this.findElement(timeout);
+      await el.clear();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to clear element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
+    }
   }
 
   async submit(timeout?: number) {
-    const el = await this.findElement(timeout);
-    await el.submit();
+    try {
+      const el = await this.findElement(timeout);
+      await el.submit();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to submit element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
+    }
   }
 
   // Checkbox methods
@@ -133,28 +164,48 @@ export class SanElement {
 
   // Mouse actions
   async doubleClick(timeout?: number) {
-    const el = await this.findElement(timeout);
-    const actions = this.getActions();
-    await actions.doubleClick(el).perform();
+    try {
+      const el = await this.findElement(timeout);
+      const actions = this.getActions();
+      await actions.doubleClick(el).perform();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to double-click element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
+    }
   }
 
   async rightClick(timeout?: number) {
-    const el = await this.findElement(timeout);
-    const actions = this.getActions();
-    await actions.contextClick(el).perform();
+    try {
+      const el = await this.findElement(timeout);
+      const actions = this.getActions();
+      await actions.contextClick(el).perform();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to right-click element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
+    }
   }
 
   async hover(timeout?: number) {
-    const el = await this.findElement(timeout);
-    const actions = this.getActions();
-    await actions.move({ origin: el }).perform();
+    try {
+      const el = await this.findElement(timeout);
+      const actions = this.getActions();
+      await actions.move({ origin: el }).perform();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to hover over element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
+    }
   }
 
   async dragAndDrop(target: SanElement, timeout?: number) {
-    const sourceEl = await this.findElement(timeout);
-    const targetEl = await target.findElement(timeout);
-    const actions = this.getActions();
-    await actions.dragAndDrop(sourceEl, targetEl).perform();
+    try {
+      const sourceEl = await this.findElement(timeout);
+      const targetEl = await target.findElement(timeout);
+      const actions = this.getActions();
+      await actions.dragAndDrop(sourceEl, targetEl).perform();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to drag and drop element with locator ${JSON.stringify(this.locator)} to target ${JSON.stringify(target.locator)}: ${errorMessage}`);
+    }
   }
 
   // Select dropdown methods
@@ -243,6 +294,12 @@ export class SanElement {
 
   static async clickWithJavaScriptByCriteria(driver: ThenableWebDriver, findAndClickScript: string, ...args: any[]) {
     await driver.executeScript(findAndClickScript, ...args);
+  }
+
+  private async typeKeys(keys: string, timeout?: number): Promise<void> {
+    const el = await this.findElement(timeout);
+    await el.clear();
+    await el.sendKeys(keys);
   }
 
   // Collection methods for handling multiple elements

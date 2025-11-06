@@ -1,4 +1,4 @@
-import { Builder, WebDriver } from 'selenium-webdriver';
+import { Builder, WebDriver, ThenableWebDriver } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 import firefox from 'selenium-webdriver/firefox.js';
 import { configLoader, BrowserType } from '../config/ConfigLoader';
@@ -7,6 +7,26 @@ export type BrowserName = BrowserType | string;
 
 export interface BrowserFactory {
   build(options?: any): Promise<WebDriver>;
+}
+
+// Central driver context - framework manages this
+export class DriverContext {
+  private static currentDriver: ThenableWebDriver | null = null;
+
+  static setDriver(driver: ThenableWebDriver) {
+    this.currentDriver = driver;
+  }
+
+  static getDriver(): ThenableWebDriver {
+    if (!this.currentDriver) {
+      throw new Error('Driver not initialized. Call DriverContext.setDriver() first.');
+    }
+    return this.currentDriver;
+  }
+
+  static clearDriver() {
+    this.currentDriver = null;
+  }
 }
 
 class DefaultChromeFactory implements BrowserFactory {
@@ -53,7 +73,7 @@ class DefaultFirefoxFactory implements BrowserFactory {
 }
 
 export class DriverManager {
-  private static factories: Map<string, BrowserFactory> = new Map();
+  private static readonly factories: Map<string, BrowserFactory> = new Map();
 
   static register(name: string, factory: BrowserFactory) {
     this.factories.set(name.toLowerCase(), factory);

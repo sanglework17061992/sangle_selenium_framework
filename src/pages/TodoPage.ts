@@ -5,16 +5,16 @@ import { AllureReporter } from '../reporting/AllureReporter';
 import SanElement from '../core/elements/SanElement';
 
 export class TodoPage extends BasePage {
-  newTodoInput = this.byCss('.new-todo');
-  todoList = this.byCss('.todo-list');
-  todoItemsList = this.byCssAll('.todo-list li');
-  todoLabelsList = this.byCssAll('.todo-list li label');
-  todoCount = this.byCss('.todo-count');
-  clearCompletedButton = this.byCss('.clear-completed');
-  toggleAllCheckbox = this.byCss('.toggle-all');
-  allFilter = this.byCss('[href="#/"]');
-  activeFilter = this.byCss('[href="#/active"]');
-  completedFilter = this.byCss('[href="#/completed"]');
+  get newTodoInput() { return this.byCss('.new-todo'); }
+  get todoList() { return this.byCss('.todo-list'); }
+  get todoItemsList() { return this.byCssAll('.todo-list li'); }
+  get todoLabelsList() { return this.byCssAll('.todo-list li label'); }
+  get todoCount() { return this.byCss('.todo-count'); }
+  get clearCompletedButton() { return this.byCss('.clear-completed'); }
+  get toggleAllCheckbox() { return this.byCss('.toggle-all'); }
+  get allFilter() { return this.byCss('[href="#/"]'); }
+  get activeFilter() { return this.byCss('[href="#/active"]'); }
+  get completedFilter() { return this.byCss('[href="#/completed"]'); }
 
   getTodoByText = (text: string) => this.byXpath(`//li[@data-testid="todo-item"][.//label[contains(text(), "%s")]]`, text);
   getTodoCheckboxByText = (text: string) => this.byXpath(`//li[@data-testid="todo-item"]//label[contains(text(), "%s")]/preceding::input[@class="toggle"]`, text);
@@ -22,17 +22,16 @@ export class TodoPage extends BasePage {
 
   async open(): Promise<void> {
     const appConfig = configLoader.getAppConfig();
-    await this.driver.get(appConfig.baseUrl);
-    await this.refresh(); // This will clear localStorage and refresh
+    await super.open(appConfig.baseUrl);
   }
 
   async addTodo(text: string): Promise<void> {
     if (AllureReporter.isEnabled()) {
       await AllureReporter.step(`Add todo item: "${text}"`, async () => {
-        await this.newTodoInput.typeAndSendKeys(text, Key.RETURN);
+        await this.newTodoInput.type(text, Key.RETURN);
       });
     } else {
-      await this.newTodoInput.typeAndSendKeys(text, Key.RETURN);
+      await this.newTodoInput.type(text, Key.RETURN);
     }
   }
 

@@ -1,7 +1,4 @@
-import { expect } from 'chai';
-import { TodoPage } from '../src/pages/TodoPage';
-import DriverManager from '../src/driver/DriverManager';
-import { AllureTestHooks } from '../src/reporting/AllureTestHooks';
+import { expectValue } from '../src/assertion/SanAssertion';
 import { BaseTest } from './BaseTest';
 
 const isAllureReporter = process.argv.includes('--reporter') &&
@@ -38,11 +35,9 @@ describe('Todo App - Completing Todos', () => {
       // Wait for DOM to update
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      const isCompleted = await baseTest.todoPage.isTodoCompleted('Buy groceries');
-      expect(isCompleted).to.be.true;
+      expectValue(await baseTest.todoPage.isTodoCompleted('Buy groceries')).toBe(true);
       
-      const remainingCount = await baseTest.todoPage.getRemainingCount();
-      expect(remainingCount).to.equal(1);
+      expectValue(await baseTest.todoPage.getRemainingCount()).toBe(1);
     });
 
     it('should mark a todo as incomplete', async () => {
@@ -53,21 +48,19 @@ describe('Todo App - Completing Todos', () => {
       // Wait for DOM to update
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      const isCompleted = await baseTest.todoPage.isTodoCompleted('Buy groceries');
-      expect(isCompleted).to.be.false;
+      expectValue(await baseTest.todoPage.isTodoCompleted('Buy groceries')).toBe(false);
       
-      const remainingCount = await baseTest.todoPage.getRemainingCount();
-      expect(remainingCount).to.equal(2);
+      expectValue(await baseTest.todoPage.getRemainingCount()).toBe(2);
     });
 
     it('should mark all todos as completed', async () => {
       await baseTest.todoPage.markAllAsCompleted();
 
-      expect(await baseTest.todoPage.isTodoCompleted('Buy groceries')).to.be.true;
+      expectValue(await baseTest.todoPage.isTodoCompleted('Buy groceries')).toBe(true);
 
-      expect(await baseTest.todoPage.isTodoCompleted('Walk the dog')).to.be.true;
+      expectValue(await baseTest.todoPage.isTodoCompleted('Walk the dog')).toBe(true);
 
-      expect(await baseTest.todoPage.getRemainingCount()).to.equal(0);
+      expectValue(await baseTest.todoPage.getRemainingCount()).toBe(0);
     });
   });
 });
