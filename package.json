@@ -4,8 +4,8 @@
   "type": "commonjs",
   "scripts": {
     "build": "tsc",
-    "test": "node scripts/run-tests.js",
-    "test:allure": "node scripts/run-tests.js --allure",
+    "test": "mocha -r ts-node/register tests/**/*.spec.ts --exit",
+    "test:allure": "mocha -r ts-node/register tests/**/*.spec.ts --exit --reporter allure-mocha --timeout 60000",
     "report:allure": "allure generate allure-results --clean && allure open",
     "lint": "eslint . --ext .ts"
   },
