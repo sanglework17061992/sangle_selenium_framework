@@ -22,7 +22,7 @@ A TypeScript Selenium framework with Playwright-style actionability checks:
 A complete Express.js testing environment with 6 test pages covering all actionability scenarios:
 
 ```bash
-cd test-webapp
+cd webapp-for-unit-tests-no-review-required
 npm install
 npm start
 ```
@@ -37,7 +37,7 @@ npm start
 5. **Dynamic Content** - DOM mutations, AJAX content
 6. **Home** - Navigation hub with documentation
 
-📚 **[Full Test Webapp Documentation](test-webapp/README.md)**
+📚 **[Full Test Webapp Documentation](webapp-for-unit-tests-no-review-required/README.md)**
 
 ## Framework Architecture
 

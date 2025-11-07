@@ -2,10 +2,12 @@
 
 A comprehensive Node.js Express application for testing Selenium WebDriver framework features including actionability checks, form interactions, and dynamic content.
 
+> **Note:** This webapp is for internal framework testing only and does not require code review.
+
 ## 🚀 Quick Start
 
 ```bash
-cd test-webapp
+cd webapp-for-unit-tests-no-review-required
 npm install
 npm start
 ```
@@ -203,7 +205,7 @@ Submit form data for testing.
 
 ### File Structure
 ```
-test-webapp/
+webapp-for-unit-tests-no-review-required/
 ├── server.js           # Express server
 ├── package.json        # Dependencies
 └── public/            # Static files

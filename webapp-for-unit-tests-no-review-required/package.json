@@ -1,5 +1,5 @@
 {
-  "name": "test-webapp",
+  "name": "webapp-for-unit-tests-no-review-required",
   "version": "1.0.0",
   "description": "Test web application for SanElement and SanAssertion testing",
   "main": "server.js",
