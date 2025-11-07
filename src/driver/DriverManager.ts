@@ -29,13 +29,26 @@ export class DriverContext {
   }
 }
 
-class DefaultChromeFactory implements BrowserFactory {
-  async createWebDriver(options?: any) {
-    const config = configLoader.getBrowserConfig();
-    const opts = new chrome.Options();
+// Base factory to eliminate duplication
+abstract class BaseBrowserFactory implements BrowserFactory {
+  protected abstract createOptions(): chrome.Options | firefox.Options;
+  protected abstract getBrowserName(): string;
+  protected abstract applyHeadlessMode(opts: chrome.Options | firefox.Options): void;
+  protected abstract configureBuilder(builder: Builder, opts: chrome.Options | firefox.Options): Builder;
 
-    if (config.headless || options?.headless) opts.addArguments('--headless=new');
-    if (config.noSandbox || options?.noSandbox) opts.addArguments('--no-sandbox', '--disable-dev-shm-usage');
+  async createWebDriver(options?: any): Promise<WebDriver> {
+    const config = configLoader.getBrowserConfig();
+    const opts = this.createOptions();
+
+    // Apply headless mode
+    if (config.headless || options?.headless) {
+      this.applyHeadlessMode(opts);
+    }
+
+    // Apply no-sandbox (Chrome-specific)
+    if ((config.noSandbox || options?.noSandbox) && opts instanceof chrome.Options) {
+      opts.addArguments('--no-sandbox', '--disable-dev-shm-usage');
+    }
 
     // Add custom args from config
     if (config.args && config.args.length > 0) {
@@ -47,28 +60,43 @@ class DefaultChromeFactory implements BrowserFactory {
       opts.addArguments(...options.args);
     }
 
-    return new Builder().forBrowser('chrome').setChromeOptions(opts).build();
+    return this.configureBuilder(new Builder().forBrowser(this.getBrowserName()), opts).build();
   }
 }
 
-class DefaultFirefoxFactory implements BrowserFactory {
-  async createWebDriver(options?: any) {
-    const config = configLoader.getBrowserConfig();
-    const opts = new firefox.Options();
+class DefaultChromeFactory extends BaseBrowserFactory {
+  protected createOptions(): chrome.Options {
+    return new chrome.Options();
+  }
 
-    if (config.headless || options?.headless) opts.addArguments('-headless');
+  protected getBrowserName(): string {
+    return BrowserType.CHROME;
+  }
 
-    // Add custom args from config
-    if (config.args && config.args.length > 0) {
-      opts.addArguments(...config.args);
-    }
+  protected applyHeadlessMode(opts: chrome.Options | firefox.Options): void {
+    (opts as chrome.Options).addArguments('--headless=new');
+  }
 
-    // Add any additional args from options
-    if (options?.args) {
-      opts.addArguments(...options.args);
-    }
+  protected configureBuilder(builder: Builder, opts: chrome.Options | firefox.Options): Builder {
+    return builder.setChromeOptions(opts as chrome.Options);
+  }
+}
 
-    return new Builder().forBrowser('firefox').setFirefoxOptions(opts).build();
+class DefaultFirefoxFactory extends BaseBrowserFactory {
+  protected createOptions(): firefox.Options {
+    return new firefox.Options();
+  }
+
+  protected getBrowserName(): string {
+    return BrowserType.FIREFOX;
+  }
+
+  protected applyHeadlessMode(opts: chrome.Options | firefox.Options): void {
+    (opts as firefox.Options).addArguments('-headless');
+  }
+
+  protected configureBuilder(builder: Builder, opts: chrome.Options | firefox.Options): Builder {
+    return builder.setFirefoxOptions(opts as firefox.Options);
   }
 }
 
@@ -98,7 +126,7 @@ export class DriverManager {
 }
 
 // register defaults
-DriverManager.register('chrome', new DefaultChromeFactory());
-DriverManager.register('firefox', new DefaultFirefoxFactory());
+DriverManager.register(BrowserType.CHROME, new DefaultChromeFactory());
+DriverManager.register(BrowserType.FIREFOX, new DefaultFirefoxFactory());
 
 export default DriverManager;
