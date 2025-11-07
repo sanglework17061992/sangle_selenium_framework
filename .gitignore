@@ -4,5 +4,13 @@ node_modules
 allure-report/
 allure-results/
 
+# Mochawesome reports (too heavy for git)
+mochawesome-report/
+.mochawesome-report/
+
+# Test output logs
+test-output.log
+*.log
+
 # Build output
 dist/

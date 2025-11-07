@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delayed Elements Test</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🕐 Delayed Elements Test</h1>
+        <p class="subtitle">Test auto-wait functionality with configurable delays</p>
+        
+        <a href="/" class="btn" style="margin-bottom: 2rem; display: inline-block;">← Back to Home</a>
+
+        <div class="test-controls">
+            <h3>Delay Configuration</h3>
+            <div class="control-row">
+                <label for="delaySlider">Element Appearance Delay:</label>
+                <div class="slider">
+                    <input type="range" id="delaySlider" min="0" max="10000" value="2000" step="500">
+                </div>
+                <span class="delay-value" id="delayValue">2000ms</span>
+            </div>
+            <div class="control-row">
+                <button class="btn" id="triggerDelayedBtn">Trigger Delayed Element</button>
+                <button class="btn btn-warning" id="resetBtn">Reset All</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Test Scenarios</h2>
+            
+            <div class="form-group">
+                <h3>1. Delayed Button (appears after configured delay)</h3>
+                <div id="delayedButtonContainer"></div>
+                <div id="delayedButtonStatus" class="status"></div>
+            </div>
+
+            <div class="form-group">
+                <h3>2. Delayed Input Field</h3>
+                <button class="btn" id="triggerInputBtn">Show Input After Delay</button>
+                <div id="delayedInputContainer"></div>
+            </div>
+
+            <div class="form-group">
+                <h3>3. Delayed with Fade Animation</h3>
+                <button class="btn" id="triggerFadeBtn">Show with Fade</button>
+                <div id="fadeContainer"></div>
+            </div>
+
+            <div class="form-group">
+                <h3>4. Delayed with Slide Animation</h3>
+                <button class="btn" id="triggerSlideBtn">Show with Slide</button>
+                <div id="slideContainer"></div>
+            </div>
+
+            <div class="form-group">
+                <h3>5. Element Becoming Visible (hidden → visible)</h3>
+                <button class="btn" id="triggerVisibleBtn">Make Visible After Delay</button>
+                <div id="hiddenElement" class="hidden">
+                    <button class="btn btn-success" id="nowVisibleBtn">Now I'm Visible!</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <h3>6. Element Becoming Enabled (disabled → enabled)</h3>
+                <button class="btn" id="enableBtn" disabled>Initially Disabled</button>
+                <button class="btn" id="triggerEnableBtn">Enable After Delay</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Test Results</h3>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        const delaySlider = document.getElementById('delaySlider');
+        const delayValue = document.getElementById('delayValue');
+        const triggerDelayedBtn = document.getElementById('triggerDelayedBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const delayedButtonContainer = document.getElementById('delayedButtonContainer');
+        const delayedButtonStatus = document.getElementById('delayedButtonStatus');
+        const triggerInputBtn = document.getElementById('triggerInputBtn');
+        const delayedInputContainer = document.getElementById('delayedInputContainer');
+        const triggerFadeBtn = document.getElementById('triggerFadeBtn');
+        const fadeContainer = document.getElementById('fadeContainer');
+        const triggerSlideBtn = document.getElementById('triggerSlideBtn');
+        const slideContainer = document.getElementById('slideContainer');
+        const triggerVisibleBtn = document.getElementById('triggerVisibleBtn');
+        const hiddenElement = document.getElementById('hiddenElement');
+        const triggerEnableBtn = document.getElementById('triggerEnableBtn');
+        const enableBtn = document.getElementById('enableBtn');
+        const results = document.getElementById('results');
+
+        let currentDelay = 2000;
+
+        // Update delay value display
+        delaySlider.addEventListener('input', (e) => {
+            currentDelay = parseInt(e.target.value);
+            delayValue.textContent = `${currentDelay}ms`;
+        });
+
+        // Trigger delayed button
+        triggerDelayedBtn.addEventListener('click', () => {
+            delayedButtonContainer.innerHTML = '<p>Loading... (waiting for delay)</p>';
+            delayedButtonStatus.classList.remove('show');
+            
+            setTimeout(() => {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-success';
+                btn.id = 'delayedButton';
+                btn.textContent = 'I Appeared After Delay!';
+                btn.addEventListener('click', () => {
+                    delayedButtonStatus.textContent = 'Button clicked successfully!';
+                    delayedButtonStatus.className = 'status success show';
+                });
+                delayedButtonContainer.innerHTML = '';
+                delayedButtonContainer.appendChild(btn);
+            }, currentDelay);
+        });
+
+        // Trigger delayed input
+        triggerInputBtn.addEventListener('click', () => {
+            delayedInputContainer.innerHTML = '<p>Loading input...</p>';
+            
+            setTimeout(() => {
+                delayedInputContainer.innerHTML = `
+                    <input type="text" id="delayedInput" placeholder="Type here after delay" class="fade-in">
+                `;
+            }, currentDelay);
+        });
+
+        // Trigger fade animation
+        triggerFadeBtn.addEventListener('click', () => {
+            fadeContainer.innerHTML = '<p>Loading...</p>';
+            
+            setTimeout(() => {
+                fadeContainer.innerHTML = `
+                    <div class="fade-in">
+                        <p>✓ Faded in after ${currentDelay}ms</p>
+                        <button class="btn" id="fadeTestBtn">Test Fade Button</button>
+                    </div>
+                `;
+            }, currentDelay);
+        });
+
+        // Trigger slide animation
+        triggerSlideBtn.addEventListener('click', () => {
+            slideContainer.innerHTML = '<p>Loading...</p>';
+            
+            setTimeout(() => {
+                slideContainer.innerHTML = `
+                    <div class="slide-in">
+                        <p>✓ Slid in after ${currentDelay}ms</p>
+                        <button class="btn" id="slideTestBtn">Test Slide Button</button>
+                    </div>
+                `;
+            }, currentDelay);
+        });
+
+        // Make element visible
+        triggerVisibleBtn.addEventListener('click', () => {
+            setTimeout(() => {
+                hiddenElement.classList.remove('hidden');
+            }, currentDelay);
+        });
+
+        // Enable button
+        triggerEnableBtn.addEventListener('click', () => {
+            triggerEnableBtn.disabled = true;
+            setTimeout(() => {
+                enableBtn.disabled = false;
+                enableBtn.textContent = 'Now Enabled!';
+                triggerEnableBtn.disabled = false;
+            }, currentDelay);
+        });
+
+        // Reset all
+        resetBtn.addEventListener('click', () => {
+            delayedButtonContainer.innerHTML = '';
+            delayedButtonStatus.classList.remove('show');
+            delayedInputContainer.innerHTML = '';
+            fadeContainer.innerHTML = '';
+            slideContainer.innerHTML = '';
+            hiddenElement.classList.add('hidden');
+            enableBtn.disabled = true;
+            enableBtn.textContent = 'Initially Disabled';
+            results.innerHTML = '';
+        });
+    </script>
+</body>
+</html>

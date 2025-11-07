@@ -3,106 +3,266 @@ import { configLoader } from '../config/ConfigLoader';
 import { AssertHelper } from '../helpers/AssertHelper';
 
 const testConfig = configLoader.getTestConfig();
-const defaultRetryTimeout = testConfig.retryCount * testConfig.retryInterval;
+const DEFAULT_TIMEOUT = 5000; // 5 seconds like Playwright
 
+/**
+ * Auto-retrying assertions for SanElement (locators)
+ * These assertions will retry until the condition is met or timeout is reached
+ * Similar to Playwright's expect(locator).toBeVisible()
+ */
 export class ElementAssertions {
   private readonly element: SanElement;
   private readonly timeout: number;
+  private readonly pollInterval: number = 100; // Poll every 100ms
 
   constructor(element: SanElement, timeout?: number) {
     this.element = element;
-    this.timeout = timeout ?? defaultRetryTimeout;
+    this.timeout = timeout ?? DEFAULT_TIMEOUT;
+  }
+
+  /**
+   * Core retry mechanism - waits until condition passes or timeout
+   */
+  private async waitUntil(
+    condition: () => Promise<boolean>,
+    errorMessage: string
+  ): Promise<void> {
+    const startTime = Date.now();
+    let lastError: Error | null = null;
+
+    while (Date.now() - startTime < this.timeout) {
+      try {
+        const result = await condition();
+        if (result) {
+          return; // Condition passed
+        }
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+      }
+      
+      // Wait before next retry
+      await new Promise(resolve => setTimeout(resolve, this.pollInterval));
+    }
+
+    // Timeout reached - throw error
+    const timeoutMsg = `Timeout ${this.timeout}ms exceeded waiting for ${errorMessage}`;
+    if (lastError) {
+      throw new Error(`${timeoutMsg}\n${lastError.message}`);
+    }
+    throw new Error(timeoutMsg);
   }
 
   /**
    * Assert that the element has the exact text
    */
   async toHaveText(expectedText: string): Promise<void> {
-    await this.retryAssert(async () => {
-      const actualText = await this.element.getText();
-      AssertHelper.equal(actualText.trim(), expectedText);
-    }, `Expected element to have text "${expectedText}"`);
+    await this.waitUntil(
+      async () => {
+        try {
+          const actualText = await this.element.getText();
+          AssertHelper.equal(actualText.trim(), expectedText);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      `element to have text "${expectedText}"`
+    );
   }
 
   /**
    * Assert that the element contains the specified text
    */
   async toContainText(expectedSubstring: string): Promise<void> {
-    await this.retryAssert(async () => {
-      const actualText = await this.element.getText();
-      AssertHelper.include(actualText.trim(), expectedSubstring);
-    }, `Expected element to contain text "${expectedSubstring}"`);
+    await this.waitUntil(
+      async () => {
+        try {
+          const actualText = await this.element.getText();
+          AssertHelper.include(actualText.trim(), expectedSubstring);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      `element to contain text "${expectedSubstring}"`
+    );
   }
 
   /**
    * Assert that the element has the specified attribute with the expected value
    */
   async toHaveAttribute(attributeName: string, expectedValue: string): Promise<void> {
-    await this.retryAssert(async () => {
-      const actualValue = await this.element.getAttribute(attributeName);
-      AssertHelper.equal(actualValue, expectedValue);
-    }, `Expected element to have attribute "${attributeName}" with value "${expectedValue}"`);
-  }
-
-  /**
-   * Assert that the element has the specified attribute containing the expected value
-   */
-  async toHaveAttributeContaining(attributeName: string, expectedSubstring: string): Promise<void> {
-    await this.retryAssert(async () => {
-      const actualValue = await this.element.getAttribute(attributeName);
-      AssertHelper.include(actualValue, expectedSubstring);
-    }, `Expected element to have attribute "${attributeName}" containing "${expectedSubstring}"`);
+    await this.waitUntil(
+      async () => {
+        try {
+          const actualValue = await this.element.getAttribute(attributeName);
+          AssertHelper.equal(actualValue, expectedValue);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      `element to have attribute "${attributeName}" with value "${expectedValue}"`
+    );
   }
 
   /**
    * Assert that the element is visible
    */
   async toBeVisible(): Promise<void> {
-    await this.retryAssert(async () => {
-      const isVisible = await this.element.isDisplayed();
-      AssertHelper.isTrue(isVisible);
-    }, 'Expected element to be visible');
+    await this.waitUntil(
+      async () => {
+        try {
+          return await this.element.isDisplayed();
+        } catch {
+          return false;
+        }
+      },
+      'element to be visible'
+    );
   }
 
   /**
-   * Assert that the element is not visible
+   * Assert that the element is hidden (not visible)
    */
   async toBeHidden(): Promise<void> {
-    await this.retryAssert(async () => {
-      const isVisible = await this.element.isDisplayed();
-      AssertHelper.isFalse(isVisible);
-    }, 'Expected element to be hidden');
+    await this.waitUntil(
+      async () => {
+        try {
+          const isVisible = await this.element.isDisplayed();
+          return !isVisible;
+        } catch {
+          // Element not found = hidden
+          return true;
+        }
+      },
+      'element to be hidden'
+    );
   }
 
   /**
    * Assert that the element is enabled
    */
   async toBeEnabled(): Promise<void> {
-    await this.retryAssert(async () => {
-      const isEnabled = await (await this.element.raw()).isEnabled();
-      AssertHelper.isTrue(isEnabled);
-    }, 'Expected element to be enabled');
+    await this.waitUntil(
+      async () => {
+        try {
+          const element = await this.element.raw();
+          return await element.isEnabled();
+        } catch {
+          return false;
+        }
+      },
+      'element to be enabled'
+    );
   }
 
   /**
    * Assert that the element is disabled
    */
   async toBeDisabled(): Promise<void> {
-    await this.retryAssert(async () => {
-      const isEnabled = await (await this.element.raw()).isEnabled();
-      AssertHelper.isFalse(isEnabled);
-    }, 'Expected element to be disabled');
+    await this.waitUntil(
+      async () => {
+        try {
+          const element = await this.element.raw();
+          const isEnabled = await element.isEnabled();
+          return !isEnabled;
+        } catch {
+          return false;
+        }
+      },
+      'element to be disabled'
+    );
+  }
+
+  /**
+   * Assert that the element is editable (enabled and not readonly)
+   */
+  async toBeEditable(): Promise<void> {
+    await this.waitUntil(
+      async () => {
+        try {
+          const element = await this.element.raw();
+          const isEnabled = await element.isEnabled();
+          const readonlyAttr = await element.getAttribute('readonly');
+          return isEnabled && !readonlyAttr;
+        } catch {
+          return false;
+        }
+      },
+      'element to be editable'
+    );
+  }
+
+  /**
+   * Assert that the element is checked (for checkboxes/radio buttons)
+   */
+  async toBeChecked(): Promise<void> {
+    await this.waitUntil(
+      async () => {
+        try {
+          const element = await this.element.raw();
+          return await element.isSelected();
+        } catch {
+          return false;
+        }
+      },
+      'element to be checked'
+    );
+  }
+
+  /**
+   * Assert that the element is unchecked
+   */
+  async toBeUnchecked(): Promise<void> {
+    await this.waitUntil(
+      async () => {
+        try {
+          const element = await this.element.raw();
+          const isChecked = await element.isSelected();
+          return !isChecked;
+        } catch {
+          return false;
+        }
+      },
+      'element to be unchecked'
+    );
+  }
+
+  /**
+   * Assert that the element is attached to the DOM
+   */
+  async toBeAttached(): Promise<void> {
+    await this.waitUntil(
+      async () => {
+        try {
+          await this.element.raw();
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      'element to be attached'
+    );
   }
 
   /**
    * Assert that the element has the specified CSS class
    */
   async toHaveClass(className: string): Promise<void> {
-    await this.retryAssert(async () => {
-      const classAttribute = await this.element.getAttribute('class');
-      const classes = classAttribute ? classAttribute.split(/\s+/) : [];
-      AssertHelper.include(classes, className);
-    }, `Expected element to have CSS class "${className}"`);
+    await this.waitUntil(
+      async () => {
+        try {
+          const classAttribute = await this.element.getAttribute('class');
+          const classes = classAttribute ? classAttribute.split(/\s+/) : [];
+          AssertHelper.include(classes, className);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      `element to have CSS class "${className}"`
+    );
   }
 
   /**
@@ -110,100 +270,6 @@ export class ElementAssertions {
    */
   async toHaveValue(expectedValue: string): Promise<void> {
     await this.toHaveAttribute('value', expectedValue);
-  }
-
-  /**
-   * Assert that the element's value attribute contains the expected substring
-   */
-  async toHaveValueContaining(expectedSubstring: string): Promise<void> {
-    await this.toHaveAttributeContaining('value', expectedSubstring);
-  }
-
-  /**
-   * Assert that the element does not have the exact text
-   */
-  async toNotHaveText(expectedText: string): Promise<void> {
-    await this.retryAssert(async () => {
-      const actualText = await this.element.getText();
-      AssertHelper.notEqual(actualText.trim(), expectedText);
-    }, `Expected element not to have text "${expectedText}"`);
-  }
-
-  /**
-   * Assert that the element does not contain the specified text
-   */
-  async toNotContainText(expectedSubstring: string): Promise<void> {
-    await this.retryAssert(async () => {
-      const actualText = await this.element.getText();
-      AssertHelper.notInclude(actualText.trim(), expectedSubstring);
-    }, `Expected element not to contain text "${expectedSubstring}"`);
-  }
-
-  /**
-   * Assert that the element does not have the specified attribute with the expected value
-   */
-  async toNotHaveAttribute(attributeName: string, expectedValue: string): Promise<void> {
-    await this.retryAssert(async () => {
-      const actualValue = await this.element.getAttribute(attributeName);
-      AssertHelper.notEqual(actualValue, expectedValue);
-    }, `Expected element not to have attribute "${attributeName}" with value "${expectedValue}"`);
-  }
-
-  /**
-   * Assert that the element does not have the specified attribute containing the expected value
-   */
-  async toNotHaveAttributeContaining(attributeName: string, expectedSubstring: string): Promise<void> {
-    await this.retryAssert(async () => {
-      const actualValue = await this.element.getAttribute(attributeName);
-      AssertHelper.notInclude(actualValue, expectedSubstring);
-    }, `Expected element not to have attribute "${attributeName}" containing "${expectedSubstring}"`);
-  }
-
-  /**
-   * Assert that the element does not have the specified CSS class
-   */
-  async toNotHaveClass(className: string): Promise<void> {
-    await this.retryAssert(async () => {
-      const classAttribute = await this.element.getAttribute('class');
-      const classes = classAttribute ? classAttribute.split(/\s+/) : [];
-      AssertHelper.notInclude(classes, className);
-    }, `Expected element not to have CSS class "${className}"`);
-  }
-
-  /**
-   * Assert that the element's value attribute does not equal the expected value
-   */
-  async toNotHaveValue(expectedValue: string): Promise<void> {
-    await this.toNotHaveAttribute('value', expectedValue);
-  }
-
-  /**
-   * Assert that the element's value attribute does not contain the expected substring
-   */
-  async toNotHaveValueContaining(expectedSubstring: string): Promise<void> {
-    await this.toNotHaveAttributeContaining('value', expectedSubstring);
-  }
-
-  /**
-   * Retry assertion with configurable timeout and interval
-   */
-  private async retryAssert(assertFn: () => Promise<void>, errorMessage: string): Promise<void> {
-    const start = Date.now();
-    let lastErr: any = null;
-
-    while (Date.now() - start < this.timeout) {
-      try {
-        await assertFn();
-        return;
-      } catch (err) {
-        lastErr = err;
-        await new Promise(r => setTimeout(r, testConfig.retryInterval));
-      }
-    }
-
-    const error = lastErr || new Error('Assertion timed out');
-    error.message = `${errorMessage}\n${error.message}`;
-    throw error;
   }
 }
 

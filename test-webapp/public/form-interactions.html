@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Interactions Test</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Form Interactions Test</h1>
+        <p class="subtitle">Test all form input types and interactions</p>
+        
+        <a href="/" class="btn" style="margin-bottom: 2rem; display: inline-block;">← Back to Home</a>
+
+        <div class="card">
+            <h2>Comprehensive Form</h2>
+            <form id="testForm">
+                <!-- Text Inputs -->
+                <div class="form-group">
+                    <label for="username">Username (required)</label>
+                    <input type="text" id="username" name="username" required placeholder="Enter username">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="email@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter password">
+                </div>
+
+                <div class="form-group">
+                    <label for="age">Age (Number)</label>
+                    <input type="number" id="age" name="age" min="1" max="120" placeholder="Enter age">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone</label>
+                    <input type="tel" id="phone" name="phone" placeholder="(123) 456-7890">
+                </div>
+
+                <div class="form-group">
+                    <label for="birthdate">Birth Date</label>
+                    <input type="date" id="birthdate" name="birthdate">
+                </div>
+
+                <!-- Textarea -->
+                <div class="form-group">
+                    <label for="comments">Comments</label>
+                    <textarea id="comments" name="comments" rows="4" placeholder="Enter your comments"></textarea>
+                </div>
+
+                <!-- Checkboxes -->
+                <div class="form-group">
+                    <label>Interests (Checkboxes)</label>
+                    <div>
+                        <label><input type="checkbox" id="interest-coding" name="interests" value="coding"> Coding</label><br>
+                        <label><input type="checkbox" id="interest-reading" name="interests" value="reading"> Reading</label><br>
+                        <label><input type="checkbox" id="interest-gaming" name="interests" value="gaming"> Gaming</label><br>
+                        <label><input type="checkbox" id="interest-music" name="interests" value="music"> Music</label>
+                    </div>
+                </div>
+
+                <!-- Radio Buttons -->
+                <div class="form-group">
+                    <label>Gender (Radio)</label>
+                    <div>
+                        <label><input type="radio" id="gender-male" name="gender" value="male"> Male</label><br>
+                        <label><input type="radio" id="gender-female" name="gender" value="female"> Female</label><br>
+                        <label><input type="radio" id="gender-other" name="gender" value="other"> Other</label>
+                    </div>
+                </div>
+
+                <!-- Select Dropdown -->
+                <div class="form-group">
+                    <label for="country">Country</label>
+                    <select id="country" name="country">
+                        <option value="">-- Select Country --</option>
+                        <option value="us">United States</option>
+                        <option value="uk">United Kingdom</option>
+                        <option value="ca">Canada</option>
+                        <option value="au">Australia</option>
+                        <option value="de">Germany</option>
+                    </select>
+                </div>
+
+                <!-- Multi-Select -->
+                <div class="form-group">
+                    <label for="skills">Skills (Multi-Select)</label>
+                    <select id="skills" name="skills" multiple size="5">
+                        <option value="javascript">JavaScript</option>
+                        <option value="python">Python</option>
+                        <option value="java">Java</option>
+                        <option value="csharp">C#</option>
+                        <option value="ruby">Ruby</option>
+                    </select>
+                </div>
+
+                <!-- File Input -->
+                <div class="form-group">
+                    <label for="file">Upload File</label>
+                    <input type="file" id="file" name="file">
+                </div>
+
+                <!-- Toggle Switch -->
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="newsletter" name="newsletter" value="yes">
+                        Subscribe to newsletter
+                    </label>
+                </div>
+
+                <!-- Buttons -->
+                <div class="form-group">
+                    <button type="submit" class="btn" id="submitBtn">Submit Form</button>
+                    <button type="reset" class="btn btn-warning" id="resetFormBtn">Reset Form</button>
+                    <button type="button" class="btn btn-danger" id="clearBtn">Clear All</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Form State Display -->
+        <div class="card">
+            <h3>Form State</h3>
+            <pre id="formState" style="background: #f3f4f6; padding: 1rem; border-radius: 0.375rem; overflow-x: auto;"></pre>
+        </div>
+
+        <!-- Submission Result -->
+        <div id="submitStatus" class="status"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('testForm');
+        const formState = document.getElementById('formState');
+        const submitStatus = document.getElementById('submitStatus');
+        const clearBtn = document.getElementById('clearBtn');
+
+        // Update form state display
+        function updateFormState() {
+            const formData = new FormData(form);
+            const data = {};
+            for (const [key, value] of formData.entries()) {
+                if (data[key]) {
+                    if (Array.isArray(data[key])) {
+                        data[key].push(value);
+                    } else {
+                        data[key] = [data[key], value];
+                    }
+                } else {
+                    data[key] = value;
+                }
+            }
+            formState.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // Listen to all form changes
+        form.addEventListener('input', updateFormState);
+        form.addEventListener('change', updateFormState);
+
+        // Handle form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch('/api/submit-form', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                submitStatus.textContent = 'Form submitted successfully! Check console for data.';
+                submitStatus.className = 'status success show';
+                console.log('Submitted data:', result);
+                
+                setTimeout(() => {
+                    submitStatus.classList.remove('show');
+                }, 5000);
+            } catch (error) {
+                submitStatus.textContent = 'Error submitting form: ' + error.message;
+                submitStatus.className = 'status error show';
+            }
+        });
+
+        // Clear button
+        clearBtn.addEventListener('click', () => {
+            form.reset();
+            updateFormState();
+        });
+
+        // Initial state
+        updateFormState();
+    </script>
+</body>
+</html>

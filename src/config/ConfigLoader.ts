@@ -23,6 +23,12 @@ export enum LogLevel {
   ERROR = 'ERROR'
 }
 
+export enum ReporterType {
+  ALLURE = 'allure',
+  MOCHAWESOME = 'mochawesome',
+  NONE = 'none'
+}
+
 export interface BrowserConfig {
   name: BrowserType;
   headless: boolean;
@@ -52,6 +58,7 @@ export interface LoggingConfig {
 export interface ReportingConfig {
   screenshotOnFailure: boolean;
   videoRecording: boolean;
+  reporterType: ReporterType;
 }
 
 export interface AppConfig {
@@ -145,7 +152,8 @@ export class ConfigLoader {
   private loadReportingConfig(): ReportingConfig {
     return {
       screenshotOnFailure: this.getEnvBoolean('SCREENSHOT_ON_FAILURE', true),
-      videoRecording: this.getEnvBoolean('VIDEO_RECORDING', false)
+      videoRecording: this.getEnvBoolean('VIDEO_RECORDING', false),
+      reporterType: this.getEnvReporterType('REPORTER_TYPE', ReporterType.ALLURE)
     };
   }
 
@@ -195,6 +203,13 @@ export class ConfigLoader {
     const upperValue = value.toUpperCase();
     return Object.values(LogLevel).includes(upperValue as LogLevel)
       ? (upperValue as LogLevel)
+      : defaultValue;
+  }
+
+  private getEnvReporterType(key: string, defaultValue: ReporterType): ReporterType {
+    const value = this.getEnvString(key, defaultValue).toLowerCase();
+    return Object.values(ReporterType).includes(value as ReporterType)
+      ? (value as ReporterType)
       : defaultValue;
   }
 

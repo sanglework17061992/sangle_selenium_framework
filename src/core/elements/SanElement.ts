@@ -1,8 +1,17 @@
 import { By, ThenableWebDriver, WebElement, until } from 'selenium-webdriver';
 import { configLoader } from '../../config/ConfigLoader';
 import { DriverContext } from '../../driver/DriverManager';
+import { ActionabilityChecker, ActionabilityOptions } from './ActionabilityChecker';
+import { getActionRequirements } from './ActionConfig';
+import { ActionType } from './ActionType';
 
+export { ActionType } from './ActionType';
 export type Locator = { using: 'css' | 'xpath' | 'id' | 'name' | 'class'; value: string };
+
+export interface ActionOptions {
+  timeout?: number;
+  force?: boolean;
+}
 
 function toBy(locator: Locator) {
   switch (locator.using) {
@@ -32,7 +41,12 @@ export class SanElement {
     return this.driver.actions({ bridge: true });
   }
 
-  private async findElement(timeout?: number): Promise<WebElement> {
+  /**
+   * Find element with basic wait (used for read operations that don't need actionability checks)
+   * @param timeout Optional timeout
+   * @returns WebElement
+   */
+  private async findElementForRead(timeout?: number): Promise<WebElement> {
     const by = toBy(this.locator);
     const t = timeout ?? this.defaultTimeout;
     // Wait until located and visible
@@ -42,10 +56,45 @@ export class SanElement {
     return el;
   }
 
+  /**
+   * Find element and wait for actionability checks
+   * @param actionType The type of action to perform
+   * @param options Options including timeout and force flag
+   * @returns WebElement that has passed all actionability checks
+   */
+  private async findElementWithActionability(
+    actionType: ActionType,
+    options?: ActionOptions
+  ): Promise<WebElement> {
+    const by = toBy(this.locator);
+    const timeout = options?.timeout ?? this.defaultTimeout;
+    const force = options?.force ?? false;
+    
+    // Step 1: Wait for element to be located
+    await this.driver.wait(until.elementLocated(by), timeout);
+    const element = await this.driver.findElement(by);
+    
+    // Step 2: Perform actionability checks (unless forced)
+    if (!force) {
+      const requirements: ActionabilityOptions = {
+        ...getActionRequirements(actionType),
+        timeout
+      };
+      
+      await ActionabilityChecker.waitForActionability(
+        element,
+        this.driver,
+        requirements
+      );
+    }
+    
+    return element;
+  }
+
   // Core interactions: click, type, getText, isDisplayed, getAttribute
-  async click(timeout?: number) {
+  async click(options?: ActionOptions) {
     try {
-      const el = await this.findElement(timeout);
+      const el = await this.findElementWithActionability(ActionType.CLICK, options);
       await el.click();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -53,11 +102,11 @@ export class SanElement {
     }
   }
 
-  async type(text?: string, keys?: string, timeout?: number) {
+  async type(text?: string, keys?: string, options?: ActionOptions) {
     try {
       const keysToSend = (text || '') + (keys || '');
       if (keysToSend) {
-        await this.typeKeys(keysToSend, timeout);
+        await this.typeKeys(keysToSend, options);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -75,7 +124,7 @@ export class SanElement {
 
   async getText(timeout?: number) {
     try {
-      const el = await this.findElement(timeout);
+      const el = await this.findElementForRead(timeout);
       return await el.getText();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -85,7 +134,7 @@ export class SanElement {
 
   async getAttribute(name: string, timeout?: number) {
     try {
-      const el = await this.findElement(timeout);
+      const el = await this.findElementForRead(timeout);
       return await el.getAttribute(name);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -95,7 +144,7 @@ export class SanElement {
 
   async isEnabled(timeout?: number): Promise<boolean> {
     try {
-      const el = await this.findElement(timeout);
+      const el = await this.findElementForRead(timeout);
       return await el.isEnabled();
     } catch {
       return false;
@@ -104,7 +153,7 @@ export class SanElement {
 
   async isDisplayed(timeout?: number): Promise<boolean> {
     try {
-      const el = await this.findElement(timeout);
+      const el = await this.findElementForRead(timeout);
       return await el.isDisplayed();
     } catch {
       return false;
@@ -113,12 +162,12 @@ export class SanElement {
 
   // expose raw element for advanced operations
   async raw(timeout?: number) {
-    return this.findElement(timeout);
+    return this.findElementForRead(timeout);
   }
 
-  async clear(timeout?: number) {
+  async clear(options?: ActionOptions) {
     try {
-      const el = await this.findElement(timeout);
+      const el = await this.findElementWithActionability(ActionType.CLEAR, options);
       await el.clear();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -128,7 +177,7 @@ export class SanElement {
 
   async submit(timeout?: number) {
     try {
-      const el = await this.findElement(timeout);
+      const el = await this.findElementForRead(timeout);
       await el.submit();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -137,16 +186,16 @@ export class SanElement {
   }
 
   // Checkbox methods
-  async check(timeout?: number) {
-    const el = await this.findElement(timeout);
+  async check(options?: ActionOptions) {
+    const el = await this.findElementWithActionability(ActionType.CHECK, options);
     const isChecked = await el.isSelected();
     if (!isChecked) {
       await el.click();
     }
   }
 
-  async uncheck(timeout?: number) {
-    const el = await this.findElement(timeout);
+  async uncheck(options?: ActionOptions) {
+    const el = await this.findElementWithActionability(ActionType.UNCHECK, options);
     const isChecked = await el.isSelected();
     if (isChecked) {
       await el.click();
@@ -155,7 +204,7 @@ export class SanElement {
 
   async isChecked(timeout?: number): Promise<boolean> {
     try {
-      const el = await this.findElement(timeout);
+      const el = await this.findElementForRead(timeout);
       return await el.isSelected();
     } catch {
       return false;
@@ -163,9 +212,9 @@ export class SanElement {
   }
 
   // Mouse actions
-  async doubleClick(timeout?: number) {
+  async doubleClick(options?: ActionOptions) {
     try {
-      const el = await this.findElement(timeout);
+      const el = await this.findElementWithActionability(ActionType.DOUBLE_CLICK, options);
       const actions = this.getActions();
       await actions.doubleClick(el).perform();
     } catch (error) {
@@ -174,9 +223,9 @@ export class SanElement {
     }
   }
 
-  async rightClick(timeout?: number) {
+  async rightClick(options?: ActionOptions) {
     try {
-      const el = await this.findElement(timeout);
+      const el = await this.findElementWithActionability(ActionType.RIGHT_CLICK, options);
       const actions = this.getActions();
       await actions.contextClick(el).perform();
     } catch (error) {
@@ -185,9 +234,9 @@ export class SanElement {
     }
   }
 
-  async hover(timeout?: number) {
+  async hover(options?: ActionOptions) {
     try {
-      const el = await this.findElement(timeout);
+      const el = await this.findElementWithActionability(ActionType.HOVER, options);
       const actions = this.getActions();
       await actions.move({ origin: el }).perform();
     } catch (error) {
@@ -196,10 +245,10 @@ export class SanElement {
     }
   }
 
-  async dragAndDrop(target: SanElement, timeout?: number) {
+  async dragAndDrop(target: SanElement, options?: ActionOptions) {
     try {
-      const sourceEl = await this.findElement(timeout);
-      const targetEl = await target.findElement(timeout);
+      const sourceEl = await this.findElementWithActionability(ActionType.DRAG, options);
+      const targetEl = await target.findElementForRead(options?.timeout);
       const actions = this.getActions();
       await actions.dragAndDrop(sourceEl, targetEl).perform();
     } catch (error) {
@@ -209,29 +258,29 @@ export class SanElement {
   }
 
   // Select dropdown methods
-  async selectByValue(value: string, timeout?: number) {
-    const el = await this.findElement(timeout);
+  async selectByValue(value: string, options?: ActionOptions) {
+    const el = await this.findElementWithActionability(ActionType.SELECT, options);
     const select = require('selenium-webdriver').Select;
     const selectElement = new select(el);
     await selectElement.selectByValue(value);
   }
 
-  async selectByText(text: string, timeout?: number) {
-    const el = await this.findElement(timeout);
+  async selectByText(text: string, options?: ActionOptions) {
+    const el = await this.findElementWithActionability(ActionType.SELECT, options);
     const select = require('selenium-webdriver').Select;
     const selectElement = new select(el);
     await selectElement.selectByVisibleText(text);
   }
 
-  async selectByIndex(index: number, timeout?: number) {
-    const el = await this.findElement(timeout);
+  async selectByIndex(index: number, options?: ActionOptions) {
+    const el = await this.findElementWithActionability(ActionType.SELECT, options);
     const select = require('selenium-webdriver').Select;
     const selectElement = new select(el);
     await selectElement.selectByIndex(index);
   }
 
   async getSelectedValue(timeout?: number): Promise<string | null> {
-    const el = await this.findElement(timeout);
+    const el = await this.findElementForRead(timeout);
     const select = require('selenium-webdriver').Select;
     const selectElement = new select(el);
     const selectedOption = await selectElement.getFirstSelectedOption();
@@ -239,7 +288,7 @@ export class SanElement {
   }
 
   async getSelectedText(timeout?: number): Promise<string> {
-    const el = await this.findElement(timeout);
+    const el = await this.findElementForRead(timeout);
     const select = require('selenium-webdriver').Select;
     const selectElement = new select(el);
     const selectedOption = await selectElement.getFirstSelectedOption();
@@ -248,7 +297,7 @@ export class SanElement {
 
   // Scrolling
   async scrollIntoView(timeout?: number) {
-    const el = await this.findElement(timeout);
+    const el = await this.findElementForRead(timeout);
     await this.driver.executeScript('arguments[0].scrollIntoView(true);', el);
   }
 
@@ -272,7 +321,7 @@ export class SanElement {
   }
  
   async clickWithForcedVisibility(timeout?: number) {
-    const el = await this.findElement(timeout);
+    const el = await this.findElementForRead(timeout);
     // Use JavaScript to force the element to be visible and clickable
     await this.driver.executeScript(`
       arguments[0].style.display = 'block';
@@ -283,12 +332,12 @@ export class SanElement {
   }
 
   async clickWithJavaScript(timeout?: number) {
-    const el = await this.findElement(timeout);
+    const el = await this.findElementForRead(timeout);
     await this.driver.executeScript('arguments[0].click();', el);
   }
 
   async clickWithCustomJavaScript(javaScriptFn: (element: any) => void, timeout?: number) {
-    const el = await this.findElement(timeout);
+    const el = await this.findElementForRead(timeout);
     await this.driver.executeScript(javaScriptFn, el);
   }
 
@@ -296,14 +345,19 @@ export class SanElement {
     await driver.executeScript(findAndClickScript, ...args);
   }
 
-  private async typeKeys(keys: string, timeout?: number): Promise<void> {
-    const el = await this.findElement(timeout);
+  private async typeKeys(keys: string, options?: ActionOptions): Promise<void> {
+    const el = await this.findElementWithActionability(ActionType.TYPE, options);
     await el.clear();
     await el.sendKeys(keys);
   }
 
   // Collection methods for handling multiple elements
-  private async findElements(timeout?: number): Promise<WebElement[]> {
+  /**
+   * Find multiple elements with basic wait (used for read operations)
+   * @param timeout Optional timeout
+   * @returns Array of WebElements
+   */
+  private async findElementsForRead(timeout?: number): Promise<WebElement[]> {
     const by = toBy(this.locator);
     const t = timeout ?? this.defaultTimeout;
     await this.driver.wait(until.elementsLocated(by), t);
@@ -311,16 +365,16 @@ export class SanElement {
   }
 
   async getElements(timeout?: number): Promise<WebElement[]> {
-    return this.findElements(timeout);
+    return this.findElementsForRead(timeout);
   }
 
   async count(timeout?: number): Promise<number> {
-    const elements = await this.findElements(timeout);
+    const elements = await this.findElementsForRead(timeout);
     return elements.length;
   }
 
   async getTexts(timeout?: number): Promise<string[]> {
-    const elements = await this.findElements(timeout);
+    const elements = await this.findElementsForRead(timeout);
     const texts: string[] = [];
     for (const element of elements) {
       try {
@@ -335,7 +389,7 @@ export class SanElement {
   }
 
   async getAttributes(attributeName: string, timeout?: number): Promise<string[]> {
-    const elements = await this.findElements(timeout);
+    const elements = await this.findElementsForRead(timeout);
     const attributes: string[] = [];
     for (const element of elements) {
       try {

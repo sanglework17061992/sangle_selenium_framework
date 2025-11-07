@@ -1,10 +1,43 @@
 # SaniumTS Selenium Framework
 
-A small TypeScript Selenium framework that demonstrates 4 layers requested:
-- SanElement (custom web element wrapper with auto-wait)
-- Assertion helpers with retry
-- DriverManager (register additional browsers easily)
-- Test layer using Page Object Model
+A TypeScript Selenium framework with Playwright-style actionability checks:
+- **SanElement** - Custom web element wrapper with intelligent auto-wait and actionability checks
+- **ActionabilityChecker** - Visibility, stability, enabled, editable, and receives events checks
+- **SanAssertion** - Fluent assertion API with auto-retry for locators
+- **DriverManager** - Register and manage multiple browser factories
+- **Test Webapp** - Comprehensive Node.js test application for validation
+- **Page Object Model** - Clean UI abstraction layer
+
+## 🎯 Key Features
+
+✅ **Playwright-Style Actionability** - Auto-wait for visible, stable, enabled, editable, and receives events  
+✅ **Type-Safe Actions** - ActionType enum for all interactions (CLICK, TYPE, HOVER, etc.)  
+✅ **Force Option** - Bypass actionability checks when needed: `{ force: true }`  
+✅ **Custom Timeouts** - Configure per-action timeouts: `{ timeout: 15000 }`  
+✅ **Auto-Retry Assertions** - Assertions automatically retry for locators  
+✅ **Comprehensive Test Webapp** - 40+ test scenarios on http://localhost:3001  
+
+## 🧪 Test Webapp
+
+A complete Express.js testing environment with 6 test pages covering all actionability scenarios:
+
+```bash
+cd test-webapp
+npm install
+npm start
+```
+
+**Access at:** http://localhost:3001
+
+### Available Test Pages:
+1. **Delayed Elements** - Test auto-wait with configurable delays (0-10s)
+2. **Form Interactions** - All input types, checkboxes, radios, selects
+3. **Actionability Tests** - Visibility, stability, enabled, editable, receives events
+4. **Overlay Tests** - Loading overlays, modals, obscured elements
+5. **Dynamic Content** - DOM mutations, AJAX content
+6. **Home** - Navigation hub with documentation
+
+📚 **[Full Test Webapp Documentation](test-webapp/README.md)**
 
 ## Framework Architecture
 
@@ -429,5 +462,224 @@ npm run report:allure
 - **Examples**: Working TodoMVC test suite included
 - **Configuration**: Environment-based with sensible defaults
 - **Extensibility**: Well-documented extension points
+
+Ready to write reliable, maintainable web automation tests! 🚀
+
+---
+
+## 📊 Test Reporting
+
+The framework supports **pluggable reporters** that can be easily swapped via configuration.
+
+### Available Reporters
+
+#### 1. **Allure Reporter** (Default)
+Rich, interactive HTML reports with screenshots, steps, and detailed test history.
+
+**Features:**
+- ✅ Interactive dashboard with test history and trends
+- ✅ Detailed test steps and timeline view
+- ✅ Screenshots automatically attached on failures
+- ✅ Test parameters and environment info
+- ✅ Flaky test detection
+
+#### 2. **Mochawesome Reporter**
+Clean, modern HTML reports with screenshots and test context.
+
+**Features:**
+- ✅ Clean, modern UI in a single HTML file
+- ✅ Screenshots embedded directly
+- ✅ Quick pass/fail summary and filters
+- ✅ Easy to share (no server needed)
+
+### Quick Start - Viewing Reports
+
+**🏆 Recommended: One-Command Workflows**
+
+```bash
+# Run all tests with Allure and open report
+npm run test:allure:run
+
+# Run all tests with Mochawesome and open report
+npm run test:mochawesome:run
+```
+
+**Manual Workflows**
+
+```bash
+# Allure - Step by step
+npm run test:allure          # 1. Run tests
+npm run report:allure        # 2. Generate and open report
+npm run report:allure:open   # 3. Or just open existing report
+
+# Mochawesome - Step by step
+npm run test:mochawesome     # 1. Run tests
+npm run report:mochawesome   # 2. Open report
+```
+
+### Configuration
+
+**Method 1: Environment Variable (`.env` file)**
+
+```properties
+# Choose: allure, mochawesome, or none
+REPORTER_TYPE=allure
+```
+
+**Method 2: Command Line**
+
+```bash
+npm run test:allure          # Override to use Allure
+npm run test:mochawesome     # Override to use Mochawesome
+```
+
+### Report Locations
+
+| Reporter | Results Location | Report Location |
+|----------|-----------------|-----------------|
+| **Allure** | `allure-results/` | `allure-report/` (after generation) |
+| **Mochawesome** | `mochawesome-report/` | `mochawesome-report/mochawesome.html` |
+
+### Available Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm run test:allure:run` | **🏆 RECOMMENDED** - Clean, run tests, generate & open Allure report |
+| `npm run test:mochawesome:run` | **🏆 RECOMMENDED** - Clean, run tests, generate & open Mochawesome report |
+| `npm run test:allure` | Run tests with Allure reporter |
+| `npm run test:mochawesome` | Run tests with Mochawesome reporter |
+| `npm run report:allure` | Generate and open Allure report |
+| `npm run report:allure:open` | Open existing Allure report |
+| `npm run report:allure:generate` | Just generate report (don't open) |
+| `npm run report:mochawesome` | Open Mochawesome HTML report |
+| `npm test` | Run with reporter from `.env` |
+
+---
+
+## 🔌 Adding a New Reporter
+
+The framework's reporter architecture is designed to be extensible. Here's how to add a new reporting library:
+
+### Step 1: Install the Reporter Package
+
+```bash
+npm install --save-dev your-reporter-package
+```
+
+### Step 2: Create a Reporter Wrapper Class
+
+Create `src/reporters/YourCustomReporter.ts` implementing the `TestReporter` interface:
+
+```typescript
+import { TestReporter } from '../base/BaseTest';
+import { ThenableWebDriver } from 'selenium-webdriver';
+
+export class YourCustomReporter implements TestReporter {
+  private driver: ThenableWebDriver | null = null;
+
+  async beforeAll?(): Promise<void> {
+    // Setup: create directories, initialize reporter
+  }
+
+  async afterAll?(): Promise<void> {
+    // Cleanup: generate final report
+  }
+
+  async beforeEach?(): Promise<void> {
+    // Log test start, setup context
+  }
+
+  async afterEach?(): Promise<void> {
+    // Log test end, save results
+  }
+
+  async onTestFailure?(test: Mocha.Test): Promise<void> {
+    if (this.driver) {
+      const screenshot = await this.driver.takeScreenshot();
+      // Save screenshot with your reporter
+    }
+  }
+
+  setDriver?(driver: ThenableWebDriver): void {
+    this.driver = driver;
+  }
+}
+```
+
+### Step 3: Add Reporter Type to Config
+
+Update `src/config/ConfigLoader.ts`:
+
+```typescript
+export enum ReporterType {
+  ALLURE = 'allure',
+  MOCHAWESOME = 'mochawesome',
+  YOUR_CUSTOM = 'your-custom',  // Add here
+  NONE = 'none'
+}
+```
+
+### Step 4: Update Reporter Factory
+
+Update `src/reporters/index.ts`:
+
+```typescript
+import { YourCustomReporter } from './YourCustomReporter';
+
+export function createReporter(type?: string): TestReporter {
+  const config = ConfigLoader.getInstance().getConfig();
+  const reporterType = type || config.reporting.reporterType;
+
+  switch (reporterType) {
+    case ReporterType.ALLURE:
+      return new AllureReporter();
+    case ReporterType.MOCHAWESOME:
+      return new MochawesomeReporter();
+    case ReporterType.YOUR_CUSTOM:  // Add case
+      return new YourCustomReporter();
+    case ReporterType.NONE:
+      return new NoOpReporter();
+    default:
+      return new NoOpReporter();
+  }
+}
+
+export { YourCustomReporter };
+```
+
+### Step 5: Configure and Use
+
+**Update `.env`:**
+```properties
+REPORTER_TYPE=your-custom
+```
+
+**Add npm scripts (optional):**
+```json
+{
+  "scripts": {
+    "test:your-custom": "mocha --reporter your-custom-reporter",
+    "report:your-custom": "open your-report/index.html"
+  }
+}
+```
+
+**Your tests automatically use it:**
+```typescript
+import { createReporter } from '../../src/reporters';
+import { TodoTest } from './TodoTest';
+
+const test = new TodoTest(createReporter());  // Uses config
+```
+
+### Benefits of This Architecture
+
+✅ **Pluggable** - Add/remove reporters without changing test code  
+✅ **Config-Driven** - Switch via .env file  
+✅ **Type-Safe** - TypeScript interface ensures consistency  
+✅ **Flexible** - Support multiple reporters  
+✅ **Clean** - Reporter logic separated from tests  
+
+---
 
 Ready to write reliable, maintainable web automation tests! 🚀
