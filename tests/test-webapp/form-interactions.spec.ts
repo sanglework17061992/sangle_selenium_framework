@@ -1,6 +1,6 @@
 import { describe, it, before, after, beforeEach, afterEach } from 'mocha';
 import { FormInteractionsPage } from '../../src/pages/test-webapp/FormInteractionsPage';
-import { expectValue } from '../../src/assertion/SanAssertion';
+import { expect } from '../../src/assertion/SanAssertion';
 import { BaseTest as GenericBaseTest } from '../../src/base';
 import { createReporter } from '../../src/reporters';
 import { ThenableWebDriver } from 'selenium-webdriver';
@@ -45,16 +45,16 @@ describe('Test Webapp - Form Interactions', () => {
       const email = await test.page.emailInput.getAttribute('value');
       const password = await test.page.passwordInput.getAttribute('value');
       
-      expectValue(username).toBe('john_doe');
-      expectValue(email).toBe('john@example.com');
-      expectValue(password).toBe('password123');
+      expect(username).toBe('john_doe');
+      expect(email).toBe('john@example.com');
+      expect(password).toBe('password123');
     });
 
     it('should fill textarea field', async () => {
       await test.page.fillComments('This is a test comment');
       
       const comments = await test.page.textareaInput.getAttribute('value');
-      expectValue(comments).toBe('This is a test comment');
+      expect(comments).toBe('This is a test comment');
     });
   });
 
@@ -63,7 +63,7 @@ describe('Test Webapp - Form Interactions', () => {
       await test.page.checkNewsletter();
       
       const isChecked = await test.page.newsletterCheckbox.isChecked();
-      expectValue(isChecked).toBe(true);
+      expect(isChecked).toBe(true);
     });
 
     it('should uncheck newsletter checkbox', async () => {
@@ -72,7 +72,7 @@ describe('Test Webapp - Form Interactions', () => {
       await test.page.newsletterCheckbox.uncheck({ force: true });
       
       const isChecked = await test.page.newsletterCheckbox.isChecked();
-      expectValue(isChecked).toBe(false);
+      expect(isChecked).toBe(false);
     });
   });
 
@@ -81,21 +81,21 @@ describe('Test Webapp - Form Interactions', () => {
       await test.page.selectGender('male');
       
       const isSelected = await test.page.genderMale.isChecked();
-      expectValue(isSelected).toBe(true);
+      expect(isSelected).toBe(true);
     });
 
     it('should select female gender', async () => {
       await test.page.selectGender('female');
       
       const isSelected = await test.page.genderFemale.isChecked();
-      expectValue(isSelected).toBe(true);
+      expect(isSelected).toBe(true);
     });
 
     it('should select other gender', async () => {
       await test.page.selectGender('other');
       
       const isSelected = await test.page.genderOther.isChecked();
-      expectValue(isSelected).toBe(true);
+      expect(isSelected).toBe(true);
     });
   });
 
@@ -104,17 +104,17 @@ describe('Test Webapp - Form Interactions', () => {
       await test.page.selectCountry('United States');
       
       const selected = await test.page.countrySelect.getSelectedValue();
-      expectValue(selected).toBe('us');
+      expect(selected).toBe('us');
     });
 
     it('should select different countries', async () => {
       await test.page.selectCountry('Canada');
       let selected = await test.page.countrySelect.getSelectedValue();
-      expectValue(selected).toBe('ca');
+      expect(selected).toBe('ca');
 
       await test.page.selectCountry('United Kingdom');
       selected = await test.page.countrySelect.getSelectedValue();
-      expectValue(selected).toBe('uk');
+      expect(selected).toBe('uk');
     });
   });
 
@@ -129,7 +129,7 @@ describe('Test Webapp - Form Interactions', () => {
       await test.page.submitForm();
       
       const submitStatus = await test.page.getSubmitStatus();
-      expectValue(submitStatus).toInclude('Form submitted successfully');
+      expect(submitStatus).toInclude('Form submitted successfully');
     });
 
     it('should clear form data', async () => {
@@ -141,8 +141,8 @@ describe('Test Webapp - Form Interactions', () => {
       const username = await test.page.usernameInput.getAttribute('value');
       const isChecked = await test.page.newsletterCheckbox.isChecked();
       
-      expectValue(username).toBe('');
-      expectValue(isChecked).toBe(false);
+      expect(username).toBe('');
+      expect(isChecked).toBe(false);
     });
   });
 });

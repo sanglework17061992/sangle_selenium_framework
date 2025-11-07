@@ -1,4 +1,4 @@
-import { expectValue } from '../../src/assertion/SanAssertion';
+import { expect } from '../../src/assertion/SanAssertion';
 import { createReporter } from '../../src/reporters';
 import { TodoTest } from './TodoTest';
 
@@ -32,23 +32,23 @@ describe('Todo App - Filtering Todos', () => {
     it('should show all todos by default', async () => {
       await test.page.filterAll();
 
-      expectValue(await test.page.getTodoCount()).toBe(3);
+      expect(await test.page.getTodoCount()).toBe(3);
     });
 
     it('should show only active todos', async () => {
       await test.page.filterActive();
 
-      expectValue(await test.page.getTodoCount()).toBe(2);
+      expect(await test.page.getTodoCount()).toBe(2);
 
-      expectValue(await test.page.getTodoTexts()).toHaveMembers(['Buy groceries', 'Clean the house']);
+      expect(await test.page.getTodoTexts()).toHaveMembers(['Buy groceries', 'Clean the house']);
     });
 
     it('should show only completed todos', async () => {
       await test.page.filterCompleted();
 
-      expectValue(await test.page.getTodoCount()).toBe(1);
+      expect(await test.page.getTodoCount()).toBe(1);
 
-      expectValue(await test.page.getTodoTexts()).toHaveMembers(['Walk the dog']);
+      expect(await test.page.getTodoTexts()).toHaveMembers(['Walk the dog']);
     });
   });
 });

@@ -1,4 +1,4 @@
-import { expectValue } from '../../src/assertion/SanAssertion';
+import { expect } from '../../src/assertion/SanAssertion';
 import { createReporter } from '../../src/reporters';
 import { TodoTest } from './TodoTest';
 
@@ -33,9 +33,9 @@ describe('Todo App - Completing Todos', () => {
       // Wait for DOM to update
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      expectValue(await test.page.isTodoCompleted('Buy groceries')).toBe(true);
+      expect(await test.page.isTodoCompleted('Buy groceries')).toBe(true);
       
-      expectValue(await test.page.getRemainingCount()).toBe(1);
+      expect(await test.page.getRemainingCount()).toBe(1);
     });
 
     it('should mark a todo as incomplete', async () => {
@@ -46,19 +46,19 @@ describe('Todo App - Completing Todos', () => {
       // Wait for DOM to update
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      expectValue(await test.page.isTodoCompleted('Buy groceries')).toBe(false);
+      expect(await test.page.isTodoCompleted('Buy groceries')).toBe(false);
       
-      expectValue(await test.page.getRemainingCount()).toBe(2);
+      expect(await test.page.getRemainingCount()).toBe(2);
     });
 
     it('should mark all todos as completed', async () => {
       await test.page.markAllAsCompleted();
 
-      expectValue(await test.page.isTodoCompleted('Buy groceries')).toBe(true);
+      expect(await test.page.isTodoCompleted('Buy groceries')).toBe(true);
 
-      expectValue(await test.page.isTodoCompleted('Walk the dog')).toBe(true);
+      expect(await test.page.isTodoCompleted('Walk the dog')).toBe(true);
 
-      expectValue(await test.page.getRemainingCount()).toBe(0);
+      expect(await test.page.getRemainingCount()).toBe(0);
     });
   });
 });

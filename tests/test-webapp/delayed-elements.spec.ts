@@ -1,6 +1,6 @@
 import { describe, it, before, after, beforeEach, afterEach } from 'mocha';
 import { DelayedElementsPage } from '../../src/pages/test-webapp/DelayedElementsPage';
-import { expectValue } from '../../src/assertion/SanAssertion';
+import { expect } from '../../src/assertion/SanAssertion';
 import { BaseTest as GenericBaseTest } from '../../src/base';
 import { createReporter } from '../../src/reporters';
 import { ThenableWebDriver } from 'selenium-webdriver';
@@ -45,7 +45,7 @@ describe('Test Webapp - Delayed Elements', () => {
       await test.page.clickDelayedButton();
       
       const status = await test.page.getDelayedButtonStatus();
-      expectValue(status).toInclude('Button clicked successfully!');
+      expect(status).toInclude('Button clicked successfully!');
     });
 
     it('should handle multiple delay values', async () => {
@@ -55,7 +55,7 @@ describe('Test Webapp - Delayed Elements', () => {
       await test.page.clickDelayedButton();
       
       let status = await test.page.getDelayedButtonStatus();
-      expectValue(status).toInclude('Button clicked successfully!');
+      expect(status).toInclude('Button clicked successfully!');
       
       // Reload and test with 500ms delay
       await test.setupTest();
@@ -64,7 +64,7 @@ describe('Test Webapp - Delayed Elements', () => {
       await test.page.clickDelayedButton();
       
       status = await test.page.getDelayedButtonStatus();
-      expectValue(status).toInclude('Button clicked successfully!');
+      expect(status).toInclude('Button clicked successfully!');
     });
 
     it('should wait for element with custom timeout', async () => {
@@ -75,7 +75,7 @@ describe('Test Webapp - Delayed Elements', () => {
       await test.page.clickDelayedButton();
       
       const status = await test.page.getDelayedButtonStatus();
-      expectValue(status).toInclude('Button clicked successfully!');
+      expect(status).toInclude('Button clicked successfully!');
     });
   });
 });

@@ -1,4 +1,4 @@
-import { expectValue } from '../../src/assertion/SanAssertion';
+import { expect } from '../../src/assertion/SanAssertion';
 import { createReporter } from '../../src/reporters';
 import { TodoTest } from './TodoTest';
 
@@ -25,23 +25,23 @@ describe('Todo App - Edge Cases', () => {
     it('should handle special characters in todo text', async () => {
       await test.page.addTodo('Buy groceries: milk, bread & eggs!');
 
-      expectValue(await test.page.getTodoTexts()).toInclude('Buy groceries: milk, bread & eggs!');
+      expect(await test.page.getTodoTexts()).toInclude('Buy groceries: milk, bread & eggs!');
     });
 
     it('should handle very long todo text', async () => {
       const longText = 'A'.repeat(200);
       await test.page.addTodo(longText);
 
-      expectValue(await test.page.getTodoTexts()).toInclude(longText);
+      expect(await test.page.getTodoTexts()).toInclude(longText);
     });
 
     it('should handle duplicate todo text', async () => {
       await test.page.addTodo('Buy groceries');
       await test.page.addTodo('Buy groceries');
 
-      expectValue(await test.page.getTodoCount()).toBe(2);
+      expect(await test.page.getTodoCount()).toBe(2);
 
-      expectValue(await test.page.getTodoTexts()).toHaveMembers(['Buy groceries', 'Buy groceries']);
+      expect(await test.page.getTodoTexts()).toHaveMembers(['Buy groceries', 'Buy groceries']);
     });
   });
 });

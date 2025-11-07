@@ -1,4 +1,4 @@
-import { expectValue } from '../../src/assertion/SanAssertion';
+import { expect } from '../../src/assertion/SanAssertion';
 import { createReporter } from '../../src/reporters';
 import { TodoTest } from './TodoTest';
 
@@ -31,22 +31,22 @@ describe('Todo App - Deleting Todos', () => {
     it('should delete a todo item', async () => {
       await test.page.deleteTodo('Walk the dog');
 
-      expectValue(await test.page.getTodoCount()).toBe(2);
+      expect(await test.page.getTodoCount()).toBe(2);
 
       const texts = await test.page.getTodoTexts();
-      expectValue(texts).toNotInclude('Walk the dog');
-      expectValue(texts).toHaveMembers(['Buy groceries', 'Clean the house']);
+      expect(texts).toNotInclude('Walk the dog');
+      expect(texts).toHaveMembers(['Buy groceries', 'Clean the house']);
     });
 
     it('should clear completed todos', async () => {
       await test.page.toggleTodo('Walk the dog');
       await test.page.clearCompleted();
 
-      expectValue(await test.page.getTodoCount()).toBe(2);
+      expect(await test.page.getTodoCount()).toBe(2);
 
       const texts = await test.page.getTodoTexts();
-      expectValue(texts).toNotInclude('Walk the dog');
-      expectValue(texts).toHaveMembers(['Buy groceries', 'Clean the house']);
+      expect(texts).toNotInclude('Walk the dog');
+      expect(texts).toHaveMembers(['Buy groceries', 'Clean the house']);
     });
   });
 });
