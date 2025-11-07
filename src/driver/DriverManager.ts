@@ -6,7 +6,7 @@ import { configLoader, BrowserType } from '../config/ConfigLoader';
 export type BrowserName = BrowserType | string;
 
 export interface BrowserFactory {
-  build(options?: any): Promise<WebDriver>;
+  createWebDriver(options?: any): Promise<WebDriver>;
 }
 
 // Central driver context - framework manages this
@@ -30,7 +30,7 @@ export class DriverContext {
 }
 
 class DefaultChromeFactory implements BrowserFactory {
-  async build(options?: any) {
+  async createWebDriver(options?: any) {
     const config = configLoader.getBrowserConfig();
     const opts = new chrome.Options();
 
@@ -52,7 +52,7 @@ class DefaultChromeFactory implements BrowserFactory {
 }
 
 class DefaultFirefoxFactory implements BrowserFactory {
-  async build(options?: any) {
+  async createWebDriver(options?: any) {
     const config = configLoader.getBrowserConfig();
     const opts = new firefox.Options();
 
@@ -85,7 +85,7 @@ export class DriverManager {
 
     const factory = this.factories.get(browserName.toLowerCase());
     if (!factory) throw new Error(`No browser registered for: ${browserName}`);
-    return factory.build(options);
+    return factory.createWebDriver(options);
   }
 
   /**
