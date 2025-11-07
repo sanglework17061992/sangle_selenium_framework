@@ -91,73 +91,93 @@ export class SanElement {
     return element;
   }
 
-  // Core interactions: click, type, getText, isDisplayed, getAttribute
-  async click(options?: ActionOptions) {
+  /**
+   * Execute an action with standardized error handling
+   * @param action The action to execute
+   * @param operation Description of the operation for error messages
+   * @returns Result of the action
+   */
+  private async executeAction<T>(
+    action: () => Promise<T>,
+    operation: string
+  ): Promise<T> {
     try {
-      const el = await this.findElementWithActionability(ActionType.CLICK, options);
-      await el.click();
+      return await action();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to click element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
+      throw new Error(`Failed to ${operation} element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
     }
   }
 
-  async type(text?: string, keys?: string, options?: ActionOptions) {
+  /**
+   * Execute a read operation that returns a default value on error
+   * @param action The action to execute
+   * @param defaultValue Value to return if action fails
+   * @returns Result of the action or default value
+   */
+  private async executeSafeRead<T>(
+    action: () => Promise<T>,
+    defaultValue: T
+  ): Promise<T> {
     try {
+      return await action();
+    } catch {
+      return defaultValue;
+    }
+  }
+
+  // Core interactions: click, type, getText, isDisplayed, getAttribute
+  async click(options?: ActionOptions) {
+    return this.executeAction(async () => {
+      const el = await this.findElementWithActionability(ActionType.CLICK, options);
+      await el.click();
+    }, 'click');
+  }
+
+  async type(text?: string, keys?: string, options?: ActionOptions) {
+    let operation: string;
+    if (text && keys) {
+      operation = `type text "${text}" and press keys "${keys}"`;
+    } else if (text) {
+      operation = `type text "${text}"`;
+    } else {
+      operation = `send keys "${keys}"`;
+    }
+
+    return this.executeAction(async () => {
       const keysToSend = (text || '') + (keys || '');
       if (keysToSend) {
         await this.typeKeys(keysToSend, options);
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      let operation: string;
-      if (text && keys) {
-        operation = `type text "${text}" and press keys "${keys}"`;
-      } else if (text) {
-        operation = `type text "${text}"`;
-      } else {
-        operation = `send keys "${keys}"`;
-      }
-      throw new Error(`Failed to ${operation} into element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
-    }
+    }, operation);
   }
 
   async getText(timeout?: number) {
-    try {
+    return this.executeAction(async () => {
       const el = await this.findElementForRead(timeout);
       return await el.getText();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to get text from element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
-    }
+    }, 'get text from');
   }
 
   async getAttribute(name: string, timeout?: number) {
-    try {
+    return this.executeAction(async () => {
       const el = await this.findElementForRead(timeout);
       return await el.getAttribute(name);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to get attribute "${name}" from element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
-    }
+    }, `get attribute "${name}" from`);
   }
 
   async isEnabled(timeout?: number): Promise<boolean> {
-    try {
+    return this.executeSafeRead(async () => {
       const el = await this.findElementForRead(timeout);
       return await el.isEnabled();
-    } catch {
-      return false;
-    }
+    }, false);
   }
 
   async isDisplayed(timeout?: number): Promise<boolean> {
-    try {
+    return this.executeSafeRead(async () => {
       const el = await this.findElementForRead(timeout);
       return await el.isDisplayed();
-    } catch {
-      return false;
-    }
+    }, false);
   }
 
   // expose raw element for advanced operations
@@ -166,23 +186,17 @@ export class SanElement {
   }
 
   async clear(options?: ActionOptions) {
-    try {
+    return this.executeAction(async () => {
       const el = await this.findElementWithActionability(ActionType.CLEAR, options);
       await el.clear();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to clear element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
-    }
+    }, 'clear');
   }
 
   async submit(timeout?: number) {
-    try {
+    return this.executeAction(async () => {
       const el = await this.findElementForRead(timeout);
       await el.submit();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to submit element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
-    }
+    }, 'submit');
   }
 
   // Checkbox methods
@@ -203,58 +217,44 @@ export class SanElement {
   }
 
   async isChecked(timeout?: number): Promise<boolean> {
-    try {
+    return this.executeSafeRead(async () => {
       const el = await this.findElementForRead(timeout);
       return await el.isSelected();
-    } catch {
-      return false;
-    }
+    }, false);
   }
 
   // Mouse actions
   async doubleClick(options?: ActionOptions) {
-    try {
+    return this.executeAction(async () => {
       const el = await this.findElementWithActionability(ActionType.DOUBLE_CLICK, options);
       const actions = this.getActions();
       await actions.doubleClick(el).perform();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to double-click element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
-    }
+    }, 'double-click');
   }
 
   async rightClick(options?: ActionOptions) {
-    try {
+    return this.executeAction(async () => {
       const el = await this.findElementWithActionability(ActionType.RIGHT_CLICK, options);
       const actions = this.getActions();
       await actions.contextClick(el).perform();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to right-click element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
-    }
+    }, 'right-click');
   }
 
   async hover(options?: ActionOptions) {
-    try {
+    return this.executeAction(async () => {
       const el = await this.findElementWithActionability(ActionType.HOVER, options);
       const actions = this.getActions();
       await actions.move({ origin: el }).perform();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to hover over element with locator ${JSON.stringify(this.locator)}: ${errorMessage}`);
-    }
+    }, 'hover over');
   }
 
   async dragAndDrop(target: SanElement, options?: ActionOptions) {
-    try {
+    return this.executeAction(async () => {
       const sourceEl = await this.findElementWithActionability(ActionType.DRAG, options);
       const targetEl = await target.findElementForRead(options?.timeout);
       const actions = this.getActions();
       await actions.dragAndDrop(sourceEl, targetEl).perform();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to drag and drop element with locator ${JSON.stringify(this.locator)} to target ${JSON.stringify(target.locator)}: ${errorMessage}`);
-    }
+    }, `drag and drop to target ${JSON.stringify(target.locator)}`);
   }
 
   // Select dropdown methods
