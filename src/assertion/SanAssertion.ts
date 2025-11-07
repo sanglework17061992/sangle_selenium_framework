@@ -54,19 +54,27 @@ export class ElementAssertions {
   }
 
   /**
+   * Helper method to safely execute assertion logic with try-catch
+   * Returns true if assertion passes, false if it fails
+   */
+  private async safeAssert(assertionFn: () => Promise<void>): Promise<boolean> {
+    try {
+      await assertionFn();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Assert that the element has the exact text
    */
   async toHaveText(expectedText: string): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const actualText = await this.element.getText();
-          AssertHelper.equal(actualText.trim(), expectedText);
-          return true;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const actualText = await this.element.getText();
+        AssertHelper.equal(actualText.trim(), expectedText);
+      }),
       `element to have text "${expectedText}"`
     );
   }
@@ -76,15 +84,10 @@ export class ElementAssertions {
    */
   async toContainText(expectedSubstring: string): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const actualText = await this.element.getText();
-          AssertHelper.include(actualText.trim(), expectedSubstring);
-          return true;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const actualText = await this.element.getText();
+        AssertHelper.include(actualText.trim(), expectedSubstring);
+      }),
       `element to contain text "${expectedSubstring}"`
     );
   }
@@ -94,15 +97,10 @@ export class ElementAssertions {
    */
   async toHaveAttribute(attributeName: string, expectedValue: string): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const actualValue = await this.element.getAttribute(attributeName);
-          AssertHelper.equal(actualValue, expectedValue);
-          return true;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const actualValue = await this.element.getAttribute(attributeName);
+        AssertHelper.equal(actualValue, expectedValue);
+      }),
       `element to have attribute "${attributeName}" with value "${expectedValue}"`
     );
   }
@@ -112,13 +110,10 @@ export class ElementAssertions {
    */
   async toBeVisible(): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          return await this.element.isDisplayed();
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const isVisible = await this.element.isDisplayed();
+        if (!isVisible) throw new Error('Element is not visible');
+      }),
       'element to be visible'
     );
   }
@@ -146,14 +141,11 @@ export class ElementAssertions {
    */
   async toBeEnabled(): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const element = await this.element.raw();
-          return await element.isEnabled();
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const element = await this.element.raw();
+        const isEnabled = await element.isEnabled();
+        if (!isEnabled) throw new Error('Element is not enabled');
+      }),
       'element to be enabled'
     );
   }
@@ -163,15 +155,11 @@ export class ElementAssertions {
    */
   async toBeDisabled(): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const element = await this.element.raw();
-          const isEnabled = await element.isEnabled();
-          return !isEnabled;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const element = await this.element.raw();
+        const isEnabled = await element.isEnabled();
+        if (isEnabled) throw new Error('Element is not disabled');
+      }),
       'element to be disabled'
     );
   }
@@ -181,16 +169,14 @@ export class ElementAssertions {
    */
   async toBeEditable(): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const element = await this.element.raw();
-          const isEnabled = await element.isEnabled();
-          const readonlyAttr = await element.getAttribute('readonly');
-          return isEnabled && !readonlyAttr;
-        } catch {
-          return false;
+      () => this.safeAssert(async () => {
+        const element = await this.element.raw();
+        const isEnabled = await element.isEnabled();
+        const readonlyAttr = await element.getAttribute('readonly');
+        if (!isEnabled || readonlyAttr) {
+          throw new Error('Element is not editable');
         }
-      },
+      }),
       'element to be editable'
     );
   }
@@ -200,14 +186,11 @@ export class ElementAssertions {
    */
   async toBeChecked(): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const element = await this.element.raw();
-          return await element.isSelected();
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const element = await this.element.raw();
+        const isChecked = await element.isSelected();
+        if (!isChecked) throw new Error('Element is not checked');
+      }),
       'element to be checked'
     );
   }
@@ -217,15 +200,11 @@ export class ElementAssertions {
    */
   async toBeUnchecked(): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const element = await this.element.raw();
-          const isChecked = await element.isSelected();
-          return !isChecked;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const element = await this.element.raw();
+        const isChecked = await element.isSelected();
+        if (isChecked) throw new Error('Element is checked');
+      }),
       'element to be unchecked'
     );
   }
@@ -235,14 +214,9 @@ export class ElementAssertions {
    */
   async toBeAttached(): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          await this.element.raw();
-          return true;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        await this.element.raw();
+      }),
       'element to be attached'
     );
   }
@@ -252,16 +226,11 @@ export class ElementAssertions {
    */
   async toHaveClass(className: string): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const classAttribute = await this.element.getAttribute('class');
-          const classes = classAttribute ? classAttribute.split(/\s+/) : [];
-          AssertHelper.include(classes, className);
-          return true;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const classAttribute = await this.element.getAttribute('class');
+        const classes = classAttribute ? classAttribute.split(/\s+/) : [];
+        AssertHelper.include(classes, className);
+      }),
       `element to have CSS class "${className}"`
     );
   }
@@ -285,16 +254,11 @@ export class ElementAssertions {
    */
   async toHaveCSS(propertyName: string, expectedValue: string): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const element = await this.element.raw();
-          const actualValue = await element.getCssValue(propertyName);
-          AssertHelper.equal(actualValue, expectedValue);
-          return true;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const element = await this.element.raw();
+        const actualValue = await element.getCssValue(propertyName);
+        AssertHelper.equal(actualValue, expectedValue);
+      }),
       `element to have CSS property "${propertyName}" with value "${expectedValue}"`
     );
   }
@@ -304,20 +268,15 @@ export class ElementAssertions {
    */
   async toHaveJSProperty(propertyName: string, expectedValue: any): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const element = await this.element.raw();
-          const driver = this.element['driver']; // Access private driver via bracket notation
-          const actualValue = await driver.executeScript(
-            `return arguments[0].${propertyName};`,
-            element
-          );
-          AssertHelper.equal(actualValue, expectedValue);
-          return true;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const element = await this.element.raw();
+        const driver = this.element['driver'];
+        const actualValue = await driver.executeScript(
+          `return arguments[0].${propertyName};`,
+          element
+        );
+        AssertHelper.equal(actualValue, expectedValue);
+      }),
       `element to have JS property "${propertyName}" with value "${expectedValue}"`
     );
   }
@@ -327,21 +286,17 @@ export class ElementAssertions {
    */
   async toBeFocused(): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const element = await this.element.raw();
-          const driver = this.element['driver'];
-          const activeElement = await driver.switchTo().activeElement();
-          const isSame = await driver.executeScript(
-            'return arguments[0] === arguments[1];',
-            element,
-            activeElement
-          );
-          return isSame as boolean;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const element = await this.element.raw();
+        const driver = this.element['driver'];
+        const activeElement = await driver.switchTo().activeElement();
+        const isSame = await driver.executeScript(
+          'return arguments[0] === arguments[1];',
+          element,
+          activeElement
+        );
+        if (!isSame) throw new Error('Element is not focused');
+      }),
       'element to be focused'
     );
   }
@@ -351,15 +306,10 @@ export class ElementAssertions {
    */
   async toBeEmpty(): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const text = await this.element.getText();
-          AssertHelper.equal(text.trim(), '');
-          return true;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const text = await this.element.getText();
+        AssertHelper.equal(text.trim(), '');
+      }),
       'element to be empty'
     );
   }
@@ -369,24 +319,20 @@ export class ElementAssertions {
    */
   async toBeInViewport(): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const element = await this.element.raw();
-          const driver = this.element['driver'];
-          const isInViewport = await driver.executeScript(`
-            const rect = arguments[0].getBoundingClientRect();
-            return (
-              rect.top >= 0 &&
-              rect.left >= 0 &&
-              rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-              rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-            );
-          `, element);
-          return isInViewport as boolean;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const element = await this.element.raw();
+        const driver = this.element['driver'];
+        const isInViewport = await driver.executeScript(`
+          const rect = arguments[0].getBoundingClientRect();
+          return (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+          );
+        `, element);
+        if (!isInViewport) throw new Error('Element is not in viewport');
+      }),
       'element to be in viewport'
     );
   }
@@ -396,15 +342,10 @@ export class ElementAssertions {
    */
   async toHaveCount(expectedCount: number): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const count = await this.element.count();
-          AssertHelper.equal(count, expectedCount);
-          return true;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const count = await this.element.count();
+        AssertHelper.equal(count, expectedCount);
+      }),
       `elements to have count ${expectedCount}`
     );
   }
@@ -414,21 +355,16 @@ export class ElementAssertions {
    */
   async toHaveValues(expectedValues: string[]): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const element = await this.element.raw();
-          const driver = this.element['driver'];
-          const actualValues = await driver.executeScript(`
-            const select = arguments[0];
-            const selectedOptions = Array.from(select.selectedOptions);
-            return selectedOptions.map(opt => opt.value);
-          `, element);
-          AssertHelper.hasMembers(actualValues as string[], expectedValues);
-          return true;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const element = await this.element.raw();
+        const driver = this.element['driver'];
+        const actualValues = await driver.executeScript(`
+          const select = arguments[0];
+          const selectedOptions = Array.from(select.selectedOptions);
+          return selectedOptions.map(opt => opt.value);
+        `, element);
+        AssertHelper.hasMembers(actualValues as string[], expectedValues);
+      }),
       `element to have values ${JSON.stringify(expectedValues)}`
     );
   }
@@ -482,20 +418,28 @@ export class PageAssertions {
   }
 
   /**
+   * Helper method to safely execute assertion logic with try-catch
+   * Returns true if assertion passes, false if it fails
+   */
+  private async safeAssert(assertionFn: () => Promise<void>): Promise<boolean> {
+    try {
+      await assertionFn();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Assert that the page has the expected title (exact match)
    */
   async toHaveTitle(expectedTitle: string): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const driver = this.page['driver'];
-          const actualTitle = await driver.getTitle();
-          AssertHelper.equal(actualTitle, expectedTitle);
-          return true;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const driver = this.page['driver'];
+        const actualTitle = await driver.getTitle();
+        AssertHelper.equal(actualTitle, expectedTitle);
+      }),
       `page to have title "${expectedTitle}"`
     );
   }
@@ -505,16 +449,11 @@ export class PageAssertions {
    */
   async toHaveTitleContaining(expectedSubstring: string): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const driver = this.page['driver'];
-          const actualTitle = await driver.getTitle();
-          AssertHelper.include(actualTitle, expectedSubstring);
-          return true;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const driver = this.page['driver'];
+        const actualTitle = await driver.getTitle();
+        AssertHelper.include(actualTitle, expectedSubstring);
+      }),
       `page title to contain "${expectedSubstring}"`
     );
   }
@@ -524,18 +463,13 @@ export class PageAssertions {
    */
   async toHaveTitleMatching(pattern: RegExp): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const driver = this.page['driver'];
-          const actualTitle = await driver.getTitle();
-          if (!pattern.test(actualTitle)) {
-            throw new Error(`Title "${actualTitle}" does not match pattern ${pattern}`);
-          }
-          return true;
-        } catch {
-          return false;
+      () => this.safeAssert(async () => {
+        const driver = this.page['driver'];
+        const actualTitle = await driver.getTitle();
+        if (!pattern.test(actualTitle)) {
+          throw new Error(`Title "${actualTitle}" does not match pattern ${pattern}`);
         }
-      },
+      }),
       `page title to match pattern ${pattern}`
     );
   }
@@ -545,16 +479,11 @@ export class PageAssertions {
    */
   async toHaveURL(expectedUrl: string): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const driver = this.page['driver'];
-          const actualUrl = await driver.getCurrentUrl();
-          AssertHelper.equal(actualUrl, expectedUrl);
-          return true;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const driver = this.page['driver'];
+        const actualUrl = await driver.getCurrentUrl();
+        AssertHelper.equal(actualUrl, expectedUrl);
+      }),
       `page to have URL "${expectedUrl}"`
     );
   }
@@ -564,16 +493,11 @@ export class PageAssertions {
    */
   async toHaveURLContaining(expectedSubstring: string): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const driver = this.page['driver'];
-          const actualUrl = await driver.getCurrentUrl();
-          AssertHelper.include(actualUrl, expectedSubstring);
-          return true;
-        } catch {
-          return false;
-        }
-      },
+      () => this.safeAssert(async () => {
+        const driver = this.page['driver'];
+        const actualUrl = await driver.getCurrentUrl();
+        AssertHelper.include(actualUrl, expectedSubstring);
+      }),
       `page URL to contain "${expectedSubstring}"`
     );
   }
@@ -583,18 +507,13 @@ export class PageAssertions {
    */
   async toHaveURLMatching(pattern: RegExp): Promise<void> {
     await this.waitUntil(
-      async () => {
-        try {
-          const driver = this.page['driver'];
-          const actualUrl = await driver.getCurrentUrl();
-          if (!pattern.test(actualUrl)) {
-            throw new Error(`URL "${actualUrl}" does not match pattern ${pattern}`);
-          }
-          return true;
-        } catch {
-          return false;
+      () => this.safeAssert(async () => {
+        const driver = this.page['driver'];
+        const actualUrl = await driver.getCurrentUrl();
+        if (!pattern.test(actualUrl)) {
+          throw new Error(`URL "${actualUrl}" does not match pattern ${pattern}`);
         }
-      },
+      }),
       `page URL to match pattern ${pattern}`
     );
   }
