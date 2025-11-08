@@ -16,12 +16,27 @@ export class TodoPage extends BasePage {
   get completedFilter() { return this.byCss('[href="#/completed"]'); }
 
   getTodoByText = (text: string) => this.byXpath(`//li[@data-testid="todo-item"][.//label[contains(text(), "%s")]]`, text);
-  getTodoCheckboxByText = (text: string) => this.byXpath(`//li[@data-testid="todo-item"]//label[contains(text(), "%s")]/preceding::input[@class="toggle"]`, text);
+  getTodoCheckboxByText = (text: string) => this.byXpath(`//li[@data-testid="todo-item"][.//label[contains(text(), "%s")]]//input[@class="toggle"]`, text);
   getTodoDeleteByText = (text: string) => this.byXpath(`//li[@data-testid="todo-item"]//label[contains(text(), "%s")]/following-sibling::button[@class="destroy"]`, text);
 
   async open(): Promise<void> {
     const appConfig = configLoader.getAppConfig();
     await super.open(appConfig.baseUrl);
+  }
+
+  /**
+   * Decode common HTML entities in text
+   */
+  private decodeHtmlEntities(text: string): string {
+    const entities: Record<string, string> = {
+      '&amp;': '&',
+      '&lt;': '<',
+      '&gt;': '>',
+      '&quot;': '"',
+      '&#39;': "'"
+    };
+    
+    return text.replace(/&(?:amp|lt|gt|quot|#39);/g, match => entities[match] || match);
   }
 
   async addTodo(text: string): Promise<void> {
@@ -42,14 +57,7 @@ export class TodoPage extends BasePage {
       const texts: string[] = [];
       for (const label of labels) {
         const textContent = await label.getAttribute('textContent') || await label.getText();
-        // Decode HTML entities
-        const decodedText = textContent
-          .replaceAll('&amp;', '&')
-          .replaceAll('&lt;', '<')
-          .replaceAll('&gt;', '>')
-          .replaceAll('&quot;', '"')
-          .replaceAll('&#39;', "'");
-        texts.push(decodedText);
+        texts.push(this.decodeHtmlEntities(textContent));
       }
       return texts;
     } catch {
@@ -58,19 +66,9 @@ export class TodoPage extends BasePage {
   }
 
   async toggleTodo(text: string): Promise<void> {
-    // Find all toggle checkboxes, then find the one associated with the todo text
-    const checkboxes = await this.driver.findElements({ css: 'input.toggle' });
-    const labels = await this.driver.findElements({ css: 'li label' });
-    
-    for (let i = 0; i < labels.length; i++) {
-      const labelText = await labels[i].getText();
-      if (labelText === text) {
-        await checkboxes[i].click();
-        return;
-      }
-    }
-    
-    throw new Error(`Todo with text "${text}" not found`);
+    // TodoMVC checkboxes are typically hidden, so we need to force click
+    const checkbox = this.getTodoCheckboxByText(text);
+    await checkbox.click({ force: true });
   }  
   
   async deleteTodo(text: string): Promise<void> {
@@ -125,18 +123,9 @@ export class TodoPage extends BasePage {
 
   async isTodoCompleted(text: string): Promise<boolean> {
     try {
-      const todoItems = await this.driver.findElements({ css: '.todo-list li' });
-      
-      for (const item of todoItems) {
-        const label = await item.findElement({ css: 'label' });
-        const labelText = await label.getText();
-        if (labelText === text) {
-          const classAttr = await item.getAttribute('class');
-          return classAttr ? classAttr.includes('completed') : false;
-        }
-      }
-      
-      return false;
+      const todoItem = this.getTodoByText(text);
+      const classAttr = await todoItem.getAttribute('class');
+      return classAttr ? classAttr.includes('completed') : false;
     } catch {
       return false;
     }
