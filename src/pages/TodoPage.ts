@@ -2,6 +2,7 @@ import { BasePage } from './BasePage';
 import { configLoader } from '../config/ConfigLoader';
 import { Key } from 'selenium-webdriver';
 import SanElement from '../core/elements/SanElement';
+import { HtmlHelper } from '../helpers/HtmlHelper';
 
 export class TodoPage extends BasePage {
   get newTodoInput() { return this.byCss('.new-todo'); }
@@ -24,21 +25,6 @@ export class TodoPage extends BasePage {
     await super.open(appConfig.baseUrl);
   }
 
-  /**
-   * Decode common HTML entities in text
-   */
-  private decodeHtmlEntities(text: string): string {
-    const entities: Record<string, string> = {
-      '&amp;': '&',
-      '&lt;': '<',
-      '&gt;': '>',
-      '&quot;': '"',
-      '&#39;': "'"
-    };
-    
-    return text.replace(/&(?:amp|lt|gt|quot|#39);/g, match => entities[match] || match);
-  }
-
   async addTodo(text: string): Promise<void> {
     await this.newTodoInput.type(text, Key.RETURN);
   }
@@ -57,7 +43,7 @@ export class TodoPage extends BasePage {
       const texts: string[] = [];
       for (const label of labels) {
         const textContent = await label.getAttribute('textContent') || await label.getText();
-        texts.push(this.decodeHtmlEntities(textContent));
+        texts.push(HtmlHelper.decodeEntities(textContent));
       }
       return texts;
     } catch {
