@@ -1,4 +1,5 @@
 import { By, ThenableWebDriver, WebElement, until } from 'selenium-webdriver';
+import { Select } from 'selenium-webdriver/lib/select.js';
 import { configLoader } from '../../config/ConfigLoader';
 import { DriverContext } from '../../driver/DriverManager';
 import { ActionabilityChecker, ActionabilityOptions } from './ActionabilityChecker';
@@ -124,6 +125,15 @@ export class SanElement {
     } catch {
       return defaultValue;
     }
+  }
+
+  /**
+   * Get Select wrapper for dropdown element
+   * @param element WebElement to wrap
+   * @returns Select instance
+   */
+  private getSelectElement(element: WebElement): Select {
+    return new Select(element);
   }
 
   // Core interactions: click, type, getText, isDisplayed, getAttribute
@@ -260,38 +270,35 @@ export class SanElement {
   // Select dropdown methods
   async selectByValue(value: string, options?: ActionOptions) {
     const el = await this.findElementWithActionability(ActionType.SELECT, options);
-    const select = require('selenium-webdriver').Select;
-    const selectElement = new select(el);
+    const selectElement = this.getSelectElement(el);
     await selectElement.selectByValue(value);
   }
 
   async selectByText(text: string, options?: ActionOptions) {
     const el = await this.findElementWithActionability(ActionType.SELECT, options);
-    const select = require('selenium-webdriver').Select;
-    const selectElement = new select(el);
+    const selectElement = this.getSelectElement(el);
     await selectElement.selectByVisibleText(text);
   }
 
   async selectByIndex(index: number, options?: ActionOptions) {
     const el = await this.findElementWithActionability(ActionType.SELECT, options);
-    const select = require('selenium-webdriver').Select;
-    const selectElement = new select(el);
+    const selectElement = this.getSelectElement(el);
     await selectElement.selectByIndex(index);
   }
 
   async getSelectedValue(timeout?: number): Promise<string | null> {
     const el = await this.findElementForRead(timeout);
-    const select = require('selenium-webdriver').Select;
-    const selectElement = new select(el);
+    const selectElement = this.getSelectElement(el);
     const selectedOption = await selectElement.getFirstSelectedOption();
+    if (!selectedOption) return null;
     return await selectedOption.getAttribute('value');
   }
 
   async getSelectedText(timeout?: number): Promise<string> {
     const el = await this.findElementForRead(timeout);
-    const select = require('selenium-webdriver').Select;
-    const selectElement = new select(el);
+    const selectElement = this.getSelectElement(el);
     const selectedOption = await selectElement.getFirstSelectedOption();
+    if (!selectedOption) return '';
     return await selectedOption.getText();
   }
 
