@@ -5,6 +5,7 @@ import { BasePage } from '../pages/BasePage';
 
 const testConfig = configLoader.getTestConfig();
 const DEFAULT_TIMEOUT = 5000; // 5 seconds like Playwright
+const POLL_INTERVAL = 100; // Poll every 100ms
 
 /**
  * Helper method to safely execute assertion logic with try-catch
@@ -21,6 +22,40 @@ async function safeAssert(assertionFn: () => Promise<void>): Promise<boolean> {
 }
 
 /**
+ * Core retry mechanism - waits until condition passes or timeout
+ * Shared by both ElementAssertions and PageAssertions
+ */
+async function waitUntil(
+  condition: () => Promise<boolean>,
+  errorMessage: string,
+  timeout: number
+): Promise<void> {
+  const startTime = Date.now();
+  let lastError: Error | null = null;
+
+  while (Date.now() - startTime < timeout) {
+    try {
+      const result = await condition();
+      if (result) {
+        return; // Condition passed
+      }
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+    }
+    
+    // Wait before next retry
+    await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL));
+  }
+
+  // Timeout reached - throw error
+  const timeoutMsg = `Timeout ${timeout}ms exceeded waiting for ${errorMessage}`;
+  if (lastError) {
+    throw new Error(`${timeoutMsg}\n${lastError.message}`);
+  }
+  throw new Error(timeoutMsg);
+}
+
+/**
  * Auto-retrying assertions for SanElement (locators)
  * These assertions will retry until the condition is met or timeout is reached
  * Similar to Playwright's expect(locator).toBeVisible()
@@ -28,7 +63,6 @@ async function safeAssert(assertionFn: () => Promise<void>): Promise<boolean> {
 export class ElementAssertions {
   private readonly element: SanElement;
   private readonly timeout: number;
-  private readonly pollInterval: number = 100; // Poll every 100ms
 
   constructor(element: SanElement, timeout?: number) {
     this.element = element;
@@ -36,47 +70,16 @@ export class ElementAssertions {
   }
 
   /**
-   * Core retry mechanism - waits until condition passes or timeout
-   */
-  private async waitUntil(
-    condition: () => Promise<boolean>,
-    errorMessage: string
-  ): Promise<void> {
-    const startTime = Date.now();
-    let lastError: Error | null = null;
-
-    while (Date.now() - startTime < this.timeout) {
-      try {
-        const result = await condition();
-        if (result) {
-          return; // Condition passed
-        }
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-      }
-      
-      // Wait before next retry
-      await new Promise(resolve => setTimeout(resolve, this.pollInterval));
-    }
-
-    // Timeout reached - throw error
-    const timeoutMsg = `Timeout ${this.timeout}ms exceeded waiting for ${errorMessage}`;
-    if (lastError) {
-      throw new Error(`${timeoutMsg}\n${lastError.message}`);
-    }
-    throw new Error(timeoutMsg);
-  }
-
-  /**
    * Assert that the element has the exact text
    */
   async toHaveText(expectedText: string): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const actualText = await this.element.getText();
         AssertHelper.equal(actualText.trim(), expectedText);
       }),
-      `element to have text "${expectedText}"`
+      `element to have text "${expectedText}"`,
+      this.timeout
     );
   }
 
@@ -84,12 +87,13 @@ export class ElementAssertions {
    * Assert that the element contains the specified text
    */
   async toContainText(expectedSubstring: string): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const actualText = await this.element.getText();
         AssertHelper.include(actualText.trim(), expectedSubstring);
       }),
-      `element to contain text "${expectedSubstring}"`
+      `element to contain text "${expectedSubstring}"`,
+      this.timeout
     );
   }
 
@@ -97,12 +101,13 @@ export class ElementAssertions {
    * Assert that the element has the specified attribute with the expected value
    */
   async toHaveAttribute(attributeName: string, expectedValue: string): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const actualValue = await this.element.getAttribute(attributeName);
         AssertHelper.equal(actualValue, expectedValue);
       }),
-      `element to have attribute "${attributeName}" with value "${expectedValue}"`
+      `element to have attribute "${attributeName}" with value "${expectedValue}"`,
+      this.timeout
     );
   }
 
@@ -110,12 +115,13 @@ export class ElementAssertions {
    * Assert that the element is visible
    */
   async toBeVisible(): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const isVisible = await this.element.isDisplayed();
         if (!isVisible) throw new Error('Element is not visible');
       }),
-      'element to be visible'
+      'element to be visible',
+      this.timeout
     );
   }
 
@@ -123,7 +129,7 @@ export class ElementAssertions {
    * Assert that the element is hidden (not visible)
    */
   async toBeHidden(): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       async () => {
         try {
           const isVisible = await this.element.isDisplayed();
@@ -133,7 +139,8 @@ export class ElementAssertions {
           return true;
         }
       },
-      'element to be hidden'
+      'element to be hidden',
+      this.timeout
     );
   }
 
@@ -141,13 +148,14 @@ export class ElementAssertions {
    * Assert that the element is enabled
    */
   async toBeEnabled(): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const element = await this.element.raw();
         const isEnabled = await element.isEnabled();
         if (!isEnabled) throw new Error('Element is not enabled');
       }),
-      'element to be enabled'
+      'element to be enabled',
+      this.timeout
     );
   }
 
@@ -155,13 +163,14 @@ export class ElementAssertions {
    * Assert that the element is disabled
    */
   async toBeDisabled(): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const element = await this.element.raw();
         const isEnabled = await element.isEnabled();
         if (isEnabled) throw new Error('Element is not disabled');
       }),
-      'element to be disabled'
+      'element to be disabled',
+      this.timeout
     );
   }
 
@@ -169,7 +178,7 @@ export class ElementAssertions {
    * Assert that the element is editable (enabled and not readonly)
    */
   async toBeEditable(): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const element = await this.element.raw();
         const isEnabled = await element.isEnabled();
@@ -178,7 +187,8 @@ export class ElementAssertions {
           throw new Error('Element is not editable');
         }
       }),
-      'element to be editable'
+      'element to be editable',
+      this.timeout
     );
   }
 
@@ -186,13 +196,14 @@ export class ElementAssertions {
    * Assert that the element is checked (for checkboxes/radio buttons)
    */
   async toBeChecked(): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const element = await this.element.raw();
         const isChecked = await element.isSelected();
         if (!isChecked) throw new Error('Element is not checked');
       }),
-      'element to be checked'
+      'element to be checked',
+      this.timeout
     );
   }
 
@@ -200,13 +211,14 @@ export class ElementAssertions {
    * Assert that the element is unchecked
    */
   async toBeUnchecked(): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const element = await this.element.raw();
         const isChecked = await element.isSelected();
         if (isChecked) throw new Error('Element is checked');
       }),
-      'element to be unchecked'
+      'element to be unchecked',
+      this.timeout
     );
   }
 
@@ -214,11 +226,12 @@ export class ElementAssertions {
    * Assert that the element is attached to the DOM
    */
   async toBeAttached(): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         await this.element.raw();
       }),
-      'element to be attached'
+      'element to be attached',
+      this.timeout
     );
   }
 
@@ -226,13 +239,14 @@ export class ElementAssertions {
    * Assert that the element has the specified CSS class
    */
   async toHaveClass(className: string): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const classAttribute = await this.element.getAttribute('class');
         const classes = classAttribute ? classAttribute.split(/\s+/) : [];
         AssertHelper.include(classes, className);
       }),
-      `element to have CSS class "${className}"`
+      `element to have CSS class "${className}"`,
+      this.timeout
     );
   }
 
@@ -254,13 +268,14 @@ export class ElementAssertions {
    * Assert that the element has the specified CSS property with expected value
    */
   async toHaveCSS(propertyName: string, expectedValue: string): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const element = await this.element.raw();
         const actualValue = await element.getCssValue(propertyName);
         AssertHelper.equal(actualValue, expectedValue);
       }),
-      `element to have CSS property "${propertyName}" with value "${expectedValue}"`
+      `element to have CSS property "${propertyName}" with value "${expectedValue}"`,
+      this.timeout
     );
   }
 
@@ -268,7 +283,7 @@ export class ElementAssertions {
    * Assert that the element has the specified JavaScript property with expected value
    */
   async toHaveJSProperty(propertyName: string, expectedValue: any): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const element = await this.element.raw();
         const driver = this.element['driver'];
@@ -278,7 +293,8 @@ export class ElementAssertions {
         );
         AssertHelper.equal(actualValue, expectedValue);
       }),
-      `element to have JS property "${propertyName}" with value "${expectedValue}"`
+      `element to have JS property "${propertyName}" with value "${expectedValue}"`,
+      this.timeout
     );
   }
 
@@ -286,7 +302,7 @@ export class ElementAssertions {
    * Assert that the element is focused
    */
   async toBeFocused(): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const element = await this.element.raw();
         const driver = this.element['driver'];
@@ -298,7 +314,8 @@ export class ElementAssertions {
         );
         if (!isSame) throw new Error('Element is not focused');
       }),
-      'element to be focused'
+      'element to be focused',
+      this.timeout
     );
   }
 
@@ -306,12 +323,13 @@ export class ElementAssertions {
    * Assert that the element is empty (no text content)
    */
   async toBeEmpty(): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const text = await this.element.getText();
         AssertHelper.equal(text.trim(), '');
       }),
-      'element to be empty'
+      'element to be empty',
+      this.timeout
     );
   }
 
@@ -319,7 +337,7 @@ export class ElementAssertions {
    * Assert that the element is in the viewport
    */
   async toBeInViewport(): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const element = await this.element.raw();
         const driver = this.element['driver'];
@@ -334,7 +352,8 @@ export class ElementAssertions {
         `, element);
         if (!isInViewport) throw new Error('Element is not in viewport');
       }),
-      'element to be in viewport'
+      'element to be in viewport',
+      this.timeout
     );
   }
 
@@ -342,12 +361,13 @@ export class ElementAssertions {
    * Assert that elements matching the locator have the expected count
    */
   async toHaveCount(expectedCount: number): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const count = await this.element.count();
         AssertHelper.equal(count, expectedCount);
       }),
-      `elements to have count ${expectedCount}`
+      `elements to have count ${expectedCount}`,
+      this.timeout
     );
   }
 
@@ -355,7 +375,7 @@ export class ElementAssertions {
    * Assert that select element has the specified values selected (for multi-select)
    */
   async toHaveValues(expectedValues: string[]): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const element = await this.element.raw();
         const driver = this.element['driver'];
@@ -366,7 +386,8 @@ export class ElementAssertions {
         `, element);
         AssertHelper.hasMembers(actualValues as string[], expectedValues);
       }),
-      `element to have values ${JSON.stringify(expectedValues)}`
+      `element to have values ${JSON.stringify(expectedValues)}`,
+      this.timeout
     );
   }
 }
@@ -379,7 +400,6 @@ export class ElementAssertions {
 export class PageAssertions {
   private readonly page: BasePage;
   private readonly timeout: number;
-  private readonly pollInterval: number = 100; // Poll every 100ms
 
   constructor(page: BasePage, timeout?: number) {
     this.page = page;
@@ -387,48 +407,17 @@ export class PageAssertions {
   }
 
   /**
-   * Core retry mechanism - waits until condition passes or timeout
-   */
-  private async waitUntil(
-    condition: () => Promise<boolean>,
-    errorMessage: string
-  ): Promise<void> {
-    const startTime = Date.now();
-    let lastError: Error | null = null;
-
-    while (Date.now() - startTime < this.timeout) {
-      try {
-        const result = await condition();
-        if (result) {
-          return; // Condition passed
-        }
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-      }
-      
-      // Wait before next retry
-      await new Promise(resolve => setTimeout(resolve, this.pollInterval));
-    }
-
-    // Timeout reached - throw error
-    const timeoutMsg = `Timeout ${this.timeout}ms exceeded waiting for ${errorMessage}`;
-    if (lastError) {
-      throw new Error(`${timeoutMsg}\n${lastError.message}`);
-    }
-    throw new Error(timeoutMsg);
-  }
-
-  /**
    * Assert that the page has the expected title (exact match)
    */
   async toHaveTitle(expectedTitle: string): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const driver = this.page['driver'];
         const actualTitle = await driver.getTitle();
         AssertHelper.equal(actualTitle, expectedTitle);
       }),
-      `page to have title "${expectedTitle}"`
+      `page to have title "${expectedTitle}"`,
+      this.timeout
     );
   }
 
@@ -436,13 +425,14 @@ export class PageAssertions {
    * Assert that the page title contains the expected substring
    */
   async toHaveTitleContaining(expectedSubstring: string): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const driver = this.page['driver'];
         const actualTitle = await driver.getTitle();
         AssertHelper.include(actualTitle, expectedSubstring);
       }),
-      `page title to contain "${expectedSubstring}"`
+      `page title to contain "${expectedSubstring}"`,
+      this.timeout
     );
   }
 
@@ -450,7 +440,7 @@ export class PageAssertions {
    * Assert that the page title matches the expected regex pattern
    */
   async toHaveTitleMatching(pattern: RegExp): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const driver = this.page['driver'];
         const actualTitle = await driver.getTitle();
@@ -458,7 +448,8 @@ export class PageAssertions {
           throw new Error(`Title "${actualTitle}" does not match pattern ${pattern}`);
         }
       }),
-      `page title to match pattern ${pattern}`
+      `page title to match pattern ${pattern}`,
+      this.timeout
     );
   }
 
@@ -466,13 +457,14 @@ export class PageAssertions {
    * Assert that the page has the expected URL (exact match)
    */
   async toHaveURL(expectedUrl: string): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const driver = this.page['driver'];
         const actualUrl = await driver.getCurrentUrl();
         AssertHelper.equal(actualUrl, expectedUrl);
       }),
-      `page to have URL "${expectedUrl}"`
+      `page to have URL "${expectedUrl}"`,
+      this.timeout
     );
   }
 
@@ -480,13 +472,14 @@ export class PageAssertions {
    * Assert that the page URL contains the expected substring
    */
   async toHaveURLContaining(expectedSubstring: string): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const driver = this.page['driver'];
         const actualUrl = await driver.getCurrentUrl();
         AssertHelper.include(actualUrl, expectedSubstring);
       }),
-      `page URL to contain "${expectedSubstring}"`
+      `page URL to contain "${expectedSubstring}"`,
+      this.timeout
     );
   }
 
@@ -494,7 +487,7 @@ export class PageAssertions {
    * Assert that the page URL matches the expected regex pattern
    */
   async toHaveURLMatching(pattern: RegExp): Promise<void> {
-    await this.waitUntil(
+    await waitUntil(
       () => safeAssert(async () => {
         const driver = this.page['driver'];
         const actualUrl = await driver.getCurrentUrl();
@@ -502,7 +495,8 @@ export class PageAssertions {
           throw new Error(`URL "${actualUrl}" does not match pattern ${pattern}`);
         }
       }),
-      `page URL to match pattern ${pattern}`
+      `page URL to match pattern ${pattern}`,
+      this.timeout
     );
   }
 }
