@@ -181,6 +181,36 @@ export class ConfigLoader {
     return value as T;
   }
 
+  /**
+   * Generic method to get enum value from environment variable
+   * @param key - Environment variable key
+   * @param defaultValue - Default enum value
+   * @param enumObject - The enum object to validate against
+   * @param transform - Optional transformation function (e.g., toUpperCase, toLowerCase)
+   */
+  private getEnvEnum<T extends string>(
+    key: string, 
+    defaultValue: T, 
+    enumObject: Record<string, T>,
+    transform: 'uppercase' | 'lowercase' | 'none' = 'none'
+  ): T {
+    return this.getEnv(key, defaultValue, (value) => {
+      let transformedValue = value;
+      
+      if (transform === 'uppercase') {
+        transformedValue = value.toUpperCase();
+      } else if (transform === 'lowercase') {
+        transformedValue = value.toLowerCase();
+      }
+      
+      if (Object.values(enumObject).includes(transformedValue as T)) {
+        return transformedValue as T;
+      }
+      
+      throw new Error(`Invalid enum value: ${value}`);
+    });
+  }
+
   private getEnvString(key: string, defaultValue: string): string {
     return this.getEnv(key, defaultValue);
   }
@@ -198,43 +228,19 @@ export class ConfigLoader {
   }
 
   private getEnvBrowserType(key: string, defaultValue: BrowserType): BrowserType {
-    return this.getEnv(key, defaultValue, (value) => {
-      const upperValue = value.toUpperCase();
-      if (Object.values(BrowserType).includes(upperValue as BrowserType)) {
-        return upperValue as BrowserType;
-      }
-      throw new Error('Invalid browser type');
-    });
+    return this.getEnvEnum(key, defaultValue, BrowserType, 'uppercase');
   }
 
   private getEnvEnvironmentType(key: string, defaultValue: EnvironmentType): EnvironmentType {
-    return this.getEnv(key, defaultValue, (value) => {
-      const upperValue = value.toUpperCase();
-      if (Object.values(EnvironmentType).includes(upperValue as EnvironmentType)) {
-        return upperValue as EnvironmentType;
-      }
-      throw new Error('Invalid environment type');
-    });
+    return this.getEnvEnum(key, defaultValue, EnvironmentType, 'uppercase');
   }
 
   private getEnvLogLevel(key: string, defaultValue: LogLevel): LogLevel {
-    return this.getEnv(key, defaultValue, (value) => {
-      const upperValue = value.toUpperCase();
-      if (Object.values(LogLevel).includes(upperValue as LogLevel)) {
-        return upperValue as LogLevel;
-      }
-      throw new Error('Invalid log level');
-    });
+    return this.getEnvEnum(key, defaultValue, LogLevel, 'uppercase');
   }
 
   private getEnvReporterType(key: string, defaultValue: ReporterType): ReporterType {
-    return this.getEnv(key, defaultValue, (value) => {
-      const lowerValue = value.toLowerCase();
-      if (Object.values(ReporterType).includes(lowerValue as ReporterType)) {
-        return lowerValue as ReporterType;
-      }
-      throw new Error('Invalid reporter type');
-    });
+    return this.getEnvEnum(key, defaultValue, ReporterType, 'lowercase');
   }
 
   /**
