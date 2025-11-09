@@ -360,18 +360,6 @@ export class SanElement {
     `, el, fullSequence);
   }
 
-    /**
-     * Click the element using custom JavaScript logic with multiple criteria  /**
-   * Execute custom JavaScript to find and click element(s)
-   * Useful for complex scenarios where standard locators don't work
-   * @param driver WebDriver instance
-   * @param findAndClickScript JavaScript code to find and click element
-   * @param args Arguments to pass to the script
-   */
-  static async clickWithJavaScriptByCriteria(driver: ThenableWebDriver, findAndClickScript: string, ...args: any[]) {
-    await driver.executeScript(findAndClickScript, ...args);
-  }
-
   private async typeKeys(keys: string, options?: ActionOptions): Promise<void> {
     const el = await this.findElementWithActionability(ActionType.TYPE, options);
     await el.clear();

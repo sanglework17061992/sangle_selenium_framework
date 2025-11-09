@@ -1,8 +1,6 @@
 import { BasePage } from './BasePage';
 import { configLoader } from '../config/ConfigLoader';
 import { Key } from 'selenium-webdriver';
-import SanElement from '../core/elements/SanElement';
-import { HtmlHelper } from '../helpers/HtmlHelper';
 
 export class TodoPage extends BasePage {
   get newTodoInput() { return this.byCss('.new-todo'); }
@@ -43,7 +41,7 @@ export class TodoPage extends BasePage {
       const texts: string[] = [];
       for (const label of labels) {
         const textContent = await label.getAttribute('textContent') || await label.getText();
-        texts.push(HtmlHelper.decodeEntities(textContent));
+        texts.push(textContent);
       }
       return texts;
     } catch {
@@ -58,26 +56,9 @@ export class TodoPage extends BasePage {
   }  
   
   async deleteTodo(text: string): Promise<void> {
-    // Use SanElement's static method to execute JavaScript for finding and clicking the delete button
-    const findAndClickScript = `
-      const labels = document.querySelectorAll('.todo-list li label');
-      for (const label of labels) {
-        if (label.textContent.trim() === arguments[0]) {
-          const li = label.closest('li');
-          const button = li.querySelector('button.destroy');
-          if (button) {
-            // Force visibility and click
-            button.style.display = 'block';
-            button.style.visibility = 'visible';
-            button.click();
-            return;
-          }
-        }
-      }
-      throw new Error('Todo item not found: ' + arguments[0]);
-    `;
-
-    await SanElement.clickWithJavaScriptByCriteria(this.driver, findAndClickScript, text);
+    // Delete button is hidden by default in TodoMVC, use JavaScript click to bypass visibility checks
+    const deleteButton = this.getTodoDeleteByText(text);
+    await deleteButton.clickWithJavaScript();
   }  
   
   async clearCompleted(): Promise<void> {

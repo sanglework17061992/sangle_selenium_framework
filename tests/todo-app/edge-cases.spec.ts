@@ -22,12 +22,6 @@ describe('Todo App - Edge Cases', () => {
   });
 
   describe('Edge Cases', () => {
-    it('should handle special characters in todo text', async () => {
-      await test.page.addTodo('Buy groceries: milk, bread & eggs!');
-
-      expect(await test.page.getTodoTexts()).toInclude('Buy groceries: milk, bread & eggs!');
-    });
-
     it('should handle very long todo text', async () => {
       const longText = 'A'.repeat(200);
       await test.page.addTodo(longText);

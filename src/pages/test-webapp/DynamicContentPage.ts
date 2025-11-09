@@ -16,11 +16,7 @@ export class DynamicContentPage extends BasePage {
   get addItemBtn() { return this.byId('addItemBtn'); }
   get itemList() { return this.byId('itemList'); }
   get itemElements() { return this.byCssAll('#itemList li'); }
-
-  async open(): Promise<void> {
-    await super.open('http://localhost:3001/dynamic-content');
-  }
-
+  
   async addElement(): Promise<void> {
     await this.addElementBtn.scrollIntoView();
     await this.addElementBtn.click({ force: true });

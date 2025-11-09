@@ -33,10 +33,6 @@ export class DelayedElementsPage extends BasePage {
   
   get results() { return this.byId('results'); }
 
-  async open(): Promise<void> {
-    await super.open('http://localhost:3001/delayed-elements');
-  }
-
   async setDelay(milliseconds: number): Promise<void> {
     await this.delaySlider.clear();
     await this.delaySlider.type(milliseconds.toString());

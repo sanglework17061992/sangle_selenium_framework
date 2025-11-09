@@ -29,10 +29,6 @@ export class FormInteractionsPage extends BasePage {
   get formState() { return this.byId('formState'); }
   get submitStatus() { return this.byId('submitStatus'); }
 
-  async open(): Promise<void> {
-    await super.open('http://localhost:3001/form-interactions');
-  }
-
   async fillTextInputs(username: string, email: string, password: string): Promise<void> {
     await this.usernameInput.type(username);
     await this.emailInput.type(email);

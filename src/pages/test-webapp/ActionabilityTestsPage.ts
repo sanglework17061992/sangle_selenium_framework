@@ -42,10 +42,6 @@ export class ActionabilityTestsPage extends BasePage {
   get obscuringLayer() { return this.byId('obscuringLayer'); }
   get multiIssueBtn() { return this.byId('multiIssueBtn'); }
 
-  async open(): Promise<void> {
-    await super.open('http://localhost:3001/actionability-tests');
-  }
-
   // Visibility Tests
   async showHiddenElement(): Promise<void> {
     await this.showHiddenBtn.scrollIntoView();

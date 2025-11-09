@@ -15,10 +15,6 @@ export class OverlayTestsPage extends BasePage {
   // Stacked Overlays Tests
   get stackedOverlayBtn() { return this.byId('stackedOverlayBtn'); }
 
-  async open(): Promise<void> {
-    await super.open('http://localhost:3001/overlay-tests');
-  }
-
   // Modal methods
   async openModal(): Promise<void> {
     await this.openModalBtn.scrollIntoView();
