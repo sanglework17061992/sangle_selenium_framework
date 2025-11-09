@@ -332,32 +332,24 @@ export class SanElement {
     const t = timeout ?? this.defaultTimeout;
     await this.driver.wait(until.elementLocated(by), t);
   }
- 
-  async clickWithForcedVisibility(timeout?: number) {
-    const el = await this.findElementForRead(timeout);
-    // Use JavaScript to dispatch click event - more reliable than modifying styles
-    // This works even when element is hidden, covered, or has CSS restrictions
-    await this.driver.executeScript(`
-      const element = arguments[0];
-      
-      // Dispatch mousedown, mouseup, and click events
-      const eventOptions = { bubbles: true, cancelable: true, view: window };
-      element.dispatchEvent(new MouseEvent('mousedown', eventOptions));
-      element.dispatchEvent(new MouseEvent('mouseup', eventOptions));
-      element.dispatchEvent(new MouseEvent('click', eventOptions));
-    `, el);
-  }
 
+  /**
+   * Click element using JavaScript execution
+   * Bypasses all actionability checks - useful when standard click fails
+   * @param timeout Optional timeout for finding element
+   */
   async clickWithJavaScript(timeout?: number) {
     const el = await this.findElementForRead(timeout);
     await this.driver.executeScript('arguments[0].click();', el);
   }
 
-  async clickWithCustomJavaScript(javaScriptFn: (element: any) => void, timeout?: number) {
-    const el = await this.findElementForRead(timeout);
-    await this.driver.executeScript(javaScriptFn, el);
-  }
-
+  /**
+   * Execute custom JavaScript to find and click element(s)
+   * Useful for complex scenarios where standard locators don't work
+   * @param driver WebDriver instance
+   * @param findAndClickScript JavaScript code to find and click element
+   * @param args Arguments to pass to the script
+   */
   static async clickWithJavaScriptByCriteria(driver: ThenableWebDriver, findAndClickScript: string, ...args: any[]) {
     await driver.executeScript(findAndClickScript, ...args);
   }
