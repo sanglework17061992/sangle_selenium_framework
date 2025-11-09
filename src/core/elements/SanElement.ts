@@ -145,20 +145,26 @@ export class SanElement {
   }
 
   async type(text?: string, keys?: string, options?: ActionOptions) {
+    // Validate: at least one parameter must be provided
+    if (!text && !keys) {
+      throw new Error('type() requires either text or keys parameter');
+    }
+
+    // Build operation description for error messages
     let operation: string;
     if (text && keys) {
-      operation = `type text "${text}" and press keys "${keys}"`;
+      const keyDesc = typeof keys === 'string' ? keys : 'special key';
+      operation = `type text "${text}" and press ${keyDesc}`;
     } else if (text) {
       operation = `type text "${text}"`;
     } else {
-      operation = `send keys "${keys}"`;
+      const keyDesc = typeof keys === 'string' ? keys : 'special key';
+      operation = `send ${keyDesc}`;
     }
 
     return this.executeAction(async () => {
       const keysToSend = (text || '') + (keys || '');
-      if (keysToSend) {
-        await this.typeKeys(keysToSend, options);
-      }
+      await this.typeKeys(keysToSend, options);
     }, operation);
   }
 
