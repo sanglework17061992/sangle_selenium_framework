@@ -18,29 +18,24 @@ export class DynamicContentPage extends BasePage {
   get itemElements() { return this.byCssAll('#itemList li'); }
   
   async addElement(): Promise<void> {
-    await this.addElementBtn.scrollIntoView();
-    await this.addElementBtn.click({ force: true });
+    await this.addElementBtn.click();
   }
 
   async removeElement(): Promise<void> {
-    await this.removeElementBtn.scrollIntoView();
-    await this.removeElementBtn.click({ force: true });
+    await this.removeElementBtn.click();
   }
 
   async clearAll(): Promise<void> {
-    await this.clearAllBtn.scrollIntoView();
-    await this.clearAllBtn.click({ force: true });
+    await this.clearAllBtn.click();
   }
 
   async replaceContent(): Promise<void> {
-    await this.replaceBtn.scrollIntoView();
-    await this.replaceBtn.click({ force: true });
+    await this.replaceBtn.click();
   }
 
   async addItem(itemName: string): Promise<void> {
-    await this.itemInput.scrollIntoView();
     await this.itemInput.type(itemName);
-    await this.addItemBtn.click({ force: true });
+    await this.addItemBtn.click();
   }
 
   async getItemsCount(): Promise<number> {

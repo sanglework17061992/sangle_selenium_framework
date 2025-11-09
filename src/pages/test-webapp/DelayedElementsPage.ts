@@ -43,13 +43,11 @@ export class DelayedElementsPage extends BasePage {
   }
 
   async triggerDelayedButton(): Promise<void> {
-    await this.triggerDelayedBtn.scrollIntoView();
-    await this.triggerDelayedBtn.click({ force: true });
+    await this.triggerDelayedBtn.click();
   }
 
   async clickDelayedButton(): Promise<void> {
-    await this.delayedButton.scrollIntoView();
-    await this.delayedButton.click({ force: true });
+    await this.delayedButton.click();
   }
 
   async getDelayedButtonStatus(): Promise<string> {
@@ -57,7 +55,6 @@ export class DelayedElementsPage extends BasePage {
   }
 
   async resetAll(): Promise<void> {
-    await this.resetBtn.scrollIntoView();
-    await this.resetBtn.click({ force: true });
+    await this.resetBtn.click();
   }
 }

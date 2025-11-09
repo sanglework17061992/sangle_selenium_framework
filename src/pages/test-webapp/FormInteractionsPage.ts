@@ -40,7 +40,6 @@ export class FormInteractionsPage extends BasePage {
   }
 
   async checkNewsletter(): Promise<void> {
-    await this.newsletterCheckbox.scrollIntoView();
     await this.newsletterCheckbox.check({ force: true });
   }
 
@@ -51,7 +50,6 @@ export class FormInteractionsPage extends BasePage {
       other: this.genderOther
     };
     const radio = radioMap[gender];
-    await radio.scrollIntoView();
     await radio.click({ force: true });
   }
 
@@ -64,12 +62,10 @@ export class FormInteractionsPage extends BasePage {
   }
 
   async submitForm(): Promise<void> {
-    await this.submitBtn.scrollIntoView();
     await this.submitBtn.click({ force: true });
   }
 
   async clearForm(): Promise<void> {
-    await this.clearBtn.scrollIntoView();
     await this.clearBtn.click({ force: true });
   }
 

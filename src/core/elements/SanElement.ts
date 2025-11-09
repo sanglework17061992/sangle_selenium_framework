@@ -75,7 +75,17 @@ export class SanElement {
     await this.driver.wait(until.elementLocated(by), timeout);
     const element = await this.driver.findElement(by);
     
-    // Step 2: Perform actionability checks (unless forced)
+    // Step 2: Scroll element into view (like Playwright does automatically)
+    // Use 'nearest' to minimize scrolling and reduce chance of obscuring
+    await this.driver.executeScript(
+      'arguments[0].scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });',
+      element
+    );
+    
+    // Give browser a moment to settle after scroll (similar to Playwright's implementation)
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    // Step 3: Perform actionability checks (unless forced)
     if (!force) {
       const requirements: ActionabilityOptions = {
         ...getActionRequirements(actionType),

@@ -17,18 +17,15 @@ export class OverlayTestsPage extends BasePage {
 
   // Modal methods
   async openModal(): Promise<void> {
-    await this.openModalBtn.scrollIntoView();
-    await this.openModalBtn.click({ force: true });
+    await this.openModalBtn.click();
   }
 
   async closeModal(): Promise<void> {
-    await this.closeModalBtn.scrollIntoView();
-    await this.closeModalBtn.click({ force: true });
+    await this.closeModalBtn.click();
   }
 
   async clickTargetButton(): Promise<void> {
-    await this.targetBtn.scrollIntoView();
-    await this.targetBtn.click({ force: true });
+    await this.targetBtn.click();
   }
 
   async isModalVisible(): Promise<boolean> {
@@ -38,8 +35,7 @@ export class OverlayTestsPage extends BasePage {
 
   // Loading overlay methods
   async triggerLoading(): Promise<void> {
-    await this.triggerLoadingBtn.scrollIntoView();
-    await this.triggerLoadingBtn.click({ force: true });
+    await this.triggerLoadingBtn.click();
   }
 
   async getLoadingResult(): Promise<string> {
@@ -53,7 +49,6 @@ export class OverlayTestsPage extends BasePage {
 
   // Stacked overlays methods
   async showStackedOverlays(): Promise<void> {
-    await this.stackedOverlayBtn.scrollIntoView();
-    await this.stackedOverlayBtn.click({ force: true });
+    await this.stackedOverlayBtn.click();
   }
 }

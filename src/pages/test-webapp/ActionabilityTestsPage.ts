@@ -42,9 +42,8 @@ export class ActionabilityTestsPage extends BasePage {
   get obscuringLayer() { return this.byId('obscuringLayer'); }
   get multiIssueBtn() { return this.byId('multiIssueBtn'); }
 
-  // Visibility Tests
+    // Visibility Tests
   async showHiddenElement(): Promise<void> {
-    await this.showHiddenBtn.scrollIntoView();
     await this.showHiddenBtn.click({ force: true });
   }
 
@@ -53,7 +52,6 @@ export class ActionabilityTestsPage extends BasePage {
   }
 
   async makeInvisibleVisible(): Promise<void> {
-    await this.makeVisibleBtn.scrollIntoView();
     await this.makeVisibleBtn.click({ force: true });
   }
 
@@ -61,18 +59,24 @@ export class ActionabilityTestsPage extends BasePage {
     return await this.invisibleBtn.isDisplayed();
   }
 
-  async makeOpacityButtonOpaque(): Promise<void> {
-    await this.makeOpaqueBtn.scrollIntoView();
+  async makeOpaque(): Promise<void> {
     await this.makeOpaqueBtn.click({ force: true });
+  }
+
+  async makeOpacityButtonOpaque(): Promise<void> {
+    await this.makeOpaque();
   }
 
   async isOpacityButtonVisible(): Promise<boolean> {
     return await this.opacityBtn.isDisplayed();
   }
 
-  async restoreZeroSizeButton(): Promise<void> {
-    await this.restoreSizeBtn.scrollIntoView();
+  async restoreSize(): Promise<void> {
     await this.restoreSizeBtn.click({ force: true });
+  }
+
+  async restoreZeroSizeButton(): Promise<void> {
+    await this.restoreSize();
   }
 
   async isZeroSizeButtonVisible(): Promise<boolean> {
@@ -80,38 +84,55 @@ export class ActionabilityTestsPage extends BasePage {
   }
 
   // Stability Tests
-  async stopMovement(): Promise<void> {
-    await this.stopMovingBtn.scrollIntoView();
+  async stopMoving(): Promise<void> {
     await this.stopMovingBtn.click({ force: true });
   }
 
+  async stopMovement(): Promise<void> {
+    await this.stopMoving();
+  }
+
+  async isMovingButtonStable(): Promise<boolean> {
+    return await this.movingBtn.isDisplayed();
+  }
+
   async clickMovingButton(): Promise<void> {
-    await this.movingBtn.scrollIntoView();
     await this.movingBtn.click({ force: true });
   }
 
-  async clickAnimateButton(): Promise<void> {
-    await this.animateBtn.scrollIntoView();
+  async triggerAnimation(): Promise<void> {
     await this.animateBtn.click({ force: true });
   }
 
-  async getAnimatedContainerText(): Promise<string> {
-    return await this.animatedContainer.getText();
+  async clickAnimateButton(): Promise<void> {
+    await this.triggerAnimation();
+  }
+
+  async isAnimationRunning(): Promise<boolean> {
+    const container = await this.animatedContainer.raw();
+    const className = await container.getAttribute('class');
+    return className?.includes('animating') ?? false;
   }
 
   // Enabled Tests
-  async enableDisabledButtonElement(): Promise<void> {
-    await this.enableDisabledBtn.scrollIntoView();
+  async enableDisabledButton(): Promise<void> {
     await this.enableDisabledBtn.click({ force: true });
+  }
+
+  async enableDisabledButtonElement(): Promise<void> {
+    await this.enableDisabledButton();
   }
 
   async isDisabledButtonEnabled(): Promise<boolean> {
     return await this.disabledBtn.isEnabled();
   }
 
-  async enableDisabledInputElement(): Promise<void> {
-    await this.enableInputBtn.scrollIntoView();
+  async enableDisabledInput(): Promise<void> {
     await this.enableInputBtn.click({ force: true });
+  }
+
+  async enableDisabledInputElement(): Promise<void> {
+    await this.enableDisabledInput();
   }
 
   async isDisabledInputEnabled(): Promise<boolean> {
@@ -119,7 +140,6 @@ export class ActionabilityTestsPage extends BasePage {
   }
 
   async toggleButtonState(): Promise<void> {
-    await this.toggleStateBtn.scrollIntoView();
     await this.toggleStateBtn.click({ force: true });
   }
 
@@ -128,54 +148,67 @@ export class ActionabilityTestsPage extends BasePage {
   }
 
   // Editable Tests
-  async makeReadonlyInputEditable(): Promise<void> {
-    await this.makeEditableBtn.scrollIntoView();
+  async makeReadonlyEditable(): Promise<void> {
     await this.makeEditableBtn.click({ force: true });
+  }
+
+  async makeReadonlyInputEditable(): Promise<void> {
+    await this.makeReadonlyEditable();
   }
 
   async isReadonlyInputEditable(): Promise<boolean> {
     const readonly = await this.readonlyInput.getAttribute('readonly');
-    return readonly === null || readonly === 'false';
+    return readonly === null;
   }
 
-  async enableTextarea(): Promise<void> {
-    await this.enableTextareaBtn.scrollIntoView();
+  async enableDisabledTextarea(): Promise<void> {
     await this.enableTextareaBtn.click({ force: true });
   }
 
-  async isTextareaEnabled(): Promise<boolean> {
+  async enableTextarea(): Promise<void> {
+    await this.enableDisabledTextarea();
+  }
+
+  async isTextareaEditable(): Promise<boolean> {
     return await this.disabledTextarea.isEnabled();
   }
 
+  async isTextareaEnabled(): Promise<boolean> {
+    return await this.isTextareaEditable();
+  }
+
   async toggleReadonlyState(): Promise<void> {
-    await this.toggleReadonlyBtn.scrollIntoView();
     await this.toggleReadonlyBtn.click({ force: true });
   }
 
   async isToggleReadonlyInputEditable(): Promise<boolean> {
     const readonly = await this.toggleReadonlyInput.getAttribute('readonly');
-    return readonly === null || readonly === 'false';
+    return readonly === null;
   }
 
   // Pointer Events Tests
   async enablePointerEvents(): Promise<void> {
-    await this.enablePointerBtn.scrollIntoView();
     await this.enablePointerBtn.click({ force: true });
   }
 
   async clickNoPointerButton(): Promise<void> {
-    await this.noPointerBtn.scrollIntoView();
     await this.noPointerBtn.click({ force: true });
   }
 
-  async removeOverlay(): Promise<void> {
-    await this.removeOverlayBtn.scrollIntoView();
+  async removeObscuringLayer(): Promise<void> {
     await this.removeOverlayBtn.click({ force: true });
   }
 
+  async removeOverlay(): Promise<void> {
+    await this.removeObscuringLayer();
+  }
+
   async clickObscuredButton(): Promise<void> {
-    await this.obscuredBtn.scrollIntoView();
     await this.obscuredBtn.click({ force: true });
+  }
+
+  async getAnimatedContainerText(): Promise<string> {
+    return await this.animatedContainer.getText();
   }
 
   async isObscuringLayerVisible(): Promise<boolean> {
