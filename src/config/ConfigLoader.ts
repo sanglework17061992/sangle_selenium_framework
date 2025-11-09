@@ -43,7 +43,6 @@ export interface TimeoutConfig {
 }
 
 export interface TestConfig {
-  environment: EnvironmentType;
   retryCount: number;
   retryInterval: number;
   parallel: boolean;
@@ -134,7 +133,6 @@ export class ConfigLoader {
 
   private loadTestConfig(): TestConfig {
     return {
-      environment: this.getEnvEnvironmentType('ENVIRONMENT', EnvironmentType.QA),
       retryCount: this.getEnvNumber('RETRY_COUNT', 3),
       retryInterval: this.getEnvNumber('RETRY_INTERVAL', 500),
       parallel: this.getEnvBoolean('PARALLEL', false),
