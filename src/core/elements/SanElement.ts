@@ -127,15 +127,6 @@ export class SanElement {
     }
   }
 
-  /**
-   * Get Select wrapper for dropdown element
-   * @param element WebElement to wrap
-   * @returns Select instance
-   */
-  private getSelectElement(element: WebElement): Select {
-    return new Select(element);
-  }
-
   // Core interactions: click, type, getText, isDisplayed, getAttribute
   async click(options?: ActionOptions) {
     return this.executeAction(async () => {
@@ -273,6 +264,15 @@ export class SanElement {
     }, `drag and drop to target ${JSON.stringify(target.locator)}`);
   }
 
+    /**
+   * Get Select wrapper for dropdown element
+   * @param element WebElement to wrap
+   * @returns Select instance
+   */
+  private getSelectElement(element: WebElement): Select {
+    return new Select(element);
+  }
+
   // Select dropdown methods
   async selectByValue(value: string, options?: ActionOptions) {
     const el = await this.findElementWithActionability(ActionType.SELECT, options);
@@ -335,12 +335,16 @@ export class SanElement {
  
   async clickWithForcedVisibility(timeout?: number) {
     const el = await this.findElementForRead(timeout);
-    // Use JavaScript to force the element to be visible and clickable
+    // Use JavaScript to dispatch click event - more reliable than modifying styles
+    // This works even when element is hidden, covered, or has CSS restrictions
     await this.driver.executeScript(`
-      arguments[0].style.display = 'block';
-      arguments[0].style.visibility = 'visible';
-      arguments[0].style.opacity = '1';
-      arguments[0].click();
+      const element = arguments[0];
+      
+      // Dispatch mousedown, mouseup, and click events
+      const eventOptions = { bubbles: true, cancelable: true, view: window };
+      element.dispatchEvent(new MouseEvent('mousedown', eventOptions));
+      element.dispatchEvent(new MouseEvent('mouseup', eventOptions));
+      element.dispatchEvent(new MouseEvent('click', eventOptions));
     `, el);
   }
 
