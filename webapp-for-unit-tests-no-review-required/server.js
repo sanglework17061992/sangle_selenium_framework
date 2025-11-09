@@ -33,6 +33,10 @@ app.get('/dynamic-content', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'dynamic-content.html'));
 });
 
+app.get('/javascript-click-tests', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'javascript-click-tests.html'));
+});
+
 // API endpoint for form submission
 app.post('/api/submit-form', (req, res) => {
   console.log('Form submitted:', req.body);
@@ -48,4 +52,5 @@ app.listen(PORT, () => {
   console.log(`  - http://localhost:${PORT}/actionability-tests`);
   console.log(`  - http://localhost:${PORT}/overlay-tests`);
   console.log(`  - http://localhost:${PORT}/dynamic-content`);
+  console.log(`  - http://localhost:${PORT}/javascript-click-tests`);
 });

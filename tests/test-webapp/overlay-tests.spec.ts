@@ -1,6 +1,6 @@
 import { describe, it, before, after, beforeEach, afterEach } from 'mocha';
 import { OverlayTestsPage } from '../../src/pages/test-webapp/OverlayTestsPage';
-import { expectValue } from '../../src/assertion/SanAssertion';
+import { expect } from '../../src/assertion/SanAssertion';
 import { BaseTest as GenericBaseTest } from '../../src/base';
 import { createReporter } from '../../src/reporters';
 import { ThenableWebDriver } from 'selenium-webdriver';
@@ -72,7 +72,7 @@ describe('Test Webapp - Overlay Tests', () => {
       await new Promise(resolve => setTimeout(resolve, 500));
       const alert = await test.getDriver().switchTo().alert();
       const alertText = await alert.getText();
-      expectValue(alertText).toInclude('Target button clicked');
+      expect(alertText).toInclude('Target button clicked');
       await alert.accept();
     });
   });
@@ -85,7 +85,7 @@ describe('Test Webapp - Overlay Tests', () => {
       await new Promise(resolve => setTimeout(resolve, 3000));
       
       const result = await test.page.loadingResult.getText();
-      expectValue(result).toInclude('complete');
+      expect(result).toInclude('complete');
     });
 
     it('should show stacked overlays successfully', async () => {

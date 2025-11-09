@@ -1,6 +1,6 @@
 import { describe, it, before, after, beforeEach, afterEach } from 'mocha';
 import { ActionabilityTestsPage } from '../../src/pages/test-webapp/ActionabilityTestsPage';
-import { expectValue } from '../../src/assertion/SanAssertion';
+import { expect } from '../../src/assertion/SanAssertion';
 import { BaseTest as GenericBaseTest } from '../../src/base';
 import { createReporter } from '../../src/reporters';
 import { ThenableWebDriver } from 'selenium-webdriver';
@@ -41,25 +41,25 @@ describe('Test Webapp - Actionability Tests', () => {
     it('should show hidden element and verify it becomes visible', async () => {
       await test.page.showHiddenElement();
       const isVisible = await test.page.isHiddenButtonVisible();
-      expectValue(isVisible).toBe(true);
+      expect(isVisible).toBe(true);
     });
 
     it('should make invisible element visible', async () => {
       await test.page.makeInvisibleVisible();
       const isVisible = await test.page.isInvisibleButtonVisible();
-      expectValue(isVisible).toBe(true);
+      expect(isVisible).toBe(true);
     });
 
     it('should make opacity button opaque and visible', async () => {
       await test.page.makeOpacityButtonOpaque();
       const isVisible = await test.page.isOpacityButtonVisible();
-      expectValue(isVisible).toBe(true);
+      expect(isVisible).toBe(true);
     });
 
     it('should restore zero size button', async () => {
       await test.page.restoreZeroSizeButton();
       const isVisible = await test.page.isZeroSizeButtonVisible();
-      expectValue(isVisible).toBe(true);
+      expect(isVisible).toBe(true);
     });
   });
 
@@ -75,7 +75,7 @@ describe('Test Webapp - Actionability Tests', () => {
       // Wait for animation to complete
       await new Promise(resolve => setTimeout(resolve, 2000));
       const text = await test.page.getAnimatedContainerText();
-      expectValue(text).toInclude('Stable');
+      expect(text).toInclude('Stable');
     });
   });
 
@@ -83,20 +83,20 @@ describe('Test Webapp - Actionability Tests', () => {
     it('should enable disabled button', async () => {
       await test.page.enableDisabledButtonElement();
       const isEnabled = await test.page.isDisabledButtonEnabled();
-      expectValue(isEnabled).toBe(true);
+      expect(isEnabled).toBe(true);
     });
 
     it('should enable disabled input', async () => {
       await test.page.enableDisabledInputElement();
       const isEnabled = await test.page.isDisabledInputEnabled();
-      expectValue(isEnabled).toBe(true);
+      expect(isEnabled).toBe(true);
     });
 
     it('should toggle button state', async () => {
       const initialState = await test.page.isToggleButtonEnabled();
       await test.page.toggleButtonState();
       const newState = await test.page.isToggleButtonEnabled();
-      expectValue(newState).toBe(!initialState);
+      expect(newState).toBe(!initialState);
     });
   });
 
@@ -104,20 +104,20 @@ describe('Test Webapp - Actionability Tests', () => {
     it('should make readonly input editable', async () => {
       await test.page.makeReadonlyInputEditable();
       const isEditable = await test.page.isReadonlyInputEditable();
-      expectValue(isEditable).toBe(true);
+      expect(isEditable).toBe(true);
     });
 
     it('should enable textarea', async () => {
       await test.page.enableTextarea();
       const isEnabled = await test.page.isTextareaEnabled();
-      expectValue(isEnabled).toBe(true);
+      expect(isEnabled).toBe(true);
     });
 
     it('should toggle readonly state', async () => {
       const initialState = await test.page.isToggleReadonlyInputEditable();
       await test.page.toggleReadonlyState();
       const newState = await test.page.isToggleReadonlyInputEditable();
-      expectValue(newState).toBe(!initialState);
+      expect(newState).toBe(!initialState);
     });
   });
 
@@ -130,7 +130,7 @@ describe('Test Webapp - Actionability Tests', () => {
 
     it('should remove overlay and click obscured button', async () => {
       const overlayVisible = await test.page.isObscuringLayerVisible();
-      expectValue(overlayVisible).toBe(true);
+      expect(overlayVisible).toBe(true);
       
       await test.page.removeOverlay();
       await test.page.clickObscuredButton();

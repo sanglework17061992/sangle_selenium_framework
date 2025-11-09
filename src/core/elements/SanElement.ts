@@ -334,16 +334,34 @@ export class SanElement {
   }
 
   /**
-   * Click element using JavaScript execution
-   * Bypasses all actionability checks - useful when standard click fails
-   * @param timeout Optional timeout for finding element
+   * Click element using JavaScript (bypasses all actionability checks)
+   * @param timeout Optional timeout
+   * @param fullSequence If true, dispatches full MouseEvent sequence (mousedown, mouseup, click).
+   *                     If false, dispatches only click event.
+   *                     Both methods are useful for elements that are not interactable due to visibility/overlay issues.
    */
-  async clickWithJavaScript(timeout?: number) {
-    const el = await this.findElementForRead(timeout);
-    await this.driver.executeScript('arguments[0].click();', el);
+  async clickWithJavaScript(timeout?: number, fullSequence: boolean = false) {
+    // For JavaScript clicks, we only need the element to be located, not visible
+    const by = toBy(this.locator);
+    const t = timeout ?? this.defaultTimeout;
+    await this.driver.wait(until.elementLocated(by), t);
+    const el = await this.driver.findElement(by);
+    
+    await this.driver.executeScript(`
+      const element = arguments[0];
+      const dispatchFullSequence = arguments[1];
+      const eventOptions = { bubbles: true, cancelable: true, view: window };
+      
+      if (dispatchFullSequence) {
+        element.dispatchEvent(new MouseEvent('mousedown', eventOptions));
+        element.dispatchEvent(new MouseEvent('mouseup', eventOptions));
+      }
+      element.dispatchEvent(new MouseEvent('click', eventOptions));
+    `, el, fullSequence);
   }
 
-  /**
+    /**
+     * Click the element using custom JavaScript logic with multiple criteria  /**
    * Execute custom JavaScript to find and click element(s)
    * Useful for complex scenarios where standard locators don't work
    * @param driver WebDriver instance

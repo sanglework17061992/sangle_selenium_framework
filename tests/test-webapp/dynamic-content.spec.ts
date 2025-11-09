@@ -1,6 +1,6 @@
 import { describe, it, before, after, beforeEach, afterEach } from 'mocha';
 import { DynamicContentPage } from '../../src/pages/test-webapp/DynamicContentPage';
-import { expectValue } from '../../src/assertion/SanAssertion';
+import { expect } from '../../src/assertion/SanAssertion';
 import { BaseTest as GenericBaseTest } from '../../src/base';
 import { createReporter } from '../../src/reporters';
 import { ThenableWebDriver } from 'selenium-webdriver';
@@ -44,7 +44,7 @@ describe('Test Webapp - Dynamic Content', () => {
       await test.page.addElement();
       
       const containerText = await test.page.dynamicContainer.getText();
-      expectValue(containerText).toInclude('Element');
+      expect(containerText).toInclude('Element');
     });
 
     it('should add items to list', async () => {
@@ -52,7 +52,7 @@ describe('Test Webapp - Dynamic Content', () => {
       await test.page.addItem('Item 2');
       
       const count = await test.page.getItemsCount();
-      expectValue(count).toBe(2);
+      expect(count).toBe(2);
     });
 
     it('should clear all elements', async () => {
