@@ -163,52 +163,78 @@ export class ConfigLoader {
     };
   }
 
+  /**
+   * Generic method to get environment variable with type conversion
+   */
+  private getEnv<T>(key: string, defaultValue: T, converter?: (value: string) => T): T {
+    const value = process.env[key];
+    if (!value) return defaultValue;
+    
+    if (converter) {
+      try {
+        return converter(value);
+      } catch {
+        return defaultValue;
+      }
+    }
+    
+    return value as T;
+  }
+
   private getEnvString(key: string, defaultValue: string): string {
-    return process.env[key] || defaultValue;
+    return this.getEnv(key, defaultValue);
   }
 
   private getEnvNumber(key: string, defaultValue: number): number {
-    const value = process.env[key];
-    if (!value) return defaultValue;
-    const parsed = Number.parseInt(value, 10);
-    return Number.isNaN(parsed) ? defaultValue : parsed;
+    return this.getEnv(key, defaultValue, (value) => {
+      const parsed = Number.parseInt(value, 10);
+      if (Number.isNaN(parsed)) throw new Error('Invalid number');
+      return parsed;
+    });
   }
 
   private getEnvBoolean(key: string, defaultValue: boolean): boolean {
-    const value = process.env[key];
-    if (!value) return defaultValue;
-    return value.toLowerCase() === 'true';
+    return this.getEnv(key, defaultValue, (value) => value.toLowerCase() === 'true');
   }
 
   private getEnvBrowserType(key: string, defaultValue: BrowserType): BrowserType {
-    const value = this.getEnvString(key, defaultValue);
-    const upperValue = value.toUpperCase();
-    return Object.values(BrowserType).includes(upperValue as BrowserType)
-      ? (upperValue as BrowserType)
-      : defaultValue;
+    return this.getEnv(key, defaultValue, (value) => {
+      const upperValue = value.toUpperCase();
+      if (Object.values(BrowserType).includes(upperValue as BrowserType)) {
+        return upperValue as BrowserType;
+      }
+      throw new Error('Invalid browser type');
+    });
   }
 
   private getEnvEnvironmentType(key: string, defaultValue: EnvironmentType): EnvironmentType {
-    const value = this.getEnvString(key, defaultValue);
-    const upperValue = value.toUpperCase();
-    return Object.values(EnvironmentType).includes(upperValue as EnvironmentType)
-      ? (upperValue as EnvironmentType)
-      : defaultValue;
+    return this.getEnv(key, defaultValue, (value) => {
+      const upperValue = value.toUpperCase();
+      if (Object.values(EnvironmentType).includes(upperValue as EnvironmentType)) {
+        return upperValue as EnvironmentType;
+      }
+      throw new Error('Invalid environment type');
+    });
   }
 
   private getEnvLogLevel(key: string, defaultValue: LogLevel): LogLevel {
-    const value = this.getEnvString(key, defaultValue);
-    const upperValue = value.toUpperCase();
-    return Object.values(LogLevel).includes(upperValue as LogLevel)
-      ? (upperValue as LogLevel)
-      : defaultValue;
+    return this.getEnv(key, defaultValue, (value) => {
+      const upperValue = value.toUpperCase();
+      if (Object.values(LogLevel).includes(upperValue as LogLevel)) {
+        return upperValue as LogLevel;
+      }
+      throw new Error('Invalid log level');
+    });
   }
 
   private getEnvReporterType(key: string, defaultValue: ReporterType): ReporterType {
-    const value = this.getEnvString(key, defaultValue).toLowerCase();
-    return Object.values(ReporterType).includes(value as ReporterType)
-      ? (value as ReporterType)
-      : defaultValue;
+    return this.getEnv(key, defaultValue, (value) => {
+      const lowerValue = value.toLowerCase();
+      if (Object.values(ReporterType).includes(lowerValue as ReporterType)) {
+        return lowerValue as ReporterType;
+      }
+      throw new Error('Invalid reporter type');
+    });
   }
 
   /**
