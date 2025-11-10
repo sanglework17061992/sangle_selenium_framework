@@ -157,7 +157,7 @@ export class ConfigLoader {
 
   private loadAppConfig(): AppConfig {
     return {
-      baseUrl: this.getEnvString('BASE_URL', 'https://example.com'),
+      baseUrl: this.getEnvString('BASE_URL', 'http://localhost:3001/'),
       username: this.getEnvString('USERNAME', 'testuser'),
       password: this.getEnvString('PASSWORD', 'testpass123')
     };
@@ -290,6 +290,13 @@ export class ConfigLoader {
    */
   getAppConfig(): AppConfig {
     return this.config.app;
+  }
+
+  /**
+   * Get base URL for application under test
+   */
+  getBaseUrl(): string {
+    return this.config.app.baseUrl;
   }
 
   /**

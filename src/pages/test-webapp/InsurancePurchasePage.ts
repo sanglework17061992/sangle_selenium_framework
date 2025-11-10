@@ -1,4 +1,4 @@
-import { BasePage } from "./BasePage";
+import { BasePage } from "../BasePage";
 
 /**
  * Page Object for OTO Insurance Purchase E2E Test

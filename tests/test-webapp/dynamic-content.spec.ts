@@ -4,6 +4,7 @@ import { expect } from '../../src/assertion/SanAssertion';
 import { BaseTest as GenericBaseTest } from '../../src/base';
 import { createReporter } from '../../src/reporters';
 import { ThenableWebDriver } from 'selenium-webdriver';
+import { configLoader } from '../../src/config/ConfigLoader';
 
 /**
  * DynamicContentPage test class
@@ -14,7 +15,7 @@ class DynamicContentTest extends GenericBaseTest<DynamicContentPage> {
   }
 
   async setupTest(): Promise<void> {
-    await super.setupTest('http://localhost:3001/dynamic-content');
+    await super.setupTest(configLoader.getBaseUrl() + 'dynamic-content');
   }
 }
 

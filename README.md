@@ -19,13 +19,17 @@ A TypeScript Selenium framework with Playwright-style actionability checks:
 
 ## 🧪 Test Webapp
 
-A complete Express.js testing environment with 6 test pages covering all actionability scenarios:
+> **⚠️ NOTE FOR REVIEWERS:** The test webapp has been moved to a separate repository to keep this framework focused on core functionality.  
+> To run the `test-webapp` tests in this project, please clone and run:
+> ```bash
+> git clone https://github.com/sanglework17061992/test-webapp
+> cd test-webapp
+> npm install
+> npm start
+> ```
+> The test webapp will be available at **http://localhost:3001**
 
-```bash
-cd webapp-for-unit-tests-no-review-required
-npm install
-npm start
-```
+A complete Express.js testing environment with 6 test pages covering all actionability scenarios:
 
 **Access at:** http://localhost:3001
 
@@ -36,8 +40,6 @@ npm start
 4. **Overlay Tests** - Loading overlays, modals, obscured elements
 5. **Dynamic Content** - DOM mutations, AJAX content
 6. **Home** - Navigation hub with documentation
-
-📚 **[Full Test Webapp Documentation](webapp-for-unit-tests-no-review-required/README.md)**
 
 ## Framework Architecture
 
