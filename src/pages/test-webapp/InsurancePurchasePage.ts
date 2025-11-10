@@ -354,7 +354,6 @@ export class InsurancePurchasePage extends BasePage {
             await this.policiesTableBody.getText();  // This will wait for element
             
             // Then search for the policy number text in any cell
-            const cell = this.byCss(`#policiesTable td`);
             const allText = await this.policiesTableBody.getText();
             return allText.includes(policyNumber);
         } catch {

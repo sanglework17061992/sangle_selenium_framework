@@ -9,7 +9,6 @@
     "test:allure:run": "rm -rf allure-results allure-report && mocha --reporter allure-mocha && npm run report:allure",
     "test:mochawesome": "mocha --reporter mochawesome",
     "test:mochawesome:run": "rm -rf mochawesome-report && mocha --reporter mochawesome && npm run report:mochawesome",
-    "test:todo-app": "mocha --no-config --require ts-node/register --timeout 60000 --exit 'tests/todo-app/**/*.spec.ts'",
     "test:test-webapp": "mocha --no-config --require ts-node/register --timeout 60000 --exit 'tests/test-webapp/**/*.spec.ts'",
     "report:allure": "allure generate allure-results --clean && allure open",
     "report:allure:open": "allure open allure-report",

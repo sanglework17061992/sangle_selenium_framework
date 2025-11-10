@@ -763,7 +763,7 @@ export function expect<T>(target: SanElement | BasePage | T, timeout?: number): 
   if (target instanceof BasePage) {
     return new PageAssertions(target, timeout);
   }
-  return new ValueAssertions(target as T);
+  return new ValueAssertions(target);
 }
 
 /**
