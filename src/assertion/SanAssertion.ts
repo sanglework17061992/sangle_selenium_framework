@@ -3,6 +3,10 @@ import { configLoader } from '../config/ConfigLoader';
 import { AssertHelper } from '../helpers/AssertHelper';
 import { BasePage } from '../pages/BasePage';
 
+// ============================================================================
+// SECTION: Shared Utilities - Constants and helper functions
+// ============================================================================
+
 const testConfig = configLoader.getTestConfig();
 const DEFAULT_TIMEOUT = 5000; // 5 seconds like Playwright
 const POLL_INTERVAL = 100; // Poll every 100ms
@@ -54,6 +58,10 @@ async function waitUntil(
   }
   throw new Error(timeoutMsg);
 }
+
+// ============================================================================
+// SECTION: ElementAssertions - Auto-retrying assertions for SanElement
+// ============================================================================
 
 /**
  * Auto-retrying assertions for SanElement (locators)
@@ -392,6 +400,10 @@ export class ElementAssertions {
   }
 }
 
+// ============================================================================
+// SECTION: PageAssertions - Auto-retrying assertions for BasePage
+// ============================================================================
+
 /**
  * Auto-retrying assertions for BasePage (page-level checks)
  * These assertions will retry until the condition is met or timeout is reached
@@ -500,6 +512,10 @@ export class PageAssertions {
     );
   }
 }
+
+// ============================================================================
+// SECTION: Helper Functions - Factory functions for creating assertions
+// ============================================================================
 
 /**
  * Create fluent assertions for a SanElement
@@ -617,6 +633,10 @@ export function expectValue<T>(actualValue: T) {
     }
   };
 }
+
+// ============================================================================
+// SECTION: ValueAssertions - Immediate (non-retrying) value checks
+// ============================================================================
 
 /**
  * Value assertions for immediate (non-retrying) checks
@@ -737,6 +757,10 @@ class ValueAssertions<T> {
   }
 }
 
+// ============================================================================
+// SECTION: Main expect() Function - Unified assertion entry point
+// ============================================================================
+
 /**
  * Unified expect function - works with SanElement (auto-retry), BasePage (page-level), and values (immediate)
  * 
@@ -765,6 +789,10 @@ export function expect<T>(target: SanElement | BasePage | T, timeout?: number): 
   }
   return new ValueAssertions(target);
 }
+
+// ============================================================================
+// SECTION: Legacy Assertions Object - Deprecated, use expect() instead
+// ============================================================================
 
 /**
  * Assertion functions for use with expectValue
