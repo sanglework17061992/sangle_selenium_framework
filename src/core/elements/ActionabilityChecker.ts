@@ -22,14 +22,20 @@ export class ActionabilityChecker {
   private static readonly POLL_INTERVAL = 100; // ms between retries
 
   /**
+   * Generic delay helper
+   */
+  private static async delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
    * Check if element is visible (non-empty bounding box, not visibility:hidden)
    * According to Playwright: element has non-empty bounding box and does not have visibility:hidden
    */
   static async isVisible(element: WebElement): Promise<boolean> {
     try {
       // Check if displayed (Selenium built-in)
-      const displayed = await element.isDisplayed();
-      if (!displayed) return false;
+      if (!(await element.isDisplayed())) return false;
 
       // Check bounding box is non-empty
       const rect = await element.getRect();
@@ -67,17 +73,17 @@ export class ActionabilityChecker {
         });
         
         if (i < this.STABILITY_REQUIRED_MATCHES - 1) {
-          await new Promise(resolve => setTimeout(resolve, this.STABILITY_CHECK_INTERVAL));
+          await this.delay(this.STABILITY_CHECK_INTERVAL);
         }
       }
 
       // Check all boxes are identical
-      const firstBox = boxes[0];
+      const first = boxes[0];
       return boxes.every(box => 
-        box.x === firstBox.x &&
-        box.y === firstBox.y &&
-        box.width === firstBox.width &&
-        box.height === firstBox.height
+        box.x === first.x &&
+        box.y === first.y &&
+        box.width === first.width &&
+        box.height === first.height
       );
     } catch {
       return false;
@@ -95,24 +101,16 @@ export class ActionabilityChecker {
       const centerY = rect.y + rect.height / 2;
 
       // Use document.elementFromPoint to check hit target at center point
-      const result = await driver.executeScript<boolean>(
+      return await driver.executeScript<boolean>(
         `
-        const target = arguments[0];
-        const x = arguments[1];
-        const y = arguments[2];
-        const hitElement = document.elementFromPoint(x, y);
-        
-        if (!hitElement) return false;
-        
-        // Check if hit element is the target or contains it or is contained by it
-        return target === hitElement || target.contains(hitElement) || hitElement.contains(target);
+        const [el, cx, cy] = arguments;
+        const hit = document.elementFromPoint(cx, cy);
+        return !!hit && (el === hit || el.contains(hit) || hit.contains(el));
         `,
         element,
         centerX,
         centerY
       );
-
-      return result;
     } catch {
       return false;
     }
@@ -128,17 +126,12 @@ export class ActionabilityChecker {
   static async isEnabled(element: WebElement): Promise<boolean> {
     try {
       // Check Selenium's isEnabled (handles disabled attribute and fieldset)
-      const enabled = await element.isEnabled();
-      if (!enabled) return false;
+      if (!(await element.isEnabled())) return false;
 
       // Check aria-disabled
       const driver = element.getDriver() as ThenableWebDriver;
       const ariaDisabled = await driver.executeScript<boolean>(
-        `
-        const elem = arguments[0];
-        const ariaDisabled = elem.getAttribute('aria-disabled');
-        return ariaDisabled === 'true';
-        `,
+        "return arguments[0].getAttribute('aria-disabled') === 'true';",
         element
       );
 
@@ -157,21 +150,14 @@ export class ActionabilityChecker {
   static async isEditable(element: WebElement): Promise<boolean> {
     try {
       // First check if enabled
-      const enabled = await this.isEnabled(element);
-      if (!enabled) return false;
+      if (!(await this.isEnabled(element))) return false;
 
       // Check readonly attributes
       const driver = element.getDriver() as ThenableWebDriver;
       const isReadonly = await driver.executeScript<boolean>(
         `
-        const elem = arguments[0];
-        
-        // Check readonly attribute
-        if (elem.hasAttribute('readonly')) return true;
-        
-        // Check aria-readonly
-        const ariaReadonly = elem.getAttribute('aria-readonly');
-        return ariaReadonly === 'true';
+        const el = arguments[0];
+        return el.hasAttribute('readonly') || el.getAttribute('aria-readonly') === 'true';
         `,
         element
       );
@@ -183,109 +169,49 @@ export class ActionabilityChecker {
   }
 
   /**
-   * Check visibility requirement and add error if failed
+   * Unified requirement mapping - maps check names to their validation functions
+   * Each function returns true on success or an error message string on failure
    */
-  private static async checkVisibilityRequirement(
-    element: WebElement,
-    errors: string[]
-  ): Promise<void> {
-    if (errors.length > 0) return; // Skip if previous check failed
+  private static readonly checkMap = {
+    visible: async (el: WebElement, _driver: ThenableWebDriver) =>
+      (await this.isVisible(el)) || 'Element is not visible',
     
-    const visible = await this.isVisible(element);
-    if (!visible) {
-      errors.push('Element is not visible');
-    }
-  }
+    stable: async (el: WebElement, _driver: ThenableWebDriver) =>
+      (await this.isStable(el)) || 'Element is not stable (still animating)',
+    
+    enabled: async (el: WebElement, _driver: ThenableWebDriver) =>
+      (await this.isEnabled(el)) || 'Element is not enabled (disabled)',
+    
+    editable: async (el: WebElement, _driver: ThenableWebDriver) =>
+      (await this.isEditable(el)) || 'Element is not editable (readonly or disabled)',
+    
+    receivesEvents: async (el: WebElement, driver: ThenableWebDriver) =>
+      (await this.receivesEvents(el, driver)) || 'Element does not receive events (obscured by another element)'
+  } as const;
 
   /**
-   * Check stability requirement and add error if failed
+   * Run all required actionability checks based on options
+   * Returns array of error messages (empty if all checks pass)
    */
-  private static async checkStabilityRequirement(
-    element: WebElement,
-    errors: string[]
-  ): Promise<void> {
-    if (errors.length > 0) return; // Skip if previous check failed
-    
-    const stable = await this.isStable(element);
-    if (!stable) {
-      errors.push('Element is not stable (still animating)');
-    }
-  }
-
-  /**
-   * Check enabled requirement and add error if failed
-   */
-  private static async checkEnabledRequirement(
-    element: WebElement,
-    errors: string[]
-  ): Promise<void> {
-    if (errors.length > 0) return; // Skip if previous check failed
-    
-    const enabled = await this.isEnabled(element);
-    if (!enabled) {
-      errors.push('Element is not enabled (disabled)');
-    }
-  }
-
-  /**
-   * Check editable requirement and add error if failed
-   */
-  private static async checkEditableRequirement(
-    element: WebElement,
-    errors: string[]
-  ): Promise<void> {
-    if (errors.length > 0) return; // Skip if previous check failed
-    
-    const editable = await this.isEditable(element);
-    if (!editable) {
-      errors.push('Element is not editable (readonly or disabled)');
-    }
-  }
-
-  /**
-   * Check receives events requirement and add error if failed
-   */
-  private static async checkReceivesEventsRequirement(
+  private static async runChecks(
     element: WebElement,
     driver: ThenableWebDriver,
-    errors: string[]
-  ): Promise<void> {
-    if (errors.length > 0) return; // Skip if previous check failed
-    
-    const receivesEvents = await this.receivesEvents(element, driver);
-    if (!receivesEvents) {
-      errors.push('Element does not receive events (obscured by another element)');
-    }
-  }
+    options: ActionabilityOptions
+  ): Promise<string[]> {
+    const errors: string[] = [];
 
-  /**
-   * Perform all required actionability checks
-   */
-  private static async performActionabilityChecks(
-    element: WebElement,
-    driver: ThenableWebDriver,
-    options: ActionabilityOptions,
-    errors: string[]
-  ): Promise<void> {
-    if (options.visible) {
-      await this.checkVisibilityRequirement(element, errors);
+    // Run checks in order, stop at first failure for fail-fast behavior
+    for (const [key, checkFn] of Object.entries(this.checkMap)) {
+      if ((options as any)[key]) {
+        const result = await checkFn(element, driver);
+        if (typeof result === 'string') {
+          errors.push(result);
+          break; // Early exit on first failure
+        }
+      }
     }
 
-    if (options.stable) {
-      await this.checkStabilityRequirement(element, errors);
-    }
-
-    if (options.enabled) {
-      await this.checkEnabledRequirement(element, errors);
-    }
-
-    if (options.editable) {
-      await this.checkEditableRequirement(element, errors);
-    }
-
-    if (options.receivesEvents) {
-      await this.checkReceivesEventsRequirement(element, driver, errors);
-    }
+    return errors;
   }
 
   /**
@@ -299,34 +225,35 @@ export class ActionabilityChecker {
   ): Promise<void> {
     const timeout = options.timeout ?? 10000;
     const startTime = Date.now();
-    const errors: string[] = [];
+    let lastErrors: string[] = [];
 
     while (Date.now() - startTime < timeout) {
-      errors.length = 0;
-
       try {
         // Perform all required checks
-        await this.performActionabilityChecks(element, driver, options, errors);
-
+        const errors = await this.runChecks(element, driver, options);
+        
         // If all checks passed, return successfully
         if (errors.length === 0) {
           return;
         }
 
+        // Store errors for final error message
+        lastErrors = errors;
+
         // Wait before retrying
-        await new Promise(resolve => setTimeout(resolve, this.POLL_INTERVAL));
+        await this.delay(this.POLL_INTERVAL);
       } catch (error) {
         // Element might have become stale, add to errors and retry
         const errorMsg = error instanceof Error ? error.message : String(error);
-        errors.push(`Element check failed: ${errorMsg}`);
-        await new Promise(resolve => setTimeout(resolve, this.POLL_INTERVAL));
+        lastErrors = [`Element check failed: ${errorMsg}`];
+        await this.delay(this.POLL_INTERVAL);
       }
     }
 
     // Timeout reached, throw error with details
     throw new Error(
       `Timeout waiting for element to be actionable after ${timeout}ms. ` +
-      `Failed checks: ${errors.join(', ')}`
+      `Failed checks: ${lastErrors.join(', ')}`
     );
   }
 }
