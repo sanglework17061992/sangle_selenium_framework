@@ -75,12 +75,59 @@ export interface FrameworkConfig {
   app: AppConfig;
 }
 
+/**
+ * Generic helper to get environment variable with type conversion
+ */
+const getEnv = <T>(
+  key: string,
+  defaultValue: T,
+  converter?: (value: string) => T
+): T => {
+  const value = process.env[key];
+  if (!value) return defaultValue;
+  
+  try {
+    return converter ? converter(value) : (value as unknown as T);
+  } catch {
+    return defaultValue;
+  }
+};
+
+/**
+ * Generic helper to parse enum values from environment variables
+ */
+const parseEnum = <T extends string>(
+  key: string,
+  defaultValue: T,
+  enumObject: Record<string, T>,
+  transform: 'uppercase' | 'lowercase' | 'none' = 'lowercase'
+): T => {
+  return getEnv(key, defaultValue, (value) => {
+    let transformedValue = value;
+    
+    if (transform === 'uppercase') {
+      transformedValue = value.toUpperCase();
+    } else if (transform === 'lowercase') {
+      transformedValue = value.toLowerCase();
+    }
+    
+    if (Object.values(enumObject).includes(transformedValue as T)) {
+      return transformedValue as T;
+    }
+    
+    throw new Error(`Invalid ${key} enum value: ${value}`);
+  });
+};
+
+/**
+ * ConfigLoader - Singleton for managing framework configuration
+ */
 export class ConfigLoader {
   private static instance: ConfigLoader;
   private config: FrameworkConfig;
 
   private constructor() {
-    this.config = this.loadConfiguration();
+    this.config = this.buildConfiguration();
   }
 
   static getInstance(): ConfigLoader {
@@ -90,157 +137,50 @@ export class ConfigLoader {
     return ConfigLoader.instance;
   }
 
-  private loadConfiguration(): FrameworkConfig {
-    return {
-      browser: this.loadBrowserConfig(),
-      timeouts: this.loadTimeoutConfig(),
-      test: this.loadTestConfig(),
-      logging: this.loadLoggingConfig(),
-      reporting: this.loadReportingConfig(),
-      app: this.loadAppConfig()
-    };
-  }
-
-  private loadBrowserConfig(): BrowserConfig {
-    const browserName = this.getEnvBrowserType('BROWSER', BrowserType.CHROME);
-    const headless = this.getEnvBoolean('HEADLESS', false);
-    const noSandbox = this.getEnvBoolean('NO_SANDBOX', true);
-
-    let args: string[] = [];
-    if (browserName === BrowserType.CHROME) {
-      const chromeArgs = this.getEnvString('CHROME_ARGS', '');
-      args = chromeArgs ? chromeArgs.split(',') : [];
-    } else if (browserName === BrowserType.FIREFOX) {
-      const firefoxArgs = this.getEnvString('FIREFOX_ARGS', '');
-      args = firefoxArgs ? firefoxArgs.split(',') : [];
-    }
-
-    return {
-      name: browserName,
-      headless,
-      noSandbox,
-      args
-    };
-  }
-
-  private loadTimeoutConfig(): TimeoutConfig {
-    return {
-      default: this.getEnvNumber('DEFAULT_TIMEOUT', 5000),
-      element: this.getEnvNumber('ELEMENT_TIMEOUT', 10000),
-      pageLoad: this.getEnvNumber('PAGE_LOAD_TIMEOUT', 30000)
-    };
-  }
-
-  private loadTestConfig(): TestConfig {
-    return {
-      retryCount: this.getEnvNumber('RETRY_COUNT', 3),
-      retryInterval: this.getEnvNumber('RETRY_INTERVAL', 500),
-      parallel: this.getEnvBoolean('PARALLEL', false),
-      threadCount: this.getEnvNumber('THREAD_COUNT', 2)
-    };
-  }
-
-  private loadLoggingConfig(): LoggingConfig {
-    return {
-      level: this.getEnvLogLevel('LOG_LEVEL', LogLevel.INFO),
-      file: this.getEnvString('LOG_FILE', './logs/test.log')
-    };
-  }
-
-  private loadReportingConfig(): ReportingConfig {
-    return {
-      screenshotOnFailure: this.getEnvBoolean('SCREENSHOT_ON_FAILURE', true),
-      videoRecording: this.getEnvBoolean('VIDEO_RECORDING', false),
-      reporterType: this.getEnvReporterType('REPORTER_TYPE', ReporterType.ALLURE)
-    };
-  }
-
-  private loadAppConfig(): AppConfig {
-    return {
-      baseUrl: this.getEnvString('BASE_URL', 'http://localhost:3001/'),
-      username: this.getEnvString('USERNAME', 'testuser'),
-      password: this.getEnvString('PASSWORD', 'testpass123')
-    };
-  }
-
   /**
-   * Generic method to get environment variable with type conversion
+   * Build complete configuration from environment variables
    */
-  private getEnv<T>(key: string, defaultValue: T, converter?: (value: string) => T): T {
-    const value = process.env[key];
-    if (!value) return defaultValue;
+  private buildConfiguration(): FrameworkConfig {
+    const browserName = parseEnum('BROWSER', BrowserType.CHROME, BrowserType);
     
-    if (converter) {
-      try {
-        return converter(value);
-      } catch {
-        return defaultValue;
+    // Get browser-specific arguments
+    const argKey = browserName === BrowserType.CHROME ? 'CHROME_ARGS' : 'FIREFOX_ARGS';
+    const argsString = getEnv<string>(argKey, '');
+    const args: string[] = argsString ? argsString.split(',').filter(Boolean) : [];
+
+    return {
+      browser: {
+        name: browserName,
+        headless: getEnv('HEADLESS', false, (v) => v.toLowerCase() === 'true'),
+        noSandbox: getEnv('NO_SANDBOX', true, (v) => v.toLowerCase() === 'true'),
+        args
+      },
+      timeouts: {
+        default: getEnv('DEFAULT_TIMEOUT', 5000, Number),
+        element: getEnv('ELEMENT_TIMEOUT', 10000, Number),
+        pageLoad: getEnv('PAGE_LOAD_TIMEOUT', 30000, Number)
+      },
+      test: {
+        retryCount: getEnv('RETRY_COUNT', 3, Number),
+        retryInterval: getEnv('RETRY_INTERVAL', 500, Number),
+        parallel: getEnv('PARALLEL', false, (v) => v.toLowerCase() === 'true'),
+        threadCount: getEnv('THREAD_COUNT', 2, Number)
+      },
+      logging: {
+        level: parseEnum('LOG_LEVEL', LogLevel.INFO, LogLevel, 'uppercase'),
+        file: getEnv('LOG_FILE', './logs/test.log')
+      },
+      reporting: {
+        screenshotOnFailure: getEnv('SCREENSHOT_ON_FAILURE', true, (v) => v.toLowerCase() === 'true'),
+        videoRecording: getEnv('VIDEO_RECORDING', false, (v) => v.toLowerCase() === 'true'),
+        reporterType: parseEnum('REPORTER_TYPE', ReporterType.ALLURE, ReporterType)
+      },
+      app: {
+        baseUrl: getEnv('BASE_URL', 'http://localhost:3001/'),
+        username: getEnv('USERNAME', 'testuser'),
+        password: getEnv('PASSWORD', 'testpass123')
       }
-    }
-    
-    return value as T;
-  }
-
-  /**
-   * Generic method to get enum value from environment variable
-   * @param key - Environment variable key
-   * @param defaultValue - Default enum value
-   * @param enumObject - The enum object to validate against
-   * @param transform - Optional transformation function (e.g., toUpperCase, toLowerCase)
-   */
-  private getEnvEnum<T extends string>(
-    key: string, 
-    defaultValue: T, 
-    enumObject: Record<string, T>,
-    transform: 'uppercase' | 'lowercase' | 'none' = 'none'
-  ): T {
-    return this.getEnv(key, defaultValue, (value) => {
-      let transformedValue = value;
-      
-      if (transform === 'uppercase') {
-        transformedValue = value.toUpperCase();
-      } else if (transform === 'lowercase') {
-        transformedValue = value.toLowerCase();
-      }
-      
-      if (Object.values(enumObject).includes(transformedValue as T)) {
-        return transformedValue as T;
-      }
-      
-      throw new Error(`Invalid enum value: ${value}`);
-    });
-  }
-
-  private getEnvString(key: string, defaultValue: string): string {
-    return this.getEnv(key, defaultValue);
-  }
-
-  private getEnvNumber(key: string, defaultValue: number): number {
-    return this.getEnv(key, defaultValue, (value) => {
-      const parsed = Number.parseInt(value, 10);
-      if (Number.isNaN(parsed)) throw new Error('Invalid number');
-      return parsed;
-    });
-  }
-
-  private getEnvBoolean(key: string, defaultValue: boolean): boolean {
-    return this.getEnv(key, defaultValue, (value) => value.toLowerCase() === 'true');
-  }
-
-  private getEnvBrowserType(key: string, defaultValue: BrowserType): BrowserType {
-    return this.getEnvEnum(key, defaultValue, BrowserType, 'uppercase');
-  }
-
-  private getEnvEnvironmentType(key: string, defaultValue: EnvironmentType): EnvironmentType {
-    return this.getEnvEnum(key, defaultValue, EnvironmentType, 'uppercase');
-  }
-
-  private getEnvLogLevel(key: string, defaultValue: LogLevel): LogLevel {
-    return this.getEnvEnum(key, defaultValue, LogLevel, 'uppercase');
-  }
-
-  private getEnvReporterType(key: string, defaultValue: ReporterType): ReporterType {
-    return this.getEnvEnum(key, defaultValue, ReporterType, 'lowercase');
+    };
   }
 
   /**
@@ -300,26 +240,21 @@ export class ConfigLoader {
   }
 
   /**
-   * Reload configuration
+   * Reload configuration from environment variables
    */
   reload(): void {
-    this.config = this.loadConfiguration();
+    this.config = this.buildConfiguration();
   }
 
   /**
-   * Print current configuration to console
+   * Print current configuration to console (with masked password)
    */
   printConfig(): void {
     console.log('=== Framework Configuration ===');
-    console.log('Browser:', this.config.browser);
-    console.log('Timeouts:', this.config.timeouts);
-    console.log('Test:', this.config.test);
-    console.log('Logging:', this.config.logging);
-    console.log('Reporting:', this.config.reporting);
-    console.log('App:', {
-      ...this.config.app,
-      password: '***' // Hide password in logs
-    });
+    console.log(JSON.stringify({
+      ...this.config,
+      app: { ...this.config.app, password: '***' }
+    }, null, 2));
     console.log('===============================');
   }
 }
