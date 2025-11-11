@@ -4,6 +4,12 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { ConfigLoader } from '../config/ConfigLoader';
 
+interface AllureRuntime {
+  parameter(name: string, value: string): void;
+  attachment(name: string, content: string | Buffer, type: string): void;
+  step<T>(name: string, body: () => T | Promise<T>): T | Promise<T>;
+}
+
 /**
  * Allure Reporter Implementation
  * Provides Allure reporting capabilities with screenshots, steps, and rich test metadata
@@ -19,14 +25,14 @@ import { ConfigLoader } from '../config/ConfigLoader';
  */
 export class AllureReporter implements TestReporter {
   private static readonly config = ConfigLoader.getInstance().getConfig();
-  private static allure: any = null;
+  private static allure: AllureRuntime | null = null;
   private static allureLoaded = false;
   private driver: ThenableWebDriver | null = null;
 
   /**
    * Get Allure instance (lazy loading to avoid parallel mode issues)
    */
-  private static getAllure(): any {
+  private static getAllure(): AllureRuntime | null {
     // Check if allure-mocha reporter is being used
     const isAllureReporter = process.argv.includes('--reporter') &&
                             process.argv.includes('allure-mocha');
@@ -79,7 +85,7 @@ export class AllureReporter implements TestReporter {
     }
   }
 
-  async onTestFailure(testName: string, error: any): Promise<void> {
+  async onTestFailure(testName: string, error: Error): Promise<void> {
     if (this.driver) {
       await this.attachScreenshot(this.driver, `Failure Screenshot - ${testName}`);
     }

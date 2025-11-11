@@ -5,8 +5,14 @@ import { configLoader, BrowserType } from '../config/ConfigLoader';
 
 export type BrowserName = BrowserType | string;
 
+export interface DriverOptions {
+  headless?: boolean;
+  noSandbox?: boolean;
+  args?: string[];
+}
+
 export interface BrowserFactory {
-  createWebDriver(options?: any): Promise<WebDriver>;
+  createWebDriver(options?: DriverOptions): Promise<WebDriver>;
 }
 
 // Central driver context - framework manages this
@@ -36,7 +42,7 @@ abstract class BaseBrowserFactory implements BrowserFactory {
   protected abstract applyHeadlessMode(opts: chrome.Options | firefox.Options): void;
   protected abstract configureBuilder(builder: Builder, opts: chrome.Options | firefox.Options): Builder;
 
-  async createWebDriver(options?: any): Promise<WebDriver> {
+  async createWebDriver(options?: DriverOptions): Promise<WebDriver> {
     const config = configLoader.getBrowserConfig();
     const opts = this.createOptions();
 
@@ -107,7 +113,7 @@ export class DriverManager {
     this.factories.set(name.toLowerCase(), factory);
   }
 
-  static async getDriver(name?: BrowserName, options?: any) {
+  static async getDriver(name?: BrowserName, options?: DriverOptions) {
     const config = configLoader.getBrowserConfig();
     const browserName = name || config.name;
 

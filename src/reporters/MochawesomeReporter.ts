@@ -42,7 +42,7 @@ export class MochawesomeReporter implements TestReporter {
     }
   }
 
-  async onTestFailure(testName: string, error: any): Promise<void> {
+  async onTestFailure(testName: string, error: Error): Promise<void> {
     if (this.driver) {
       const screenshotPath = await this.captureScreenshot(`failure-${this.sanitizeFilename(testName)}`);
       

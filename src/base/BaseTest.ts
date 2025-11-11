@@ -2,6 +2,14 @@ import { BasePage } from '../pages/BasePage';
 import DriverManager from '../driver/DriverManager';
 import { ThenableWebDriver } from 'selenium-webdriver';
 
+export interface MochaTestContext {
+  currentTest?: {
+    title: string;
+    state?: 'passed' | 'failed' | 'pending';
+    err?: Error;
+  };
+}
+
 /**
  * Reporter interface that test reporters must implement
  * This allows plugging in different reporters (Allure, Mochawesome, etc.)
@@ -11,7 +19,7 @@ export interface TestReporter {
   afterAll?(): Promise<void>;
   beforeEach?(): Promise<void>;
   afterEach?(): Promise<void>;
-  onTestFailure?(testName: string, error: any): Promise<void>;
+  onTestFailure?(testName: string, error: Error): Promise<void>;
   setDriver?(driver: ThenableWebDriver): void;
 }
 
@@ -114,11 +122,11 @@ export abstract class BaseTest<T extends BasePage> {
    * Teardown for each test - handles failures and screenshots
    * Call this in the afterEach() hook
    */
-  async teardownTest(testContext?: any): Promise<void> {
+  async teardownTest(testContext?: MochaTestContext): Promise<void> {
     if (testContext?.currentTest?.state === 'failed') {
       await this.reporter.onTestFailure?.(
         testContext.currentTest.title,
-        testContext.currentTest?.err
+        testContext.currentTest?.err || new Error('Unknown error')
       );
     }
     await this.reporter.afterEach?.();
