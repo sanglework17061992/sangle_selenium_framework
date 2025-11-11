@@ -41,7 +41,7 @@ export class AllureReporter implements TestReporter {
                       process.argv.includes('--parallel');
 
     if (isParallel) {
-      console.warn('⚠️  Allure Reporter: Parallel mode detected. Runtime API disabled.');
+      console.warn('Allure Reporter: Parallel mode detected. Runtime API disabled.');
       return null;
     }
 
@@ -51,7 +51,7 @@ export class AllureReporter implements TestReporter {
         this.allure = allureModule.allure;
         this.allureLoaded = true;
       } catch (error) {
-        console.warn('⚠️  Allure not available:', error);
+        console.warn('Allure not available:', error);
         return null;
       }
     }

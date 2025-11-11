@@ -8,18 +8,18 @@ A TypeScript Selenium framework with Playwright-style actionability checks:
 - **Test Webapp** - Comprehensive Node.js test application for validation
 - **Page Object Model** - Clean UI abstraction layer
 
-## 🎯 Key Features
+## Key Features
 
-✅ **Playwright-Style Actionability** - Auto-wait for visible, stable, enabled, editable, and receives events  
-✅ **Type-Safe Actions** - ActionType enum for all interactions (CLICK, TYPE, HOVER, etc.)  
-✅ **Force Option** - Bypass actionability checks when needed: `{ force: true }`  
-✅ **Custom Timeouts** - Configure per-action timeouts: `{ timeout: 15000 }`  
-✅ **Auto-Retry Assertions** - Assertions automatically retry for locators  
-✅ **Comprehensive Test Webapp** - 40+ test scenarios on http://localhost:3001  
+- **Playwright-Style Actionability** - Auto-wait for visible, stable, enabled, editable, and receives events  
+- **Type-Safe Actions** - ActionType enum for all interactions (CLICK, TYPE, HOVER, etc.)  
+- **Force Option** - Bypass actionability checks when needed: `{ force: true }`  
+- **Custom Timeouts** - Configure per-action timeouts: `{ timeout: 15000 }`  
+- **Auto-Retry Assertions** - Assertions automatically retry for locators  
+- **Comprehensive Test Webapp** - 40+ test scenarios on http://localhost:3001  
 
-## 🧪 Test Webapp
+## Test Webapp
 
-> **⚠️ NOTE FOR REVIEWERS:** The test webapp has been moved to a separate repository to keep this framework focused on core functionality.  
+> **NOTE FOR REVIEWERS:** The test webapp has been moved to a separate repository to keep this framework focused on core functionality.  
 > To run the `test-webapp` tests in this project, please clone and run:
 > ```bash
 > git clone https://github.com/sanglework17061992/test-webapp
@@ -44,8 +44,9 @@ A complete Express.js testing environment with 6 test pages covering all actiona
 ## Framework Architecture
 
 ```
+```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           👤 USER LAYER                                    │
+│                           USER LAYER                                        │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  Test Files (.spec.ts)                                                      │
 │  └── todo.spec.ts        ──► Todo application tests                        │
@@ -62,7 +63,7 @@ A complete Express.js testing environment with 6 test pages covering all actiona
                   │ uses
                   ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                      🔧 FRAMEWORK LAYER                                  │
+│                      FRAMEWORK LAYER                                        │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  ConfigLoader (Singleton)                                                   │
 │  ├── BrowserConfig {name, headless, noSandbox, args}                       │
@@ -73,6 +74,7 @@ A complete Express.js testing environment with 6 test pages covering all actiona
 │  DriverManager                                                              │
 │  ├── register(name, factory)                                                │
 │  ├── getDriver(name?, options?)                                             │
+```
 │  └── getConfiguredDriver()                                                  │
 │                                                                             │
 │  BrowserFactory (Interface)                                                 │
@@ -125,12 +127,12 @@ Test → PageObject methods → SanElement actions → SanAssertion → Verifica
 
 ### 4-Layer Architecture Benefits
 
-#### 👤 User Layer
+#### User Layer
 - **Test Code**: Focus on business logic and test scenarios
 - **Page Objects**: Clean UI abstraction with auto-waiting elements
 - **Separation**: User code is isolated from framework internals
 
-#### 🔧 Framework Layer
+#### Framework Layer
 - **SanElement**: Unified wrapper for single elements and collections
 - **DriverManager**: Browser factory with multiple browser support
 - **SanAssertion**: Fluent API with retry logic and timeouts
@@ -338,13 +340,13 @@ classDiagram
 
 ### Key Features
 
-- **🔧 Unified Element Wrapper**: `SanElement` handles both single elements and collections with auto-waiting
-- **✅ Fluent Assertions**: `SanAssertion` provides readable, retry-enabled assertions
-- **🌐 Browser Management**: `DriverManager` supports Chrome, Firefox, and custom browsers
-- **⚙️ Configuration-Driven**: Environment-based configuration with sensible defaults
-- **📊 Rich Reporting**: Allure integration for detailed test execution reports
-- **🔄 Auto-Retry Logic**: Built-in retry mechanisms for flaky elements and assertions
-- **📱 Page Object Model**: Clean abstraction for UI interactions
+- **Unified Element Wrapper**: `SanElement` handles both single elements and collections with auto-waiting
+- **Fluent Assertions**: `SanAssertion` provides readable, retry-enabled assertions
+- **Browser Management**: `DriverManager` supports Chrome, Firefox, and custom browsers
+- **Configuration-Driven**: Environment-based configuration with sensible defaults
+- **Rich Reporting**: Allure integration for detailed test execution reports
+- **Auto-Retry Logic**: Built-in retry mechanisms for flaky elements and assertions
+- **Page Object Model**: Clean abstraction for UI interactions
 
 ### Quick Start
 
@@ -465,11 +467,11 @@ npm run report:allure
 - **Configuration**: Environment-based with sensible defaults
 - **Extensibility**: Well-documented extension points
 
-Ready to write reliable, maintainable web automation tests! 🚀
+Ready to write reliable, maintainable web automation tests!
 
 ---
 
-## 📊 Test Reporting
+## Test Reporting
 
 The framework supports **pluggable reporters** that can be easily swapped via configuration.
 
@@ -479,24 +481,24 @@ The framework supports **pluggable reporters** that can be easily swapped via co
 Rich, interactive HTML reports with screenshots, steps, and detailed test history.
 
 **Features:**
-- ✅ Interactive dashboard with test history and trends
-- ✅ Detailed test steps and timeline view
-- ✅ Screenshots automatically attached on failures
-- ✅ Test parameters and environment info
-- ✅ Flaky test detection
+- Interactive dashboard with test history and trends
+- Detailed test steps and timeline view
+- Screenshots automatically attached on failures
+- Test parameters and environment info
+- Flaky test detection
 
 #### 2. **Mochawesome Reporter**
 Clean, modern HTML reports with screenshots and test context.
 
 **Features:**
-- ✅ Clean, modern UI in a single HTML file
-- ✅ Screenshots embedded directly
-- ✅ Quick pass/fail summary and filters
-- ✅ Easy to share (no server needed)
+- Clean, modern UI in a single HTML file
+- Screenshots embedded directly
+- Quick pass/fail summary and filters
+- Easy to share (no server needed)
 
 ### Quick Start - Viewing Reports
 
-**🏆 Recommended: One-Command Workflows**
+**Recommended: One-Command Workflows**
 
 ```bash
 # Run all tests with Allure and open report
@@ -546,8 +548,8 @@ npm run test:mochawesome     # Override to use Mochawesome
 
 | Command | Description |
 |---------|-------------|
-| `npm run test:allure:run` | **🏆 RECOMMENDED** - Clean, run tests, generate & open Allure report |
-| `npm run test:mochawesome:run` | **🏆 RECOMMENDED** - Clean, run tests, generate & open Mochawesome report |
+| `npm run test:allure:run` | **RECOMMENDED** - Clean, run tests, generate & open Allure report |
+| `npm run test:mochawesome:run` | **RECOMMENDED** - Clean, run tests, generate & open Mochawesome report |
 | `npm run test:allure` | Run tests with Allure reporter |
 | `npm run test:mochawesome` | Run tests with Mochawesome reporter |
 | `npm run report:allure` | Generate and open Allure report |
@@ -558,7 +560,7 @@ npm run test:mochawesome     # Override to use Mochawesome
 
 ---
 
-## 🔌 Adding a New Reporter
+## Adding a New Reporter
 
 The framework's reporter architecture is designed to be extensible. Here's how to add a new reporting library:
 
@@ -676,12 +678,12 @@ const test = new TodoTest(createReporter());  // Uses config
 
 ### Benefits of This Architecture
 
-✅ **Pluggable** - Add/remove reporters without changing test code  
-✅ **Config-Driven** - Switch via .env file  
-✅ **Type-Safe** - TypeScript interface ensures consistency  
-✅ **Flexible** - Support multiple reporters  
-✅ **Clean** - Reporter logic separated from tests  
+- **Pluggable** - Add/remove reporters without changing test code  
+- **Config-Driven** - Switch via .env file  
+- **Type-Safe** - TypeScript interface ensures consistency  
+- **Flexible** - Support multiple reporters  
+- **Clean** - Reporter logic separated from tests  
 
 ---
 
-Ready to write reliable, maintainable web automation tests! 🚀
+Ready to write reliable, maintainable web automation tests!

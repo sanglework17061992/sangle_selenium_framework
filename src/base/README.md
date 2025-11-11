@@ -6,19 +6,19 @@ The BaseTest has been refactored to be **generic and reporter-agnostic**, allowi
 ## Key Benefits
 
 ### 1. **Generic Page Object Support**
-- ✅ No longer tied to `TodoPage`
-- ✅ Works with any page object that extends `BasePage`
-- ✅ Type-safe with TypeScript generics
+- No longer tied to `TodoPage`
+- Works with any page object that extends `BasePage`
+- Type-safe with TypeScript generics
 
 ### 2. **Reporter Independence**
-- ✅ Not coupled to Allure - uses dependency injection
-- ✅ Easy to add new reporters (Mochawesome, JUnit, custom, etc.)
-- ✅ Falls back to no-op reporter if none provided
+- Not coupled to Allure - uses dependency injection
+- Easy to add new reporters (Mochawesome, JUnit, custom, etc.)
+- Falls back to no-op reporter if none provided
 
 ### 3. **Clean Architecture**
-- ✅ Follows SOLID principles (Strategy Pattern for reporters)
-- ✅ Single Responsibility: BaseTest manages test lifecycle, reporters handle reporting
-- ✅ Open/Closed: Open for extension (new reporters), closed for modification
+- Follows SOLID principles (Strategy Pattern for reporters)
+- Single Responsibility: BaseTest manages test lifecycle, reporters handle reporting
+- Open/Closed: Open for extension (new reporters), closed for modification
 
 ## Architecture
 
@@ -224,11 +224,11 @@ CUSTOM_REPORTER=true npm test
 
 | Before | After |
 |--------|-------|
-| ❌ Tied to TodoPage | ✅ Works with any page |
-| ❌ Hardcoded Allure dependency | ✅ Reporter agnostic |
-| ❌ Hard to test reporter logic | ✅ Easy to mock/test |
-| ❌ Difficult to add new reporters | ✅ Just implement interface |
-| ❌ Duplication for new pages | ✅ Reusable for all pages |
+| Tied to TodoPage | Works with any page |
+| Hardcoded Allure dependency | Reporter agnostic |
+| Hard to test reporter logic | Easy to mock/test |
+| Difficult to add new reporters | Just implement interface |
+| Duplication for new pages | Reusable for all pages |
 
 ## Future Enhancements
 
