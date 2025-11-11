@@ -473,11 +473,33 @@ Ready to write reliable, maintainable web automation tests!
 
 ## Test Reporting
 
-The framework supports **pluggable reporters** that can be easily swapped via configuration.
+The framework supports **pluggable reporters** that can be used individually or simultaneously via the MultiReporter pattern.
+
+### Multiple Reporters Support
+
+Yes, the framework supports running multiple reporters at the same time using the `MultiReporter` class. You can generate both Allure and Mochawesome reports in a single test run.
+
+**Run all tests with multiple reporters:**
+```bash
+npm run test:multi:all        # Run all tests with Allure + Mochawesome
+npm run test:multi:clean      # Clean old reports and run all tests
+```
+
+**Run specific test file:**
+```bash
+npm run test:multi -- tests/test-webapp/insurance-purchase.e2e.spec.ts
+```
+
+**View the reports:**
+```bash
+npm run report:allure:generate    # Generate Allure HTML report
+npm run report:allure:open        # Open Allure report
+npm run report:mochawesome        # Open Mochawesome report
+```
 
 ### Available Reporters
 
-#### 1. **Allure Reporter** (Default)
+#### 1. Allure Reporter (Default)
 Rich, interactive HTML reports with screenshots, steps, and detailed test history.
 
 **Features:**
@@ -487,7 +509,7 @@ Rich, interactive HTML reports with screenshots, steps, and detailed test histor
 - Test parameters and environment info
 - Flaky test detection
 
-#### 2. **Mochawesome Reporter**
+#### 2. Mochawesome Reporter
 Clean, modern HTML reports with screenshots and test context.
 
 **Features:**
@@ -498,7 +520,20 @@ Clean, modern HTML reports with screenshots and test context.
 
 ### Quick Start - Viewing Reports
 
-**Recommended: One-Command Workflows**
+**Recommended: Multiple Reporters (Allure + Mochawesome)**
+
+```bash
+# Run all tests with both reporters
+npm run test:multi:clean
+
+# View Allure report
+npm run report:allure
+
+# View Mochawesome report
+npm run report:mochawesome
+```
+
+**Single Reporter Workflows**
 
 ```bash
 # Run all tests with Allure and open report
@@ -535,6 +570,7 @@ REPORTER_TYPE=allure
 ```bash
 npm run test:allure          # Override to use Allure
 npm run test:mochawesome     # Override to use Mochawesome
+npm run test:multi:all       # Use both reporters
 ```
 
 ### Report Locations
@@ -548,10 +584,13 @@ npm run test:mochawesome     # Override to use Mochawesome
 
 | Command | Description |
 |---------|-------------|
-| `npm run test:allure:run` | **RECOMMENDED** - Clean, run tests, generate & open Allure report |
-| `npm run test:mochawesome:run` | **RECOMMENDED** - Clean, run tests, generate & open Mochawesome report |
+| `npm run test:multi:all` | **RECOMMENDED** - Run all tests with Allure + Mochawesome |
+| `npm run test:multi:clean` | **RECOMMENDED** - Clean old reports and run all tests with both reporters |
+| `npm run test:allure:run` | Clean, run tests, generate & open Allure report |
+| `npm run test:mochawesome:run` | Clean, run tests, generate & open Mochawesome report |
 | `npm run test:allure` | Run tests with Allure reporter |
 | `npm run test:mochawesome` | Run tests with Mochawesome reporter |
+| `npm run test:multi` | Run tests with multiple reporters |
 | `npm run report:allure` | Generate and open Allure report |
 | `npm run report:allure:open` | Open existing Allure report |
 | `npm run report:allure:generate` | Just generate report (don't open) |

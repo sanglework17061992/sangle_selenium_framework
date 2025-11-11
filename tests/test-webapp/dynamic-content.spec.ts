@@ -1,8 +1,8 @@
 import { describe, it, before, after, beforeEach, afterEach } from 'mocha';
 import { DynamicContentPage } from '../../src/pages/test-webapp/DynamicContentPage';
 import { expect } from '../../src/assertion/SanAssertion';
-import { BaseTest as GenericBaseTest } from '../../src/base/BaseTest';
-import { createReporter } from '../../src/reporters';
+import { BaseTest as GenericBaseTest, MultiReporter } from '../../src/base/BaseTest';
+import { createAllureReporter, createMochawesomeReporter } from '../../src/reporters';
 import { ThenableWebDriver } from 'selenium-webdriver';
 import { configLoader } from '../../src/config/ConfigLoader';
 
@@ -20,7 +20,12 @@ class DynamicContentTest extends GenericBaseTest<DynamicContentPage> {
 }
 
 describe('Test Webapp - Dynamic Content', () => {
-  const test = new DynamicContentTest(createReporter());
+  const test = new DynamicContentTest(
+    new MultiReporter([
+      createAllureReporter(),
+      createMochawesomeReporter()
+    ])
+  );
 
   before(async () => {
     await test.setupDriver();

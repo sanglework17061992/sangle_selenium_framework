@@ -5,6 +5,9 @@
   "scripts": {
     "build": "tsc",
     "test": "mocha",
+    "test:multi": "mocha --reporter mocha-multi-reporters --reporter-options configFile=multi-reporter-config.json",
+    "test:multi:all": "npm run test:multi -- 'tests/test-webapp/**/*.spec.ts'",
+    "test:multi:clean": "rm -rf allure-results allure-report mochawesome-report && npm run test:multi:all",
     "test:allure": "mocha --reporter allure-mocha",
     "test:allure:run": "rm -rf allure-results allure-report && mocha --reporter allure-mocha && npm run report:allure",
     "test:mochawesome": "mocha --reporter mochawesome",
@@ -32,6 +35,7 @@
     "eslint-config-standard-with-typescript": "^23.0.0",
     "geckodriver": "^4.1.0",
     "mocha": "^10.2.0",
+    "mocha-multi-reporters": "^1.5.1",
     "mochawesome": "^7.1.4",
     "mochawesome-report-generator": "^6.3.2",
     "ts-node": "^10.9.1",

@@ -1,8 +1,8 @@
 import { describe, it, before, after, beforeEach, afterEach } from 'mocha';
 import { FormInteractionsPage } from '../../src/pages/test-webapp/FormInteractionsPage';
 import { expect } from '../../src/assertion/SanAssertion';
-import { BaseTest as GenericBaseTest } from '../../src/base/BaseTest';
-import { createReporter } from '../../src/reporters';
+import { BaseTest as GenericBaseTest, MultiReporter } from '../../src/base/BaseTest';
+import { createAllureReporter, createMochawesomeReporter } from '../../src/reporters';
 import { ThenableWebDriver } from 'selenium-webdriver';
 import { configLoader } from '../../src/config/ConfigLoader';
 
@@ -20,7 +20,12 @@ class FormInteractionsTest extends GenericBaseTest<FormInteractionsPage> {
 }
 
 describe('Test Webapp - Form Interactions', () => {
-  const test = new FormInteractionsTest(createReporter());
+  const test = new FormInteractionsTest(
+    new MultiReporter([
+      createAllureReporter(),
+      createMochawesomeReporter()
+    ])
+  );
 
   before(async () => {
     await test.setupDriver();

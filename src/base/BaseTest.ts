@@ -48,6 +48,62 @@ class NoOpReporter implements TestReporter {
 }
 
 /**
+ * MultiReporter allows using multiple reporters at the same time.
+ * It delegates all TestReporter methods to each reporter in the array.
+ * 
+ * @example
+ * const test = new TodoTest(
+ *   new MultiReporter([
+ *     createAllureReporter(),
+ *     createMochawesomeReporter()
+ *   ])
+ * );
+ */
+export class MultiReporter implements TestReporter {
+  private readonly reporters: TestReporter[];
+
+  constructor(reporters: TestReporter[]) {
+    this.reporters = reporters;
+  }
+
+  async beforeAll(): Promise<void> {
+    for (const reporter of this.reporters) {
+      await reporter.beforeAll?.();
+    }
+  }
+
+  async afterAll(): Promise<void> {
+    for (const reporter of this.reporters) {
+      await reporter.afterAll?.();
+    }
+  }
+
+  async beforeEach(): Promise<void> {
+    for (const reporter of this.reporters) {
+      await reporter.beforeEach?.();
+    }
+  }
+
+  async afterEach(): Promise<void> {
+    for (const reporter of this.reporters) {
+      await reporter.afterEach?.();
+    }
+  }
+
+  async onTestFailure(testName: string, error: Error): Promise<void> {
+    for (const reporter of this.reporters) {
+      await reporter.onTestFailure?.(testName, error);
+    }
+  }
+
+  setDriver(driver: ThenableWebDriver): void {
+    for (const reporter of this.reporters) {
+      reporter.setDriver?.(driver);
+    }
+  }
+}
+
+/**
  * Generic BaseTest class that can be used with any Page Object and any Reporter
  * 
  * @example

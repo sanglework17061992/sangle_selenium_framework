@@ -1,8 +1,8 @@
 import { describe, it, before, after, beforeEach, afterEach } from 'mocha';
 import { ActionabilityTestsPage } from '../../src/pages/test-webapp/ActionabilityTestsPage';
 import { expect } from '../../src/assertion/SanAssertion';
-import { BaseTest as GenericBaseTest } from '../../src/base/BaseTest';
-import { createReporter } from '../../src/reporters';
+import { BaseTest as GenericBaseTest, MultiReporter } from '../../src/base/BaseTest';
+import { createAllureReporter, createMochawesomeReporter } from '../../src/reporters';
 import { ThenableWebDriver } from 'selenium-webdriver';
 import { configLoader } from '../../src/config/ConfigLoader';
 
@@ -20,7 +20,12 @@ class ActionabilityTestsTest extends GenericBaseTest<ActionabilityTestsPage> {
 }
 
 describe('Test Webapp - Actionability Tests', () => {
-  const test = new ActionabilityTestsTest(createReporter());
+  const test = new ActionabilityTestsTest(
+    new MultiReporter([
+      createAllureReporter(),
+      createMochawesomeReporter()
+    ])
+  );
 
   before(async () => {
     await test.setupDriver();
