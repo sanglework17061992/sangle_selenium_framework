@@ -644,16 +644,24 @@ export function expectValue<T>(actualValue: T) {
 class ValueAssertions<T> {
   constructor(private readonly actualValue: T) {}
 
-  toBe(expected: T, message?: string): void {
+  private handleAssertion(assertFn: () => void, defaultMsg: string, message?: string): void {
     try {
-      AssertHelper.equal(this.actualValue, expected);
+      assertFn();
     } catch (err) {
-      const error = new Error(message || `Expected ${this.actualValue} to equal ${expected}`);
+      const error = new Error(message || defaultMsg);
       if (err instanceof Error) {
         error.message += `\n${err.message}`;
       }
       throw error;
     }
+  }
+
+  toBe(expected: T, message?: string): void {
+    this.handleAssertion(
+      () => AssertHelper.equal(this.actualValue, expected),
+      `Expected ${this.actualValue} to equal ${expected}`,
+      message
+    );
   }
 
   toEqual(expected: T, message?: string): void {
@@ -661,99 +669,67 @@ class ValueAssertions<T> {
   }
 
   toNotBe(expected: T, message?: string): void {
-    try {
-      AssertHelper.notEqual(this.actualValue, expected);
-    } catch (err) {
-      const error = new Error(message || `Expected ${this.actualValue} not to equal ${expected}`);
-      if (err instanceof Error) {
-        error.message += `\n${err.message}`;
-      }
-      throw error;
-    }
+    this.handleAssertion(
+      () => AssertHelper.notEqual(this.actualValue, expected),
+      `Expected ${this.actualValue} not to equal ${expected}`,
+      message
+    );
   }
 
   toInclude(expected: any, message?: string): void {
-    try {
-      AssertHelper.include(this.actualValue as any, expected);
-    } catch (err) {
-      const error = new Error(message || `Expected ${this.actualValue} to include ${expected}`);
-      if (err instanceof Error) {
-        error.message += `\n${err.message}`;
-      }
-      throw error;
-    }
+    this.handleAssertion(
+      () => AssertHelper.include(this.actualValue as any, expected),
+      `Expected ${this.actualValue} to include ${expected}`,
+      message
+    );
   }
 
   toNotInclude(expected: any, message?: string): void {
-    try {
-      AssertHelper.notInclude(this.actualValue as any, expected);
-    } catch (err) {
-      const error = new Error(message || `Expected ${this.actualValue} not to include ${expected}`);
-      if (err instanceof Error) {
-        error.message += `\n${err.message}`;
-      }
-      throw error;
-    }
+    this.handleAssertion(
+      () => AssertHelper.notInclude(this.actualValue as any, expected),
+      `Expected ${this.actualValue} not to include ${expected}`,
+      message
+    );
   }
 
   toHaveMembers(expected: any[], message?: string): void {
-    try {
-      AssertHelper.hasMembers(this.actualValue as any[], expected);
-    } catch (err) {
-      const error = new Error(message || `Expected ${this.actualValue} to have members ${expected}`);
-      if (err instanceof Error) {
-        error.message += `\n${err.message}`;
-      }
-      throw error;
-    }
+    this.handleAssertion(
+      () => AssertHelper.hasMembers(this.actualValue as any[], expected),
+      `Expected ${this.actualValue} to have members ${expected}`,
+      message
+    );
   }
 
   toBeTrue(message?: string): void {
-    try {
-      AssertHelper.isTrue(this.actualValue);
-    } catch (err) {
-      const error = new Error(message || `Expected ${this.actualValue} to be true`);
-      if (err instanceof Error) {
-        error.message += `\n${err.message}`;
-      }
-      throw error;
-    }
+    this.handleAssertion(
+      () => AssertHelper.isTrue(this.actualValue),
+      `Expected ${this.actualValue} to be true`,
+      message
+    );
   }
 
   toBeFalse(message?: string): void {
-    try {
-      AssertHelper.isFalse(this.actualValue);
-    } catch (err) {
-      const error = new Error(message || `Expected ${this.actualValue} to be false`);
-      if (err instanceof Error) {
-        error.message += `\n${err.message}`;
-      }
-      throw error;
-    }
+    this.handleAssertion(
+      () => AssertHelper.isFalse(this.actualValue),
+      `Expected ${this.actualValue} to be false`,
+      message
+    );
   }
 
   toBeGreaterThan(expected: number, message?: string): void {
-    try {
-      AssertHelper.greaterThan(this.actualValue as any, expected);
-    } catch (err) {
-      const error = new Error(message || `Expected ${this.actualValue} to be greater than ${expected}`);
-      if (err instanceof Error) {
-        error.message += `\n${err.message}`;
-      }
-      throw error;
-    }
+    this.handleAssertion(
+      () => AssertHelper.greaterThan(this.actualValue as any, expected),
+      `Expected ${this.actualValue} to be greater than ${expected}`,
+      message
+    );
   }
 
   toBeLessThan(expected: number, message?: string): void {
-    try {
-      AssertHelper.lessThan(this.actualValue as any, expected);
-    } catch (err) {
-      const error = new Error(message || `Expected ${this.actualValue} to be less than ${expected}`);
-      if (err instanceof Error) {
-        error.message += `\n${err.message}`;
-      }
-      throw error;
-    }
+    this.handleAssertion(
+      () => AssertHelper.lessThan(this.actualValue as any, expected),
+      `Expected ${this.actualValue} to be less than ${expected}`,
+      message
+    );
   }
 }
 
