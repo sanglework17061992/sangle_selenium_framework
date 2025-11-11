@@ -183,6 +183,112 @@ export class ActionabilityChecker {
   }
 
   /**
+   * Check visibility requirement and add error if failed
+   */
+  private static async checkVisibilityRequirement(
+    element: WebElement,
+    errors: string[]
+  ): Promise<void> {
+    if (errors.length > 0) return; // Skip if previous check failed
+    
+    const visible = await this.isVisible(element);
+    if (!visible) {
+      errors.push('Element is not visible');
+    }
+  }
+
+  /**
+   * Check stability requirement and add error if failed
+   */
+  private static async checkStabilityRequirement(
+    element: WebElement,
+    errors: string[]
+  ): Promise<void> {
+    if (errors.length > 0) return; // Skip if previous check failed
+    
+    const stable = await this.isStable(element);
+    if (!stable) {
+      errors.push('Element is not stable (still animating)');
+    }
+  }
+
+  /**
+   * Check enabled requirement and add error if failed
+   */
+  private static async checkEnabledRequirement(
+    element: WebElement,
+    errors: string[]
+  ): Promise<void> {
+    if (errors.length > 0) return; // Skip if previous check failed
+    
+    const enabled = await this.isEnabled(element);
+    if (!enabled) {
+      errors.push('Element is not enabled (disabled)');
+    }
+  }
+
+  /**
+   * Check editable requirement and add error if failed
+   */
+  private static async checkEditableRequirement(
+    element: WebElement,
+    errors: string[]
+  ): Promise<void> {
+    if (errors.length > 0) return; // Skip if previous check failed
+    
+    const editable = await this.isEditable(element);
+    if (!editable) {
+      errors.push('Element is not editable (readonly or disabled)');
+    }
+  }
+
+  /**
+   * Check receives events requirement and add error if failed
+   */
+  private static async checkReceivesEventsRequirement(
+    element: WebElement,
+    driver: ThenableWebDriver,
+    errors: string[]
+  ): Promise<void> {
+    if (errors.length > 0) return; // Skip if previous check failed
+    
+    const receivesEvents = await this.receivesEvents(element, driver);
+    if (!receivesEvents) {
+      errors.push('Element does not receive events (obscured by another element)');
+    }
+  }
+
+  /**
+   * Perform all required actionability checks
+   */
+  private static async performActionabilityChecks(
+    element: WebElement,
+    driver: ThenableWebDriver,
+    options: ActionabilityOptions,
+    errors: string[]
+  ): Promise<void> {
+    if (options.visible) {
+      await this.checkVisibilityRequirement(element, errors);
+    }
+
+    if (options.stable) {
+      await this.checkStabilityRequirement(element, errors);
+    }
+
+    if (options.enabled) {
+      await this.checkEnabledRequirement(element, errors);
+    }
+
+    if (options.editable) {
+      await this.checkEditableRequirement(element, errors);
+    }
+
+    if (options.receivesEvents) {
+      await this.checkReceivesEventsRequirement(element, driver, errors);
+    }
+  }
+
+  /**
    * Main method: Wait for element to meet actionability requirements
    * Retries checks until timeout is reached or all checks pass
    */
@@ -199,41 +305,8 @@ export class ActionabilityChecker {
       errors.length = 0;
 
       try {
-        // Perform required checks in order
-        if (options.visible) {
-          const visible = await this.isVisible(element);
-          if (!visible) {
-            errors.push('Element is not visible');
-          }
-        }
-
-        if (options.stable && errors.length === 0) {
-          const stable = await this.isStable(element);
-          if (!stable) {
-            errors.push('Element is not stable (still animating)');
-          }
-        }
-
-        if (options.enabled && errors.length === 0) {
-          const enabled = await this.isEnabled(element);
-          if (!enabled) {
-            errors.push('Element is not enabled (disabled)');
-          }
-        }
-
-        if (options.editable && errors.length === 0) {
-          const editable = await this.isEditable(element);
-          if (!editable) {
-            errors.push('Element is not editable (readonly or disabled)');
-          }
-        }
-
-        if (options.receivesEvents && errors.length === 0) {
-          const receivesEvents = await this.receivesEvents(element, driver);
-          if (!receivesEvents) {
-            errors.push('Element does not receive events (obscured by another element)');
-          }
-        }
+        // Perform all required checks
+        await this.performActionabilityChecks(element, driver, options, errors);
 
         // If all checks passed, return successfully
         if (errors.length === 0) {
