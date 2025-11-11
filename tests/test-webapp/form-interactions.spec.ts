@@ -1,7 +1,7 @@
 import { describe, it, before, after, beforeEach, afterEach } from 'mocha';
 import { FormInteractionsPage } from '../../src/pages/test-webapp/FormInteractionsPage';
 import { expect } from '../../src/assertion/SanAssertion';
-import { BaseTest as GenericBaseTest } from '../../src/base';
+import { BaseTest as GenericBaseTest } from '../../src/base/BaseTest';
 import { createReporter } from '../../src/reporters';
 import { ThenableWebDriver } from 'selenium-webdriver';
 import { configLoader } from '../../src/config/ConfigLoader';
