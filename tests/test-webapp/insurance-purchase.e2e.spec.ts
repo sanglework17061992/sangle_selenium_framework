@@ -254,15 +254,13 @@ describe('OTO Insurance Purchase - Complete E2E Journey', () => {
     console.log(`Success: Confirmation email verified: ${confirmEmail}`);
 
     // ==================== RETURN TO DASHBOARD ====================
-    console.log('
-Step 6: Returning to Dashboard');
+    console.log('\nStep 6: Returning to Dashboard');
     
     await test.page.clickBackToDashboardFromSuccess();
     console.log('Clicked Back to Dashboard from Success screen');
 
     // ==================== SEARCH FOR NEWLY CREATED POLICY ====================
-    console.log('
-Step 7: Searching for Newly Created Policy');
+    console.log('\nStep 7: Searching for Newly Created Policy');
     
     // Search by policy number
     await test.page.searchPolicy(policyNumber);
@@ -275,8 +273,7 @@ Step 7: Searching for Newly Created Policy');
     console.log('Search cleared - Dashboard shows all policies');
 
     // ==================== VIEW POLICY DETAILS ====================
-    console.log('
-Step 8: Viewing Policy Details');
+    console.log('\nStep 8: Viewing Policy Details');
     
     await test.page.clickViewPolicy(policyNumber);
     console.log('Opened policy detail view');
