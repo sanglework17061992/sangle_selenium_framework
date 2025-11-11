@@ -1,33 +1,11 @@
 import { config } from 'dotenv';
+import { BrowserType, LogLevel, ReporterType } from '../types/Enums';
+
+// Re-export enums for backward compatibility with existing imports
+export { BrowserType, EnvironmentType, LogLevel, ReporterType } from '../types/Enums';
 
 // Load environment variables from .env file
 config();
-
-// Enums for type-safe configuration
-export enum BrowserType {
-  CHROME = 'chrome',
-  FIREFOX = 'firefox'
-}
-
-export enum EnvironmentType {
-  DEV = 'dev',
-  QA = 'qa',
-  STAGING = 'staging',
-  PROD = 'prod'
-}
-
-export enum LogLevel {
-  DEBUG = 'DEBUG',
-  INFO = 'INFO',
-  WARN = 'WARN',
-  ERROR = 'ERROR'
-}
-
-export enum ReporterType {
-  ALLURE = 'allure',
-  MOCHAWESOME = 'mochawesome',
-  NONE = 'none'
-}
 
 export interface BrowserConfig {
   name: BrowserType;

@@ -1,5 +1,5 @@
 import { ActionabilityOptions } from './ActionabilityChecker';
-import { ActionType } from './ActionType';
+import { ActionType } from '../../types/Enums';
 
 /**
  * Action requirements matrix based on Playwright's actionability checks

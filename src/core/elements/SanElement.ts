@@ -4,9 +4,9 @@ import { configLoader } from '../../config/ConfigLoader';
 import { DriverContext } from '../../driver/DriverManager';
 import { ActionabilityChecker, ActionabilityOptions } from './ActionabilityChecker';
 import { getActionRequirements } from './ActionConfig';
-import { ActionType } from './ActionType';
+import { ActionType } from '../../types/Enums';
 
-export { ActionType } from './ActionType';
+export { ActionType } from '../../types/Enums';
 export type Locator = { using: 'css' | 'xpath' | 'id' | 'name' | 'class'; value: string };
 
 export interface ActionOptions {
