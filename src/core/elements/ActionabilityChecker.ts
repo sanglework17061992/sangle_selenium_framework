@@ -19,32 +19,21 @@ interface BoundingBox {
   height: number;
 }
 
-// Constants for retry logic
-const STABILITY_CHECK_INTERVAL = 50; // ms between stability checks
-const STABILITY_REQUIRED_MATCHES = 2; // consecutive matching boxes
-const POLL_INTERVAL = 100; // ms between retries
+const STABILITY_CHECK_INTERVAL = 50;
+const STABILITY_REQUIRED_MATCHES = 2;
+const POLL_INTERVAL = 100;
 
-/**
- * Generic delay helper
- */
 async function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/**
- * Check if element is visible (non-empty bounding box, not visibility:hidden)
- * According to Playwright: element has non-empty bounding box and does not have visibility:hidden
- */
 async function isVisible(element: WebElement): Promise<boolean> {
   try {
-    // Check if displayed (Selenium built-in)
     if (!(await element.isDisplayed())) return false;
 
-    // Check bounding box is non-empty
     const rect = await element.getRect();
     if (rect.width === 0 || rect.height === 0) return false;
 
-    // Check computed style visibility
     const driver = element.getDriver() as ThenableWebDriver;
     const visibility = await driver.executeScript<string>(
       'return window.getComputedStyle(arguments[0]).visibility;',
@@ -57,15 +46,10 @@ async function isVisible(element: WebElement): Promise<boolean> {
   }
 }
 
-/**
- * Check if element is stable (same bounding box for consecutive animation frames)
- * Element is stable when it maintains the same bounding box for at least two consecutive checks
- */
 async function isStable(element: WebElement): Promise<boolean> {
   try {
     const boxes: BoundingBox[] = [];
     
-    // Collect bounding boxes over time
     for (let i = 0; i < STABILITY_REQUIRED_MATCHES; i++) {
       const rect = await element.getRect();
       boxes.push({
@@ -80,7 +64,6 @@ async function isStable(element: WebElement): Promise<boolean> {
       }
     }
 
-    // Check all boxes are identical
     const first = boxes[0];
     return boxes.every(box => 
       box.x === first.x &&
@@ -93,19 +76,10 @@ async function isStable(element: WebElement): Promise<boolean> {
   }
 }
 
-/**
- * Check if element is enabled (not disabled)
- * According to Playwright, element is disabled when:
- * - it has [disabled] attribute
- * - it's part of a <fieldset> with [disabled] attribute
- * - it has [aria-disabled=true] attribute
- */
 async function isEnabled(element: WebElement): Promise<boolean> {
   try {
-    // Check Selenium's isEnabled (handles disabled attribute and fieldset)
     if (!(await element.isEnabled())) return false;
 
-    // Check aria-disabled
     const driver = element.getDriver() as ThenableWebDriver;
     const ariaDisabled = await driver.executeScript<boolean>(
       "return arguments[0].getAttribute('aria-disabled') === 'true';",
@@ -118,18 +92,10 @@ async function isEnabled(element: WebElement): Promise<boolean> {
   }
 }
 
-/**
- * Check if element is editable (enabled and not readonly)
- * Element is readonly when:
- * - it has [readonly] attribute
- * - it has [aria-readonly=true] attribute with supporting role
- */
 async function isEditable(element: WebElement): Promise<boolean> {
   try {
-    // First check if enabled
     if (!(await isEnabled(element))) return false;
 
-    // Check readonly attributes
     const driver = element.getDriver() as ThenableWebDriver;
     const isReadonly = await driver.executeScript<boolean>(
       `
@@ -145,10 +111,6 @@ async function isEditable(element: WebElement): Promise<boolean> {
   }
 }
 
-/**
- * Unified requirement mapping - maps check names to their validation functions
- * Each function returns true on success or an error message string on failure
- */
 const checkMap: Record<Check, (el: WebElement, driver: ThenableWebDriver) => Promise<boolean | string>> = {
   [Check.VISIBLE]: async (el: WebElement, _driver: ThenableWebDriver) =>
     (await isVisible(el)) || 'Element is not visible',
@@ -163,10 +125,6 @@ const checkMap: Record<Check, (el: WebElement, driver: ThenableWebDriver) => Pro
     (await isEditable(el)) || 'Element is not editable (readonly or disabled)',
 };
 
-/**
- * Run all required actionability checks based on options
- * Returns array of error messages (empty if all checks pass)
- */
 async function runChecks(
   element: WebElement,
   driver: ThenableWebDriver,
@@ -175,14 +133,13 @@ async function runChecks(
   const errors: string[] = [];
   const checksToRun = options.checks || [];
 
-  // Run checks in order, stop at first failure for fail-fast behavior
   for (const checkName of checksToRun) {
     const checkFn = checkMap[checkName];
     if (checkFn) {
       const result = await checkFn(element, driver);
       if (typeof result === 'string') {
         errors.push(result);
-        break; // Early exit on first failure
+        break;
       }
     }
   }
@@ -190,10 +147,6 @@ async function runChecks(
   return errors;
 }
 
-/**
- * Main function: Wait for element to meet actionability requirements
- * Retries checks until timeout is reached or all checks pass
- */
 export async function waitForActionability(
   element: WebElement,
   driver: ThenableWebDriver,
@@ -205,28 +158,21 @@ export async function waitForActionability(
 
   while (Date.now() - startTime < timeout) {
     try {
-      // Perform all required checks
       const errors = await runChecks(element, driver, options);
       
-      // If all checks passed, return successfully
       if (errors.length === 0) {
         return;
       }
 
-      // Store errors for final error message
       lastErrors = errors;
-
-      // Wait before retrying
       await delay(POLL_INTERVAL);
     } catch (error) {
-      // Element might have become stale, add to errors and retry
       const errorMsg = error instanceof Error ? error.message : String(error);
       lastErrors = [`Element check failed: ${errorMsg}`];
       await delay(POLL_INTERVAL);
     }
   }
 
-  // Timeout reached, throw error with details
   throw new Error(
     `Timeout waiting for element to be actionable after ${timeout}ms. ` +
     `Failed checks: ${lastErrors.join(', ')}`
