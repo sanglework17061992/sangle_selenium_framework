@@ -35,7 +35,7 @@ export interface LoggingConfig {
 export interface ReportingConfig {
   screenshotOnFailure: boolean;
   videoRecording: boolean;
-  reporterType: ReporterType;
+  reporterTypes: ReporterType[];
 }
 
 export interface AppConfig {
@@ -115,9 +115,20 @@ export class ConfigLoader {
     return ConfigLoader.instance;
   }
 
-  /**
-   * Build complete configuration from environment variables
-   */
+  private parseReporterTypes(): ReporterType[] {
+    const reporterTypesStr = getEnv<string>('REPORTER_TYPE', ReporterType.NONE);
+    
+    if (!reporterTypesStr || reporterTypesStr === ReporterType.NONE) {
+      return [];
+    }
+
+    return reporterTypesStr
+      .split(',')
+      .map((type: string) => type.trim().toLowerCase())
+      .filter((type: string) => Object.values(ReporterType).includes(type as ReporterType))
+      .map((type: string) => type as ReporterType);
+  }
+
   private buildConfiguration(): FrameworkConfig {
     const browserName = parseEnum('BROWSER', BrowserType.CHROME, BrowserType);
     
@@ -151,7 +162,7 @@ export class ConfigLoader {
       reporting: {
         screenshotOnFailure: getEnv('SCREENSHOT_ON_FAILURE', true, (v) => v.toLowerCase() === 'true'),
         videoRecording: getEnv('VIDEO_RECORDING', false, (v) => v.toLowerCase() === 'true'),
-        reporterType: parseEnum('REPORTER_TYPE', ReporterType.ALLURE, ReporterType)
+        reporterTypes: this.parseReporterTypes()
       },
       app: {
         baseUrl: getEnv('BASE_URL', 'http://localhost:3001/'),

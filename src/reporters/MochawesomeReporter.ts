@@ -1,18 +1,14 @@
 import { TestReporter } from '../base/BaseTest';
 import { ThenableWebDriver } from 'selenium-webdriver';
-import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { 
+  hasCliReporter, 
+  captureScreenshot, 
+  saveScreenshot, 
+  sanitizeFilename,
+  ensureDirectoryExists 
+} from './ReporterUtils';
 
-/**
- * Mochawesome Reporter Implementation
- * Provides Mochawesome reporting capabilities with screenshots
- * 
- * @example
- * // Use with BaseTest:
- * const test = new TodoTest(createMochawesomeReporter());
- * 
- * // Mochawesome will automatically generate HTML reports with screenshots
- */
 export class MochawesomeReporter implements TestReporter {
   private driver: ThenableWebDriver | null = null;
   private readonly screenshotsDir: string;
@@ -22,10 +18,7 @@ export class MochawesomeReporter implements TestReporter {
   }
 
   async beforeAll(): Promise<void> {
-    // Ensure screenshots directory exists
-    if (!fs.existsSync(this.screenshotsDir)) {
-      fs.mkdirSync(this.screenshotsDir, { recursive: true });
-    }
+    ensureDirectoryExists(this.screenshotsDir);
   }
 
   async afterAll(): Promise<void> {
@@ -33,34 +26,32 @@ export class MochawesomeReporter implements TestReporter {
   }
 
   async beforeEach(): Promise<void> {
-    // No specific setup needed for mochawesome
+    // No specific setup needed
   }
 
   async afterEach(): Promise<void> {
     if (this.driver) {
-      await this.captureScreenshot('test-completion');
+      await this.saveScreenshotFile('test-completion');
     }
   }
 
   async onTestFailure(testName: string, error: Error): Promise<void> {
-    if (this.driver) {
-      const screenshotPath = await this.captureScreenshot(`failure-${this.sanitizeFilename(testName)}`);
-      
-      // Add screenshot to mochawesome context
-      if (screenshotPath && (globalThis as any).testContext) {
-        (globalThis as any).testContext.addContext({
-          title: 'Failure Screenshot',
-          value: path.relative(process.cwd(), screenshotPath)
-        });
-      }
-      
-      // Add error details
-      if ((globalThis as any).testContext) {
-        (globalThis as any).testContext.addContext({
-          title: 'Error Details',
-          value: error.stack || error.message
-        });
-      }
+    if (!this.driver) return;
+
+    const screenshotPath = await this.saveScreenshotFile(`failure-${sanitizeFilename(testName)}`);
+    
+    if (screenshotPath && (globalThis as any).testContext) {
+      (globalThis as any).testContext.addContext({
+        title: 'Failure Screenshot',
+        value: path.relative(process.cwd(), screenshotPath)
+      });
+    }
+    
+    if ((globalThis as any).testContext) {
+      (globalThis as any).testContext.addContext({
+        title: 'Error Details',
+        value: error.stack || error.message
+      });
     }
   }
 
@@ -68,44 +59,20 @@ export class MochawesomeReporter implements TestReporter {
     this.driver = driver;
   }
 
-  /**
-   * Capture screenshot and save to file
-   */
-  private async captureScreenshot(name: string): Promise<string | null> {
+  private async saveScreenshotFile(name: string): Promise<string | null> {
     if (!this.driver) return null;
 
-    try {
-      const screenshot = await this.driver.takeScreenshot();
-      const timestamp = Date.now();
-      const filename = `${name}-${timestamp}.png`;
-      const filepath = path.join(this.screenshotsDir, filename);
+    const buffer = await captureScreenshot(this.driver);
+    if (!buffer) return null;
 
-      fs.writeFileSync(filepath, screenshot, 'base64');
-      return filepath;
-    } catch (error) {
-      console.warn(`Failed to capture screenshot: ${error}`);
-      return null;
-    }
+    const timestamp = Date.now();
+    const filename = `${name}-${timestamp}.png`;
+    const filepath = path.join(this.screenshotsDir, filename);
+
+    saveScreenshot(buffer, filepath);
+    return filepath;
   }
 
-  /**
-   * Sanitize filename by removing invalid characters
-   */
-  private sanitizeFilename(name: string): string {
-    return (
-      name
-        .toLowerCase()
-        // eslint-disable-next-line unicorn/prefer-string-replace-all
-        .replace(/[^a-z0-9]+/g, '-')
-        .slice(0, 100)
-    );
-  }
-
-  /**
-   * Add context to Mochawesome report
-   * @example
-   * MochawesomeReporter.addContext('User ID', 'user123');
-   */
   static addContext(title: string, value: string | object): void {
     if ((globalThis as any).testContext) {
       (globalThis as any).testContext.addContext({ title, value });
@@ -113,17 +80,10 @@ export class MochawesomeReporter implements TestReporter {
   }
 }
 
-/**
- * Utility function to determine if Mochawesome reporter should be used
- */
 export function shouldUseMochawesomeReporter(): boolean {
-  return process.argv.includes('--reporter') && 
-         (process.argv.includes('mochawesome') || process.argv.includes('mocha-multi-reporters'));
+  return hasCliReporter('mochawesome') || hasCliReporter('mocha-multi-reporters');
 }
 
-/**
- * Factory function to create Mochawesome reporter
- */
 export function createMochawesomeReporter(): TestReporter {
   return new MochawesomeReporter();
 }

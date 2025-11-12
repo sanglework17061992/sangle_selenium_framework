@@ -3,6 +3,7 @@ import { ThenableWebDriver } from 'selenium-webdriver';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { ConfigLoader } from '../config/ConfigLoader';
+import { hasCliReporter, isParallelMode, captureScreenshot } from './ReporterUtils';
 
 interface AllureRuntime {
   parameter(name: string, value: string): void;
@@ -12,16 +13,6 @@ interface AllureRuntime {
 
 /**
  * Allure Reporter Implementation
- * Provides Allure reporting capabilities with screenshots, steps, and rich test metadata
- * 
- * @example
- * // Use with BaseTest:
- * const test = new TodoTest(createAllureReporter());
- * 
- * // Add custom steps in tests:
- * await AllureReporter.step('Login to application', async () => {
- *   await page.login('user', 'pass');
- * });
  */
 export class AllureReporter implements TestReporter {
   private static readonly config = ConfigLoader.getInstance().getConfig();
@@ -29,24 +20,12 @@ export class AllureReporter implements TestReporter {
   private static allureLoaded = false;
   private driver: ThenableWebDriver | null = null;
 
-  /**
-   * Get Allure instance (lazy loading to avoid parallel mode issues)
-   */
   private static getAllure(): AllureRuntime | null {
-    // Check if allure-mocha reporter is being used
-    const isAllureReporter = process.argv.includes('--reporter') &&
-                            process.argv.includes('allure-mocha');
-    
-    if (!isAllureReporter) {
+    if (!hasCliReporter('allure-mocha')) {
       return null;
     }
 
-    // Check for parallel mode
-    const isParallel = process.env.MOCHA_WORKER_ID !== undefined ||
-                      process.env.MOCHA_PARALLEL !== undefined ||
-                      process.argv.includes('--parallel');
-
-    if (isParallel) {
+    if (isParallelMode()) {
       console.warn('Allure Reporter: Parallel mode detected. Runtime API disabled.');
       return null;
     }
@@ -81,13 +60,13 @@ export class AllureReporter implements TestReporter {
 
   async afterEach(): Promise<void> {
     if (this.driver) {
-      await this.attachScreenshot(this.driver, 'Test Completion Screenshot');
+      await this.attachScreenshot('Test Completion Screenshot');
     }
   }
 
   async onTestFailure(testName: string, error: Error): Promise<void> {
     if (this.driver) {
-      await this.attachScreenshot(this.driver, `Failure Screenshot - ${testName}`);
+      await this.attachScreenshot(`Failure Screenshot - ${testName}`);
     }
     
     const allure = AllureReporter.getAllure();
@@ -100,25 +79,16 @@ export class AllureReporter implements TestReporter {
     this.driver = driver;
   }
 
-  /**
-   * Attach screenshot to Allure report
-   */
-  private async attachScreenshot(driver: ThenableWebDriver, name: string = 'Screenshot'): Promise<void> {
+  private async attachScreenshot(name: string = 'Screenshot'): Promise<void> {
     const allure = AllureReporter.getAllure();
-    if (!allure) return;
+    if (!allure || !this.driver) return;
 
-    try {
-      const screenshot = await driver.takeScreenshot();
-      const buffer = Buffer.from(screenshot, 'base64');
+    const buffer = await captureScreenshot(this.driver);
+    if (buffer) {
       allure.attachment(name, buffer, 'image/png');
-    } catch (error) {
-      console.warn(`Failed to attach screenshot: ${error}`);
     }
   }
 
-  /**
-   * Setup Allure environment information
-   */
   private setupEnvironment(): void {
     const allure = AllureReporter.getAllure();
     if (!allure) return;
@@ -150,13 +120,6 @@ export class AllureReporter implements TestReporter {
     }
   }
 
-  /**
-   * Add step to Allure report
-   * @example
-   * await AllureReporter.step('Click login button', async () => {
-   *   await loginPage.clickLogin();
-   * });
-   */
   static step(name: string, body: () => void | Promise<void>): void | Promise<void> {
     const allure = this.getAllure();
     if (!allure) {
@@ -165,9 +128,6 @@ export class AllureReporter implements TestReporter {
     return allure.step(name, body);
   }
 
-  /**
-   * Add parameter to Allure report
-   */
   static parameter(name: string, value: string): void {
     const allure = this.getAllure();
     if (allure) {
@@ -175,9 +135,6 @@ export class AllureReporter implements TestReporter {
     }
   }
 
-  /**
-   * Add attachment to Allure report
-   */
   static attachment(name: string, content: Buffer | string, type: string): void {
     const allure = this.getAllure();
     if (allure) {
@@ -186,16 +143,10 @@ export class AllureReporter implements TestReporter {
   }
 }
 
-/**
- * Utility function to determine if Allure reporter should be used
- */
 export function shouldUseAllureReporter(): boolean {
-  return process.argv.includes('--reporter') && process.argv.includes('allure-mocha');
+  return hasCliReporter('allure-mocha');
 }
 
-/**
- * Factory function to create Allure reporter
- */
 export function createAllureReporter(): TestReporter {
   return new AllureReporter();
 }

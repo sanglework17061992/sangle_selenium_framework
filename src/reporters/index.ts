@@ -1,31 +1,13 @@
-// Export all reporters
 export { AllureReporter, createAllureReporter, shouldUseAllureReporter } from './AllureReporter';
 export { MochawesomeReporter, createMochawesomeReporter, shouldUseMochawesomeReporter } from './MochawesomeReporter';
-
-// Re-export TestReporter interface for convenience
 export type { TestReporter } from '../base/BaseTest';
 
 import { createAllureReporter, shouldUseAllureReporter } from './AllureReporter';
 import { createMochawesomeReporter, shouldUseMochawesomeReporter } from './MochawesomeReporter';
 import { ConfigLoader, ReporterType } from '../config/ConfigLoader';
+import { TestReporter } from '../base/BaseTest';
 
-/**
- * Auto-detect and create appropriate reporter based on:
- * 1. Configuration file (.env REPORTER_TYPE)
- * 2. Command line arguments (--reporter flag)
- * 
- * @returns Reporter instance or undefined (will use NoOpReporter)
- * 
- * @example
- * // Automatically select reporter based on config
- * const test = new TodoTest(createReporter());
- * 
- * // Or explicitly create specific reporter:
- * const test = new TodoTest(createAllureReporter());
- * const test = new TodoTest(createMochawesomeReporter());
- */
-export function createReporter() {
-  // First check CLI arguments (highest priority)
+export function createReporter(): TestReporter | undefined {
   if (shouldUseAllureReporter()) {
     return createAllureReporter();
   }
@@ -34,11 +16,22 @@ export function createReporter() {
     return createMochawesomeReporter();
   }
   
-  // Then check config file
   const config = ConfigLoader.getInstance().getConfig();
-  const reporterType = config.reporting.reporterType;
+  const reporterTypes = config.reporting.reporterTypes;
   
-  switch (reporterType) {
+  if (reporterTypes.length === 0) {
+    return undefined;
+  }
+
+  if (reporterTypes.length === 1) {
+    return createSingleReporter(reporterTypes[0]);
+  }
+
+  return createMultiReporter(reporterTypes);
+}
+
+function createSingleReporter(type: ReporterType): TestReporter | undefined {
+  switch (type) {
     case ReporterType.ALLURE:
       return createAllureReporter();
     case ReporterType.MOCHAWESOME:
@@ -47,6 +40,44 @@ export function createReporter() {
       return undefined;
     default:
       return undefined;
+  }
+}
+
+function createMultiReporter(types: ReporterType[]): TestReporter {
+  const reporters = types
+    .map(createSingleReporter)
+    .filter((r): r is TestReporter => r !== undefined);
+
+  return new CompositeReporter(reporters);
+}
+
+class CompositeReporter implements TestReporter {
+  constructor(private readonly reporters: TestReporter[]) {}
+
+  async beforeAll(): Promise<void> {
+    await Promise.all(this.reporters.map(async (r) => r.beforeAll?.()));
+  }
+
+  async afterAll(): Promise<void> {
+    await Promise.all(this.reporters.map(async (r) => r.afterAll?.()));
+  }
+
+  async beforeEach(): Promise<void> {
+    await Promise.all(this.reporters.map(async (r) => r.beforeEach?.()));
+  }
+
+  async afterEach(): Promise<void> {
+    await Promise.all(this.reporters.map(async (r) => r.afterEach?.()));
+  }
+
+  async onTestFailure(testName: string, error: Error): Promise<void> {
+    await Promise.all(this.reporters.map(async (r) => r.onTestFailure?.(testName, error)));
+  }
+
+  setDriver(driver: any): void {
+    for (const reporter of this.reporters) {
+      reporter.setDriver?.(driver);
+    }
   }
 }
 
