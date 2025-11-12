@@ -46,14 +46,9 @@ export enum ReporterType {
  */
 export enum ActionType {
   CLICK = 'click',
-  DOUBLE_CLICK = 'dblclick',
-  RIGHT_CLICK = 'contextmenu',
   TYPE = 'type',
   CLEAR = 'clear',
   CHECK = 'check',
   UNCHECK = 'uncheck',
   HOVER = 'hover',
-  FOCUS = 'focus',
-  SELECT = 'select',
-  DRAG = 'drag'
 }
