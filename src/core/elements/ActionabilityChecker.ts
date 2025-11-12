@@ -1,9 +1,9 @@
 import { WebElement, ThenableWebDriver } from 'selenium-webdriver';
 
-export type CheckName = 'visible' | 'stable' | 'receivesEvents' | 'enabled' | 'editable';
+export type Check = 'visible' | 'stable' | 'receivesEvents' | 'enabled' | 'editable';
 
 export interface ActionabilityOptions {
-  checks?: readonly CheckName[];
+  checks?: readonly Check[];
   timeout?: number;
 }
 
@@ -170,7 +170,7 @@ async function isEditable(element: WebElement): Promise<boolean> {
  * Unified requirement mapping - maps check names to their validation functions
  * Each function returns true on success or an error message string on failure
  */
-const checkMap: Record<CheckName, (el: WebElement, driver: ThenableWebDriver) => Promise<boolean | string>> = {
+const checkMap: Record<Check, (el: WebElement, driver: ThenableWebDriver) => Promise<boolean | string>> = {
   visible: async (el: WebElement, _driver: ThenableWebDriver) =>
     (await isVisible(el)) || 'Element is not visible',
   
