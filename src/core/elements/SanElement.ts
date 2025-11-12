@@ -197,7 +197,11 @@ export class SanElement {
     }, false);
   }
 
-  // expose raw element for advanced operations
+  /**
+   * Get raw WebElement for advanced operations (used internally by assertions)
+   * @param timeout Optional timeout
+   * @returns WebElement
+   */
   async raw(timeout?: number) {
     return this.findElementForRead(timeout);
   }
@@ -209,26 +213,11 @@ export class SanElement {
     }, 'clear');
   }
 
-  async submit(timeout?: number) {
-    return this.executeAction(async () => {
-      const el = await this.findElementForRead(timeout);
-      await el.submit();
-    }, 'submit');
-  }
-
   // Checkbox methods
   async check(options?: ActionOptions) {
     const el = await this.findElementWithActionability(ActionType.CHECK, options);
     const isChecked = await el.isSelected();
     if (!isChecked) {
-      await el.click();
-    }
-  }
-
-  async uncheck(options?: ActionOptions) {
-    const el = await this.findElementWithActionability(ActionType.UNCHECK, options);
-    const isChecked = await el.isSelected();
-    if (isChecked) {
       await el.click();
     }
   }
@@ -241,22 +230,6 @@ export class SanElement {
   }
 
   // Mouse actions
-  async doubleClick(options?: ActionOptions) {
-    return this.executeAction(async () => {
-      const el = await this.findElementWithActionability(ActionType.DOUBLE_CLICK, options);
-      const actions = this.getActions();
-      await actions.doubleClick(el).perform();
-    }, 'double-click');
-  }
-
-  async rightClick(options?: ActionOptions) {
-    return this.executeAction(async () => {
-      const el = await this.findElementWithActionability(ActionType.RIGHT_CLICK, options);
-      const actions = this.getActions();
-      await actions.contextClick(el).perform();
-    }, 'right-click');
-  }
-
   async hover(options?: ActionOptions) {
     return this.executeAction(async () => {
       const el = await this.findElementWithActionability(ActionType.HOVER, options);
@@ -265,16 +238,7 @@ export class SanElement {
     }, 'hover over');
   }
 
-  async dragAndDrop(target: SanElement, options?: ActionOptions) {
-    return this.executeAction(async () => {
-      const sourceEl = await this.findElementWithActionability(ActionType.DRAG, options);
-      const targetEl = await target.findElementForRead(options?.timeout);
-      const actions = this.getActions();
-      await actions.dragAndDrop(sourceEl, targetEl).perform();
-    }, `drag and drop to target ${JSON.stringify(target.locator)}`);
-  }
-
-    /**
+  /**
    * Get Select wrapper for dropdown element
    * @param element WebElement to wrap
    * @returns Select instance
@@ -296,51 +260,11 @@ export class SanElement {
     await selectElement.selectByVisibleText(text);
   }
 
-  async selectByIndex(index: number, options?: ActionOptions) {
-    const el = await this.findElementWithActionability(ActionType.SELECT, options);
-    const selectElement = this.getSelectElement(el);
-    await selectElement.selectByIndex(index);
-  }
-
-  async getSelectedValue(timeout?: number): Promise<string | null> {
-    const el = await this.findElementForRead(timeout);
-    const selectElement = this.getSelectElement(el);
-    const selectedOption = await selectElement.getFirstSelectedOption();
-    if (!selectedOption) return null;
-    return await selectedOption.getAttribute('value');
-  }
-
-  async getSelectedText(timeout?: number): Promise<string> {
-    const el = await this.findElementForRead(timeout);
-    const selectElement = this.getSelectElement(el);
-    const selectedOption = await selectElement.getFirstSelectedOption();
-    if (!selectedOption) return '';
-    return await selectedOption.getText();
-  }
-
-  // Scrolling
-  async scrollIntoView(timeout?: number) {
-    const el = await this.findElementForRead(timeout);
-    await this.driver.executeScript('arguments[0].scrollIntoView(true);', el);
-  }
-
   // Advanced waiting methods
   async waitUntilVisible(timeout?: number) {
     const by = toBy(this.locator);
     const t = timeout ?? this.defaultTimeout;
     await this.driver.wait(until.elementIsVisible(await this.driver.findElement(by)), t);
-  }
-
-  async waitUntilClickable(timeout?: number) {
-    const by = toBy(this.locator);
-    const t = timeout ?? this.defaultTimeout;
-    await this.driver.wait(until.elementIsEnabled(await this.driver.findElement(by)), t);
-  }
-
-  async waitUntilPresent(timeout?: number) {
-    const by = toBy(this.locator);
-    const t = timeout ?? this.defaultTimeout;
-    await this.driver.wait(until.elementLocated(by), t);
   }
 
   /**
@@ -389,42 +313,9 @@ export class SanElement {
     return this.driver.findElements(by);
   }
 
-  async getElements(timeout?: number): Promise<WebElement[]> {
-    return this.findElementsForRead(timeout);
-  }
-
   async count(timeout?: number): Promise<number> {
     const elements = await this.findElementsForRead(timeout);
     return elements.length;
-  }
-
-  async getTexts(timeout?: number): Promise<string[]> {
-    const elements = await this.findElementsForRead(timeout);
-    const texts: string[] = [];
-    for (const element of elements) {
-      try {
-        const text = await element.getText();
-        texts.push(text);
-      } catch {
-        // Skip elements that can't get text
-        continue;
-      }
-    }
-    return texts;
-  }
-
-  async getAttributes(attributeName: string, timeout?: number): Promise<string[]> {
-    const elements = await this.findElementsForRead(timeout);
-    const attributes: string[] = [];
-    for (const element of elements) {
-      try {
-        const attr = await element.getAttribute(attributeName);
-        attributes.push(attr || '');
-      } catch {
-        attributes.push('');
-      }
-    }
-    return attributes;
   }
 }
 

@@ -106,18 +106,6 @@ export class TypeAssertion<T> {
   }
 
   /**
-   * Assert that an array has exactly the same members (order doesn't matter)
-   * @example expect(['a', 'b', 'c']).toHaveMembers(['c', 'a', 'b'])
-   */
-  toHaveMembers(expected: any[], message?: string): void {
-    this.handleAssertion(
-      () => assert.hasMembers(this.actualValue as any[], expected),
-      `Expected ${this.actualValue} to have members ${expected}`,
-      message
-    );
-  }
-
-  /**
    * Assert that the value is strictly true (=== true)
    * @example expect(isActive).toBeTrue()
    */
@@ -142,30 +130,6 @@ export class TypeAssertion<T> {
   }
 
   /**
-   * Assert that the value is truthy (if/while would treat it as true)
-   * @example expect('text').toBeTruthy()
-   */
-  toBeTruthy(message?: string): void {
-    this.handleAssertion(
-      () => assert.isTruthy(this.actualValue),
-      `Expected ${this.actualValue} to be truthy`,
-      message
-    );
-  }
-
-  /**
-   * Assert that the value is falsy (if/while would treat it as false)
-   * @example expect(0).toBeFalsy()
-   */
-  toBeFalsy(message?: string): void {
-    this.handleAssertion(
-      () => assert.isFalsy(this.actualValue),
-      `Expected ${this.actualValue} to be falsy`,
-      message
-    );
-  }
-
-  /**
    * Assert that a number is greater than the expected value
    * @example expect(score).toBeGreaterThan(50)
    */
@@ -173,42 +137,6 @@ export class TypeAssertion<T> {
     this.handleAssertion(
       () => assert.greaterThan(this.actualValue as any, expected),
       `Expected ${this.actualValue} to be greater than ${expected}`,
-      message
-    );
-  }
-
-  /**
-   * Assert that a number is less than the expected value
-   * @example expect(age).toBeLessThan(100)
-   */
-  toBeLessThan(expected: number, message?: string): void {
-    this.handleAssertion(
-      () => assert.lessThan(this.actualValue as any, expected),
-      `Expected ${this.actualValue} to be less than ${expected}`,
-      message
-    );
-  }
-
-  /**
-   * Assert that a number is greater than or equal to the expected value
-   * @example expect(score).toBeGreaterThanOrEqual(50)
-   */
-  toBeGreaterThanOrEqual(expected: number, message?: string): void {
-    this.handleAssertion(
-      () => assert.greaterThanOrEqual(this.actualValue as any, expected),
-      `Expected ${this.actualValue} to be greater than or equal to ${expected}`,
-      message
-    );
-  }
-
-  /**
-   * Assert that a number is less than or equal to the expected value
-   * @example expect(age).toBeLessThanOrEqual(100)
-   */
-  toBeLessThanOrEqual(expected: number, message?: string): void {
-    this.handleAssertion(
-      () => assert.lessThanOrEqual(this.actualValue as any, expected),
-      `Expected ${this.actualValue} to be less than or equal to ${expected}`,
       message
     );
   }
@@ -226,18 +154,6 @@ export class TypeAssertion<T> {
   }
 
   /**
-   * Assert that the value is not null
-   * @example expect(result).toNotBeNull()
-   */
-  toNotBeNull(message?: string): void {
-    this.handleAssertion(
-      () => assert.isNotNull(this.actualValue),
-      `Expected ${this.actualValue} not to be null`,
-      message
-    );
-  }
-
-  /**
    * Assert that the value is undefined
    * @example expect(result).toBeUndefined()
    */
@@ -245,18 +161,6 @@ export class TypeAssertion<T> {
     this.handleAssertion(
       () => assert.isUndefined(this.actualValue),
       `Expected ${this.actualValue} to be undefined`,
-      message
-    );
-  }
-
-  /**
-   * Assert that the value is defined (not undefined)
-   * @example expect(result).toBeDefined()
-   */
-  toBeDefined(message?: string): void {
-    this.handleAssertion(
-      () => assert.isDefined(this.actualValue),
-      `Expected value to be defined`,
       message
     );
   }

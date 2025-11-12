@@ -158,7 +158,7 @@ export class InsurancePurchasePage extends BasePage {
     }
 
     async getSelectedVehicleMake(): Promise<string | null> {
-        return await this.vehicleMakeSelect.getSelectedValue();
+        return await this.vehicleMakeSelect.getAttribute('value');
     }
 
     async fillVehicleDetails(year: string, mileage: string): Promise<void> {

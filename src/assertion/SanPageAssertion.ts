@@ -74,24 +74,6 @@ export class SanPageAssertion {
   }
 
   /**
-   * Assert that the page title matches the expected regex pattern
-   * @example await expect(page).toHaveTitleMatching(/Dashboard/)
-   */
-  async toHaveTitleMatching(pattern: RegExp): Promise<void> {
-    await waitUntil(
-      () => safeAssert(async () => {
-        const driver = this.page['driver'];
-        const actualTitle = await driver.getTitle();
-        if (!pattern.test(actualTitle)) {
-          throw new Error(`Title "${actualTitle}" does not match pattern ${pattern}`);
-        }
-      }),
-      `page title to match pattern ${pattern}`,
-      this.timeout
-    );
-  }
-
-  /**
    * Assert that the page has the expected URL (exact match)
    * @example await expect(page).toHaveURL('https://example.com/dashboard')
    */
@@ -129,23 +111,5 @@ export class SanPageAssertion {
    */
   async toContainURL(expectedSubstring: string): Promise<void> {
     await this.toHaveURLContaining(expectedSubstring);
-  }
-
-  /**
-   * Assert that the page URL matches the expected regex pattern
-   * @example await expect(page).toHaveURLMatching(/dashboard/)
-   */
-  async toHaveURLMatching(pattern: RegExp): Promise<void> {
-    await waitUntil(
-      () => safeAssert(async () => {
-        const driver = this.page['driver'];
-        const actualUrl = await driver.getCurrentUrl();
-        if (!pattern.test(actualUrl)) {
-          throw new Error(`URL "${actualUrl}" does not match pattern ${pattern}`);
-        }
-      }),
-      `page URL to match pattern ${pattern}`,
-      this.timeout
-    );
   }
 }
