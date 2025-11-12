@@ -1,11 +1,9 @@
 import { WebElement, ThenableWebDriver } from 'selenium-webdriver';
 
+export type CheckName = 'visible' | 'stable' | 'receivesEvents' | 'enabled' | 'editable';
+
 export interface ActionabilityOptions {
-  visible?: boolean;
-  stable?: boolean;
-  receivesEvents?: boolean;
-  enabled?: boolean;
-  editable?: boolean;
+  checks?: readonly CheckName[];
   timeout?: number;
 }
 
@@ -172,7 +170,7 @@ async function isEditable(element: WebElement): Promise<boolean> {
  * Unified requirement mapping - maps check names to their validation functions
  * Each function returns true on success or an error message string on failure
  */
-const checkMap = {
+const checkMap: Record<CheckName, (el: WebElement, driver: ThenableWebDriver) => Promise<boolean | string>> = {
   visible: async (el: WebElement, _driver: ThenableWebDriver) =>
     (await isVisible(el)) || 'Element is not visible',
   
@@ -187,7 +185,7 @@ const checkMap = {
   
   receivesEvents: async (el: WebElement, driver: ThenableWebDriver) =>
     (await receivesEvents(el, driver)) || 'Element does not receive events (obscured by another element)'
-} as const;
+};
 
 /**
  * Run all required actionability checks based on options
@@ -199,10 +197,12 @@ async function runChecks(
   options: ActionabilityOptions
 ): Promise<string[]> {
   const errors: string[] = [];
+  const checksToRun = options.checks || [];
 
   // Run checks in order, stop at first failure for fail-fast behavior
-  for (const [key, checkFn] of Object.entries(checkMap)) {
-    if ((options as any)[key]) {
+  for (const checkName of checksToRun) {
+    const checkFn = checkMap[checkName];
+    if (checkFn) {
       const result = await checkFn(element, driver);
       if (typeof result === 'string') {
         errors.push(result);

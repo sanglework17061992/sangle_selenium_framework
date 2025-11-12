@@ -1,5 +1,12 @@
-import { ActionabilityOptions } from './ActionabilityChecker';
+import { ActionabilityOptions, CheckName } from './ActionabilityChecker';
 import { ActionType } from '../../types/Enums';
+
+// Reusable check combinations - define which checks are needed for each action type
+const INTERACTIVE_CHECKS: readonly CheckName[] = ['visible', 'stable', 'receivesEvents', 'enabled'];
+const HOVER_CHECKS: readonly CheckName[] = ['visible', 'stable', 'receivesEvents'];
+const EDITABLE_CHECKS: readonly CheckName[] = ['visible', 'enabled', 'editable'];
+const ENABLED_CHECKS: readonly CheckName[] = ['visible', 'enabled'];
+const VISIBLE_ONLY: readonly CheckName[] = ['visible'];
 
 /**
  * Action requirements matrix based on Playwright's actionability checks
@@ -7,76 +14,25 @@ import { ActionType } from '../../types/Enums';
  */
 export const ACTION_REQUIREMENTS: Record<ActionType, ActionabilityOptions> = {
   // Interactive click-like actions - require all checks
-  [ActionType.CLICK]: {
-    visible: true,
-    stable: true,
-    receivesEvents: true,
-    enabled: true,
-  },
-  
-  [ActionType.DOUBLE_CLICK]: {
-    visible: true,
-    stable: true,
-    receivesEvents: true,
-    enabled: true,
-  },
-  
-  [ActionType.RIGHT_CLICK]: {
-    visible: true,
-    stable: true,
-    receivesEvents: true,
-    enabled: true,
-  },
-  
-  [ActionType.CHECK]: {
-    visible: true,
-    stable: true,
-    receivesEvents: true,
-    enabled: true,
-  },
-  
-  [ActionType.UNCHECK]: {
-    visible: true,
-    stable: true,
-    receivesEvents: true,
-    enabled: true,
-  },
+  [ActionType.CLICK]: { checks: INTERACTIVE_CHECKS },
+  [ActionType.DOUBLE_CLICK]: { checks: INTERACTIVE_CHECKS },
+  [ActionType.RIGHT_CLICK]: { checks: INTERACTIVE_CHECKS },
+  [ActionType.CHECK]: { checks: INTERACTIVE_CHECKS },
+  [ActionType.UNCHECK]: { checks: INTERACTIVE_CHECKS },
   
   // Hover actions - no enabled check
-  [ActionType.HOVER]: {
-    visible: true,
-    stable: true,
-    receivesEvents: true,
-  },
-  
-  [ActionType.DRAG]: {
-    visible: true,
-    stable: true,
-    receivesEvents: true,
-  },
+  [ActionType.HOVER]: { checks: HOVER_CHECKS },
+  [ActionType.DRAG]: { checks: HOVER_CHECKS },
   
   // Input/fill actions - require editability
-  [ActionType.CLEAR]: {
-    visible: true,
-    enabled: true,
-    editable: true,
-  },
-  
-  [ActionType.TYPE]: {
-    visible: true,
-    enabled: true,
-    editable: true,
-  },
+  [ActionType.CLEAR]: { checks: EDITABLE_CHECKS },
+  [ActionType.TYPE]: { checks: EDITABLE_CHECKS },
   
   // Select actions - require enabled but not editable
-  [ActionType.SELECT]: {
-    visible: true,
-    enabled: true,
-  },
+  [ActionType.SELECT]: { checks: ENABLED_CHECKS },
   
-  [ActionType.FOCUS]: {
-    visible: true,
-  },
+  // Focus only requires visibility
+  [ActionType.FOCUS]: { checks: VISIBLE_ONLY },
 };
 
 /**
