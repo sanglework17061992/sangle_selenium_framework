@@ -1,6 +1,11 @@
 import { WebElement, ThenableWebDriver } from 'selenium-webdriver';
 
-export type Check = 'visible' | 'stable' | 'receivesEvents' | 'enabled' | 'editable';
+export enum Check {
+  VISIBLE = 'visible',
+  STABLE = 'stable',
+  ENABLED = 'enabled',
+  EDITABLE = 'editable',
+}
 
 export interface ActionabilityOptions {
   checks?: readonly Check[];
@@ -89,32 +94,6 @@ async function isStable(element: WebElement): Promise<boolean> {
 }
 
 /**
- * Check if element receives pointer events (not obscured by other elements)
- * Uses document.elementFromPoint to check if element is the hit target at its center point
- */
-async function receivesEvents(element: WebElement, driver: ThenableWebDriver): Promise<boolean> {
-  try {
-    const rect = await element.getRect();
-    const centerX = rect.x + rect.width / 2;
-    const centerY = rect.y + rect.height / 2;
-
-    // Use document.elementFromPoint to check hit target at center point
-    return await driver.executeScript<boolean>(
-      `
-      const [el, cx, cy] = arguments;
-      const hit = document.elementFromPoint(cx, cy);
-      return !!hit && (el === hit || el.contains(hit) || hit.contains(el));
-      `,
-      element,
-      centerX,
-      centerY
-    );
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Check if element is enabled (not disabled)
  * According to Playwright, element is disabled when:
  * - it has [disabled] attribute
@@ -171,20 +150,17 @@ async function isEditable(element: WebElement): Promise<boolean> {
  * Each function returns true on success or an error message string on failure
  */
 const checkMap: Record<Check, (el: WebElement, driver: ThenableWebDriver) => Promise<boolean | string>> = {
-  visible: async (el: WebElement, _driver: ThenableWebDriver) =>
+  [Check.VISIBLE]: async (el: WebElement, _driver: ThenableWebDriver) =>
     (await isVisible(el)) || 'Element is not visible',
   
-  stable: async (el: WebElement, _driver: ThenableWebDriver) =>
+  [Check.STABLE]: async (el: WebElement, _driver: ThenableWebDriver) =>
     (await isStable(el)) || 'Element is not stable (still animating)',
   
-  enabled: async (el: WebElement, _driver: ThenableWebDriver) =>
+  [Check.ENABLED]: async (el: WebElement, _driver: ThenableWebDriver) =>
     (await isEnabled(el)) || 'Element is not enabled (disabled)',
   
-  editable: async (el: WebElement, _driver: ThenableWebDriver) =>
+  [Check.EDITABLE]: async (el: WebElement, _driver: ThenableWebDriver) =>
     (await isEditable(el)) || 'Element is not editable (readonly or disabled)',
-  
-  receivesEvents: async (el: WebElement, driver: ThenableWebDriver) =>
-    (await receivesEvents(el, driver)) || 'Element does not receive events (obscured by another element)'
 };
 
 /**
