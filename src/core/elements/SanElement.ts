@@ -1,7 +1,7 @@
 import { By, ThenableWebDriver, WebElement, until } from 'selenium-webdriver';
 import { configLoader } from '../../config/ConfigLoader';
 import { DriverContext } from '../../driver/DriverManager';
-import { ActionabilityChecker, ActionabilityOptions } from './ActionabilityChecker';
+import { waitForActionability, ActionabilityOptions } from './ActionabilityChecker';
 import { getActionRequirements } from './ActionConfig';
 import { ActionType } from '../../types/Enums';
 
@@ -109,7 +109,7 @@ export class SanElement {
             timeout: this.getRemainingTimeout(startTime, timeout)
           };
           
-          await ActionabilityChecker.waitForActionability(
+          await waitForActionability(
             element,
             this.driver,
             requirements
