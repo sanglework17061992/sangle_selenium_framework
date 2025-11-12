@@ -27,6 +27,10 @@ function toBy(locator: Locator) {
 export class SanElement {
   private readonly locator: Locator;
   private readonly defaultTimeout: number;
+  
+  // Constants for retry logic
+  private static readonly SCROLL_SETTLE_TIME = 50; // ms to wait after scroll
+  private static readonly RETRY_INTERVAL = 100; // ms between retries
 
   constructor(locator: Locator, defaultTimeout?: number) {
     this.locator = locator;
@@ -40,65 +44,90 @@ export class SanElement {
   private getActions() {
     return this.driver.actions({ bridge: true });
   }
-
+  
   /**
-   * Find element with basic wait (used for read operations that don't need actionability checks)
-   * @param timeout Optional timeout
-   * @returns WebElement
+   * Calculate remaining timeout, ensuring it's not negative
    */
-  private async findElementForRead(timeout?: number): Promise<WebElement> {
-    const by = toBy(this.locator);
-    const t = timeout ?? this.defaultTimeout;
-    // Wait until located and visible
-    await this.driver.wait(until.elementLocated(by), t);
-    const el = await this.driver.findElement(by);
-    await this.driver.wait(until.elementIsVisible(el), t);
-    return el;
+  private getRemainingTimeout(startTime: number, totalTimeout: number): number {
+    const elapsed = Date.now() - startTime;
+    return Math.max(0, totalTimeout - elapsed);
   }
 
   /**
-   * Find element and wait for actionability checks
-   * @param actionType The type of action to perform
-   * @param options Options including timeout and force flag
-   * @returns WebElement that has passed all actionability checks
+   * Find and prepare element for interaction or reading
+   * 
+   * For read operations (actionType = null):
+   * - Wait for element located
+   * - Wait for element visible
+   * 
+   * For action operations (actionType provided):
+   * - Wait for element located
+   * - Scroll into view
+   * - Wait for element actionable (unless force = true)
+   * 
+   * @param actionType Type of action (null for read operations)
+   * @param options Timeout and force options
+   * @returns WebElement ready for use
    */
-  private async findElementWithActionability(
-    actionType: ActionType,
+  // eslint-disable-next-line sonarjs/no-identical-functions
+  private async findElement(
+    actionType: ActionType | null = null,
     options?: ActionOptions
   ): Promise<WebElement> {
     const by = toBy(this.locator);
     const timeout = options?.timeout ?? this.defaultTimeout;
-    const force = options?.force ?? false;
+    const startTime = Date.now();
     
-    // Step 1: Wait for element to be located
-    await this.driver.wait(until.elementLocated(by), timeout);
-    const element = await this.driver.findElement(by);
-    
-    // Step 2: Scroll element into view (like Playwright does automatically)
-    // Use 'nearest' to minimize scrolling and reduce chance of obscuring
-    await this.driver.executeScript(
-      'arguments[0].scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });',
-      element
-    );
-    
-    // Give browser a moment to settle after scroll (similar to Playwright's implementation)
-    await new Promise(resolve => setTimeout(resolve, 50));
-    
-    // Step 3: Perform actionability checks (unless forced)
-    if (!force) {
-      const requirements: ActionabilityOptions = {
-        ...getActionRequirements(actionType),
-        timeout
-      };
-      
-      await ActionabilityChecker.waitForActionability(
-        element,
-        this.driver,
-        requirements
-      );
+    while (this.getRemainingTimeout(startTime, timeout) > 0) {
+      try {
+        // Step 1: Wait for element to be located in DOM
+        const remainingTime = this.getRemainingTimeout(startTime, timeout);
+        await this.driver.wait(until.elementLocated(by), remainingTime);
+        const element = await this.driver.findElement(by);
+        
+        // For read operations, just wait for visibility and return
+        if (actionType === null) {
+          const visibilityTimeout = this.getRemainingTimeout(startTime, timeout);
+          await this.driver.wait(until.elementIsVisible(element), visibilityTimeout);
+          return element;
+        }
+        
+        // For action operations, prepare element for interaction
+        const force = options?.force ?? false;
+        
+        // Step 2: Scroll into view (element is guaranteed to exist now)
+        await this.driver.executeScript(
+          'arguments[0].scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });',
+          element
+        );
+        await new Promise(resolve => setTimeout(resolve, SanElement.SCROLL_SETTLE_TIME));
+        
+        // Step 3: Wait for element to be actionable (unless forced)
+        if (!force) {
+          const requirements: ActionabilityOptions = {
+            ...getActionRequirements(actionType),
+            timeout: this.getRemainingTimeout(startTime, timeout)
+          };
+          
+          await ActionabilityChecker.waitForActionability(
+            element,
+            this.driver,
+            requirements
+          );
+        }
+        
+        return element;
+      } catch (error) {
+        // If element becomes stale or any error occurs, retry until timeout
+        if (this.getRemainingTimeout(startTime, timeout) <= 0) {
+          throw error;
+        }
+        await new Promise(resolve => setTimeout(resolve, SanElement.RETRY_INTERVAL));
+      }
     }
     
-    return element;
+    // This should rarely be reached due to the while condition, but kept for safety
+    throw new Error(`Timeout finding element with locator ${JSON.stringify(this.locator)} after ${timeout}ms`);
   }
 
   /**
@@ -136,105 +165,153 @@ export class SanElement {
     }
   }
 
-  // Core interactions: click, type, getText, isDisplayed, getAttribute
-  async click(options?: ActionOptions) {
+  // Core interactions
+  async click(options?: ActionOptions): Promise<void> {
     return this.executeAction(async () => {
-      const el = await this.findElementWithActionability(ActionType.CLICK, options);
-      await el.click();
+      const element = await this.findElement(ActionType.CLICK, options);
+      await element.click();
     }, 'click');
   }
 
-  async type(text?: string, keys?: string, options?: ActionOptions) {
-    // Validate: at least one parameter must be provided
+  async type(text?: string, keys?: string, options?: ActionOptions): Promise<void> {
     if (!text && !keys) {
       throw new Error('type() requires either text or keys parameter');
     }
 
-    // Build operation description for error messages
-    let operation: string;
-    if (text && keys) {
-      const keyDesc = typeof keys === 'string' ? keys : 'special key';
-      operation = `type text "${text}" and press ${keyDesc}`;
-    } else if (text) {
-      operation = `type text "${text}"`;
-    } else {
-      const keyDesc = typeof keys === 'string' ? keys : 'special key';
-      operation = `send ${keyDesc}`;
-    }
-
+    const operation = this.buildTypeOperation(text, keys);
+    
     return this.executeAction(async () => {
       const keysToSend = (text || '') + (keys || '');
       await this.typeKeys(keysToSend, options);
     }, operation);
   }
+  
+  /**
+   * Build operation description for type command
+   */
+  private buildTypeOperation(text?: string, keys?: string): string {
+    if (text && keys) {
+      return `type text "${text}" and press ${keys}`;
+    }
+    if (text) {
+      return `type text "${text}"`;
+    }
+    return `send ${keys}`;
+  }
 
-  async getText(timeout?: number) {
+  async getText(timeout?: number): Promise<string> {
     return this.executeAction(async () => {
-      const el = await this.findElementForRead(timeout);
-      return await el.getText();
+      const element = await this.findElement(null, { timeout });
+      return await element.getText();
     }, 'get text from');
   }
 
-  async getAttribute(name: string, timeout?: number) {
+  async getAttribute(name: string, timeout?: number): Promise<string | null> {
     return this.executeAction(async () => {
-      const el = await this.findElementForRead(timeout);
-      return await el.getAttribute(name);
+      const element = await this.findElement(null, { timeout });
+      return await element.getAttribute(name);
     }, `get attribute "${name}" from`);
   }
 
   async isDisplayed(timeout?: number): Promise<boolean> {
     return this.executeSafeRead(async () => {
-      const el = await this.findElementForRead(timeout);
-      return await el.isDisplayed();
+      const element = await this.findElement(null, { timeout });
+      return await element.isDisplayed();
     }, false);
   }
 
   /**
    * Get raw WebElement for advanced operations (used internally by assertions)
-   * @param timeout Optional timeout
-   * @returns WebElement
    */
-  async raw(timeout?: number) {
-    return this.findElementForRead(timeout);
+  async raw(timeout?: number): Promise<WebElement> {
+    return this.findElement(null, { timeout });
   }
 
-  async clear(options?: ActionOptions) {
+  async clear(options?: ActionOptions): Promise<void> {
     return this.executeAction(async () => {
-      const el = await this.findElementWithActionability(ActionType.CLEAR, options);
-      await el.clear();
+      const element = await this.findElement(ActionType.CLEAR, options);
+      await element.clear();
     }, 'clear');
   }
 
+  // Checkbox actions
+  /**
+   * Toggle checkbox to desired state (check or uncheck)
+   */
+  private async toggleCheckbox(
+    shouldBeChecked: boolean,
+    options?: ActionOptions
+  ): Promise<void> {
+    const actionType = shouldBeChecked ? ActionType.CHECK : ActionType.UNCHECK;
+    const element = await this.findElement(actionType, options);
+    
+    const isCurrentlyChecked = await element.isSelected();
+    if (isCurrentlyChecked !== shouldBeChecked) {
+      await element.click();
+    }
+  }
+
+  /**
+   * Check a checkbox element (makes it checked)
+   */
+  async check(options?: ActionOptions) {
+    return this.executeAction(
+      async () => this.toggleCheckbox(true, options),
+      'check'
+    );
+  }
+
+  /**
+   * Uncheck a checkbox element (makes it unchecked)
+   */
+  async uncheck(options?: ActionOptions) {
+    return this.executeAction(
+      async () => this.toggleCheckbox(false, options),
+      'uncheck'
+    );
+  }
+
+  /**
+   * Check if a checkbox element is checked
+   */
+  async isChecked(timeout?: number): Promise<boolean> {
+    return this.executeSafeRead(async () => {
+      const element = await this.findElement(null, { timeout });
+      return await element.isSelected();
+    }, false);
+  }
+
   // Mouse actions
-  async hover(options?: ActionOptions) {
+  async hover(options?: ActionOptions): Promise<void> {
     return this.executeAction(async () => {
-      const el = await this.findElementWithActionability(ActionType.HOVER, options);
+      const element = await this.findElement(ActionType.HOVER, options);
       const actions = this.getActions();
-      await actions.move({ origin: el }).perform();
+      await actions.move({ origin: element }).perform();
     }, 'hover over');
   }
 
   private async typeKeys(keys: string, options?: ActionOptions): Promise<void> {
-    const el = await this.findElementWithActionability(ActionType.TYPE, options);
-    await el.clear();
-    await el.sendKeys(keys);
+    const element = await this.findElement(ActionType.TYPE, options);
+    await element.clear();
+    await element.sendKeys(keys);
   }
 
-  // Collection methods for handling multiple elements
+  // Collection methods
   /**
-   * Find multiple elements with basic wait (used for read operations)
-   * @param timeout Optional timeout
-   * @returns Array of WebElements
+   * Find multiple elements with basic wait
    */
-  private async findElementsForRead(timeout?: number): Promise<WebElement[]> {
+  private async findElements(timeout?: number): Promise<WebElement[]> {
     const by = toBy(this.locator);
-    const t = timeout ?? this.defaultTimeout;
-    await this.driver.wait(until.elementsLocated(by), t);
+    const effectiveTimeout = timeout ?? this.defaultTimeout;
+    await this.driver.wait(until.elementsLocated(by), effectiveTimeout);
     return this.driver.findElements(by);
   }
 
+  /**
+   * Count number of elements matching the locator
+   */
   async count(timeout?: number): Promise<number> {
-    const elements = await this.findElementsForRead(timeout);
+    const elements = await this.findElements(timeout);
     return elements.length;
   }
 }

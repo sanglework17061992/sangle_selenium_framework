@@ -7,19 +7,29 @@ import { SanElement } from '../core/elements/SanElement';
  * Simple page for testing common interactions
  */
 export class TodoPage extends BasePage {
+  // Locators - defined in constructor
+  private readonly newTodoInput: SanElement;
+  private readonly todoList: SanElement;
+  private readonly todoItems: SanElement;
+  private readonly todoCount: SanElement;
+  private readonly clearCompletedBtn: SanElement;
+  private readonly filterAll: SanElement;
+  private readonly filterActive: SanElement;
+  private readonly filterCompleted: SanElement;
+
   constructor(driver: ThenableWebDriver) {
     super(driver);
+    
+    // Initialize locators
+    this.newTodoInput = this.byCss('.new-todo');
+    this.todoList = this.byCss('.todo-list');
+    this.todoItems = this.byCss('.todo-list li');
+    this.todoCount = this.byCss('.todo-count');
+    this.clearCompletedBtn = this.byCss('.clear-completed');
+    this.filterAll = this.byCss('a[href="#/"]');
+    this.filterActive = this.byCss('a[href="#/active"]');
+    this.filterCompleted = this.byCss('a[href="#/completed"]');
   }
-
-  // Locators - defined as getter methods
-  private get newTodoInput() { return this.byCss('.new-todo'); }
-  private get todoList() { return this.byCss('.todo-list'); }
-  private get todoItems() { return this.byCss('.todo-list li'); }
-  private get todoCount() { return this.byCss('.todo-count'); }
-  private get clearCompletedBtn() { return this.byCss('.clear-completed'); }
-  private get filterAll() { return this.byCss('a[href="#/"]'); }
-  private get filterActive() { return this.byCss('a[href="#/active"]'); }
-  private get filterCompleted() { return this.byCss('a[href="#/completed"]'); }
 
   // Actions
   async addTodo(todoText: string): Promise<void> {
