@@ -8,7 +8,7 @@ import { delay } from '../core/elements/ActionabilityChecker';
  * Simple page for testing common interactions
  */
 export class TodoPage extends BasePage {
-  // Locators - defined in constructor
+  // Locators
   private readonly newTodoInput: SanElement;
   private readonly todoList: SanElement;
   private readonly todoItems: SanElement;
@@ -17,11 +17,17 @@ export class TodoPage extends BasePage {
   private readonly filterAll: SanElement;
   private readonly filterActive: SanElement;
   private readonly filterCompleted: SanElement;
+  
+  // Dynamic locators initialized in constructor
+  private readonly todoItem: (index: number) => SanElement;
+  private readonly todoCheckbox: (index: number) => SanElement;
+  private readonly todoLabel: (index: number) => SanElement;
+  private readonly todoDeleteBtn: (index: number) => SanElement;
 
   constructor(driver: ThenableWebDriver) {
     super(driver);
     
-    // Initialize locators
+    // Initialize static locators
     this.newTodoInput = this.byCss('.new-todo');
     this.todoList = this.byCss('.todo-list');
     this.todoItems = this.byCss('.todo-list li');
@@ -30,6 +36,12 @@ export class TodoPage extends BasePage {
     this.filterAll = this.byCss('a[href="#/"]');
     this.filterActive = this.byCss('a[href="#/active"]');
     this.filterCompleted = this.byCss('a[href="#/completed"]');
+    
+    // Initialize dynamic locators
+    this.todoItem = (index: number) => this.byCss(`.todo-list li:nth-child(${index + 1})`);
+    this.todoCheckbox = (index: number) => this.byCss(`.todo-list li:nth-child(${index + 1}) .toggle`);
+    this.todoLabel = (index: number) => this.byCss(`.todo-list li:nth-child(${index + 1}) label`);
+    this.todoDeleteBtn = (index: number) => this.byCss(`.todo-list li:nth-child(${index + 1}) .destroy`);
   }
 
   // Actions
@@ -38,36 +50,35 @@ export class TodoPage extends BasePage {
   }
 
   getTodoItem(index: number): SanElement {
-    return this.byCss(`.todo-list li:nth-child(${index + 1})`);
+    return this.todoItem(index);
   }
 
   getTodoCheckbox(index: number): SanElement {
-    return this.byCss(`.todo-list li:nth-child(${index + 1}) .toggle`);
+    return this.todoCheckbox(index);
   }
 
   getTodoLabel(index: number): SanElement {
-    return this.byCss(`.todo-list li:nth-child(${index + 1}) label`);
+    return this.todoLabel(index);
   }
 
   getTodoDeleteBtn(index: number): SanElement {
-    return this.byCss(`.todo-list li:nth-child(${index + 1}) .destroy`);
+    return this.todoDeleteBtn(index);
   }
 
   async toggleTodo(index: number): Promise<void> {
-    const checkbox = this.getTodoCheckbox(index);
+    const checkbox = this.todoCheckbox(index);
     await checkbox.click({ force: true });
   }
 
   async deleteTodo(index: number): Promise<void> {
-    // Hover over the todo item to reveal the delete button
-    const item = this.getTodoItem(index);
+    const item = this.todoItem(index);
     await item.hover();
     
     // Wait a bit for CSS transition to complete
     await delay(100);
     
     // Click the delete button (use force as button might still be transitioning)
-    const deleteBtn = this.getTodoDeleteBtn(index);
+    const deleteBtn = this.todoDeleteBtn(index);
     await deleteBtn.click({ force: true });
   }
 
