@@ -1,6 +1,7 @@
 import { ThenableWebDriver } from 'selenium-webdriver';
 import { BasePage } from './BasePage';
 import { SanElement } from '../core/elements/SanElement';
+import { delay } from '../core/elements/ActionabilityChecker';
 
 /**
  * Page Object for Todo App
@@ -58,10 +59,16 @@ export class TodoPage extends BasePage {
   }
 
   async deleteTodo(index: number): Promise<void> {
+    // Hover over the todo item to reveal the delete button
     const item = this.getTodoItem(index);
     await item.hover();
+    
+    // Wait a bit for CSS transition to complete
+    await delay(100);
+    
+    // Click the delete button (use force as button might still be transitioning)
     const deleteBtn = this.getTodoDeleteBtn(index);
-    await deleteBtn.click();
+    await deleteBtn.click({ force: true });
   }
 
   async getTodoCount(): Promise<number> {
