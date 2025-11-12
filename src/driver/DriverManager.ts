@@ -35,12 +35,14 @@ export class DriverContext {
   }
 }
 
+type BrowserOptions = chrome.Options | firefox.Options;
+
 // Base factory to eliminate duplication
 abstract class BaseBrowserFactory implements BrowserFactory {
-  protected abstract createOptions(): chrome.Options | firefox.Options;
+  protected abstract createOptions(): BrowserOptions;
   protected abstract getBrowserName(): string;
-  protected abstract applyHeadlessMode(opts: chrome.Options | firefox.Options): void;
-  protected abstract configureBuilder(builder: Builder, opts: chrome.Options | firefox.Options): Builder;
+  protected abstract applyHeadlessMode(opts: BrowserOptions): void;
+  protected abstract configureBuilder(builder: Builder, opts: BrowserOptions): Builder;
 
   async createWebDriver(options?: DriverOptions): Promise<WebDriver> {
     const config = configLoader.getBrowserConfig();
@@ -79,11 +81,11 @@ class DefaultChromeFactory extends BaseBrowserFactory {
     return BrowserType.CHROME;
   }
 
-  protected applyHeadlessMode(opts: chrome.Options | firefox.Options): void {
+  protected applyHeadlessMode(opts: BrowserOptions): void {
     (opts as chrome.Options).addArguments('--headless=new');
   }
 
-  protected configureBuilder(builder: Builder, opts: chrome.Options | firefox.Options): Builder {
+  protected configureBuilder(builder: Builder, opts: BrowserOptions): Builder {
     return builder.setChromeOptions(opts as chrome.Options);
   }
 }
@@ -97,11 +99,11 @@ class DefaultFirefoxFactory extends BaseBrowserFactory {
     return BrowserType.FIREFOX;
   }
 
-  protected applyHeadlessMode(opts: chrome.Options | firefox.Options): void {
+  protected applyHeadlessMode(opts: BrowserOptions): void {
     (opts as firefox.Options).addArguments('-headless');
   }
 
-  protected configureBuilder(builder: Builder, opts: chrome.Options | firefox.Options): Builder {
+  protected configureBuilder(builder: Builder, opts: BrowserOptions): Builder {
     return builder.setFirefoxOptions(opts as firefox.Options);
   }
 }

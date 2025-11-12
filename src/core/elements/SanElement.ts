@@ -3,9 +3,9 @@ import { configLoader } from '../../config/ConfigLoader';
 import { DriverContext } from '../../driver/DriverManager';
 import { waitForActionability, ActionabilityOptions, delay, getRemainingTimeout } from './ActionabilityChecker';
 import { getActionRequirements } from './ActionConfig';
-import { ActionType } from '../../types/Enums';
+import { ActionType, LocatorType } from '../../types/Enums';
 
-export { ActionType } from '../../types/Enums';
+export { ActionType, LocatorType } from '../../types/Enums';
 export type Locator = { using: 'css' | 'xpath' | 'id' | 'name' | 'class'; value: string };
 
 export interface ActionOptions {
@@ -302,51 +302,13 @@ export class SanElement {
   // Chaining methods - find child elements
   
   /**
-   * Find a child element using CSS selector
-   * @example parentElement.find('.child-class')
+   * Find a child element with specified locator type
+   * @example parentElement.findChild(LocatorType.CSS, '.child-class')
+   * @example parentElement.findChild(LocatorType.XPATH, './/div')
+   * @example parentElement.findChild(LocatorType.ID, 'child-id')
    */
-  find(selector: string): SanElement {
-    return new SanElement({ using: 'css', value: selector }, this.defaultTimeout, this);
-  }
-
-  /**
-   * Find a child element using CSS selector (alias for find)
-   * @example parentElement.byCss('.child-class')
-   */
-  byCss(selector: string): SanElement {
-    return new SanElement({ using: 'css', value: selector }, this.defaultTimeout, this);
-  }
-
-  /**
-   * Find a child element using XPath
-   * @example parentElement.byXpath('.//div[@class="child"]')
-   */
-  byXpath(xpath: string): SanElement {
-    return new SanElement({ using: 'xpath', value: xpath }, this.defaultTimeout, this);
-  }
-
-  /**
-   * Find a child element by ID
-   * @example parentElement.byId('child-id')
-   */
-  byId(id: string): SanElement {
-    return new SanElement({ using: 'id', value: id }, this.defaultTimeout, this);
-  }
-
-  /**
-   * Find a child element by name attribute
-   * @example parentElement.byName('child-name')
-   */
-  byName(name: string): SanElement {
-    return new SanElement({ using: 'name', value: name }, this.defaultTimeout, this);
-  }
-
-  /**
-   * Find a child element by class name
-   * @example parentElement.byClass('child-class')
-   */
-  byClass(className: string): SanElement {
-    return new SanElement({ using: 'class', value: className }, this.defaultTimeout, this);
+  findChild(type: LocatorType, value: string): SanElement {
+    return new SanElement({ using: type, value }, this.defaultTimeout, this);
   }
 
   /**

@@ -50,5 +50,16 @@ export enum ActionType {
   CLEAR = 'clear',
   CHECK = 'check',
   UNCHECK = 'uncheck',
-  HOVER = 'hover',
+  HOVER = 'hover'
+}
+
+/**
+ * Locator types for element finding
+ */
+export enum LocatorType {
+  CSS = 'css',
+  XPATH = 'xpath',
+  ID = 'id',
+  NAME = 'name',
+  CLASS = 'class'
 }

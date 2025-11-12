@@ -1,6 +1,6 @@
 import { ThenableWebDriver } from 'selenium-webdriver';
 import { BasePage } from './BasePage';
-import { SanElement } from '../core/elements/SanElement';
+import { SanElement, LocatorType } from '../core/elements/SanElement';
 import { delay } from '../core/elements/ActionabilityChecker';
 
 /**
@@ -38,10 +38,10 @@ export class TodoPage extends BasePage {
     this.filterCompleted = this.byCss('a[href="#/completed"]');
     
     // Initialize dynamic locators using chaining
-    this.todoItem = (index: number) => this.todoList.find('li').nth(index);
-    this.todoCheckbox = (index: number) => this.todoItem(index).find('.toggle');
-    this.todoLabel = (index: number) => this.todoItem(index).find('label');
-    this.todoDeleteBtn = (index: number) => this.todoItem(index).find('.destroy');
+    this.todoItem = (index: number) => this.todoList.findChild(LocatorType.CSS, 'li').nth(index);
+    this.todoCheckbox = (index: number) => this.todoItem(index).findChild(LocatorType.CSS, '.toggle');
+    this.todoLabel = (index: number) => this.todoItem(index).findChild(LocatorType.CSS, 'label');
+    this.todoDeleteBtn = (index: number) => this.todoItem(index).findChild(LocatorType.CSS, '.destroy');
   }
 
   async addTodo(todoText: string): Promise<void> {
