@@ -6,17 +6,12 @@
 
 import { configLoader } from '../../config/ConfigLoader';
 
-// ============================================================================
-// SECTION: Constants
-// ============================================================================
-
+// Constants
 const testConfig = configLoader.getTestConfig();
 export const DEFAULT_TIMEOUT = 5000; // 5 seconds like Playwright
 export const POLL_INTERVAL = 100; // Poll every 100ms
 
-// ============================================================================
-// SECTION: Retry Mechanisms - Used by auto-retry assertions
-// ============================================================================
+// Retry Mechanisms - Used by auto-retry assertions
 
 /**
  * Helper method to safely execute assertion logic with try-catch
@@ -66,9 +61,7 @@ export async function waitUntil(
   throw new Error(timeoutMsg);
 }
 
-// ============================================================================
-// SECTION: Inline Assertion Logic - Replaces AssertHelper
-// ============================================================================
+// Inline Assertion Logic - Replaces AssertHelper
 
 /**
  * Helper method to format values for error messages

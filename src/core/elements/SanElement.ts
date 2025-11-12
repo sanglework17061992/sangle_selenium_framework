@@ -267,33 +267,6 @@ export class SanElement {
     await this.driver.wait(until.elementIsVisible(await this.driver.findElement(by)), t);
   }
 
-  /**
-   * Click element using JavaScript (bypasses all actionability checks)
-   * @param timeout Optional timeout
-   * @param fullSequence If true, dispatches full MouseEvent sequence (mousedown, mouseup, click).
-   *                     If false, dispatches only click event.
-   *                     Both methods are useful for elements that are not interactable due to visibility/overlay issues.
-   */
-  async clickWithJavaScript(timeout?: number, fullSequence: boolean = false) {
-    // For JavaScript clicks, we only need the element to be located, not visible
-    const by = toBy(this.locator);
-    const t = timeout ?? this.defaultTimeout;
-    await this.driver.wait(until.elementLocated(by), t);
-    const el = await this.driver.findElement(by);
-    
-    await this.driver.executeScript(`
-      const element = arguments[0];
-      const dispatchFullSequence = arguments[1];
-      const eventOptions = { bubbles: true, cancelable: true, view: window };
-      
-      if (dispatchFullSequence) {
-        element.dispatchEvent(new MouseEvent('mousedown', eventOptions));
-        element.dispatchEvent(new MouseEvent('mouseup', eventOptions));
-      }
-      element.dispatchEvent(new MouseEvent('click', eventOptions));
-    `, el, fullSequence);
-  }
-
   private async typeKeys(keys: string, options?: ActionOptions): Promise<void> {
     const el = await this.findElementWithActionability(ActionType.TYPE, options);
     await el.clear();
