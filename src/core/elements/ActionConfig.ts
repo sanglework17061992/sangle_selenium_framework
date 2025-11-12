@@ -1,17 +1,13 @@
-import { ActionabilityOptions, Check } from './ActionabilityChecker';
+import { ActionabilityOptions } from './ActionabilityChecker';
 import { ActionType } from '../../types/Enums';
 
-const INTERACTIVE_CHECKS: readonly Check[] = ['visible', 'stable', 'receivesEvents', 'enabled'];
-const HOVER_CHECKS: readonly Check[] = ['visible', 'stable', 'receivesEvents'];
-const EDITABLE_CHECKS: readonly Check[] = ['visible', 'enabled', 'editable'];
-
 export const ACTION_REQUIREMENTS: Record<ActionType, ActionabilityOptions> = {
-  [ActionType.CLICK]: { checks: INTERACTIVE_CHECKS },
-  [ActionType.CHECK]: { checks: INTERACTIVE_CHECKS },
-  [ActionType.UNCHECK]: { checks: INTERACTIVE_CHECKS },
-  [ActionType.HOVER]: { checks: HOVER_CHECKS },
-  [ActionType.CLEAR]: { checks: EDITABLE_CHECKS },
-  [ActionType.TYPE]: { checks: EDITABLE_CHECKS },
+  [ActionType.CLICK]: { checks: ['visible', 'stable', 'receivesEvents', 'enabled'] },
+  [ActionType.CHECK]: { checks: ['visible', 'stable', 'receivesEvents', 'enabled'] },
+  [ActionType.UNCHECK]: { checks: ['visible', 'stable', 'receivesEvents', 'enabled'] },
+  [ActionType.HOVER]: { checks: ['visible', 'stable', 'receivesEvents'] },
+  [ActionType.CLEAR]: { checks: ['visible', 'enabled', 'editable'] },
+  [ActionType.TYPE]: { checks: ['visible', 'enabled', 'editable'] },
 };
 
 export function getActionRequirements(actionType: ActionType): ActionabilityOptions {
