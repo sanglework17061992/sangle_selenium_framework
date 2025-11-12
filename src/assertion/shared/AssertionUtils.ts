@@ -5,6 +5,7 @@
  */
 
 import { configLoader } from '../../config/ConfigLoader';
+import { getRemainingTimeout } from '../../core/elements/ActionabilityChecker';
 
 // Constants
 const testConfig = configLoader.getTestConfig();
@@ -39,7 +40,7 @@ export async function waitUntil(
   const startTime = Date.now();
   let lastError: Error | null = null;
 
-  while (Date.now() - startTime < timeout) {
+  while (getRemainingTimeout(startTime, timeout) > 0) {
     try {
       const result = await condition();
       if (result) {
@@ -53,12 +54,9 @@ export async function waitUntil(
     await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL));
   }
 
-  // Timeout reached - throw error
-  const timeoutMsg = `Timeout ${timeout}ms exceeded waiting for ${errorMessage}`;
-  if (lastError) {
-    throw new Error(`${timeoutMsg}\n${lastError.message}`);
-  }
-  throw new Error(timeoutMsg);
+  // Timeout reached
+  const finalError = lastError || new Error(errorMessage);
+  throw new Error(`${errorMessage}\nLast error: ${finalError.message}`);
 }
 
 // Inline Assertion Logic - Replaces AssertHelper

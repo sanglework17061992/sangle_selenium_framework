@@ -27,6 +27,11 @@ export async function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+export function getRemainingTimeout(startTime: number, totalTimeout: number): number {
+  const elapsed = Date.now() - startTime;
+  return Math.max(0, totalTimeout - elapsed);
+}
+
 async function isVisible(element: WebElement): Promise<boolean> {
   try {
     if (!(await element.isDisplayed())) return false;
@@ -156,7 +161,7 @@ export async function waitForActionability(
   const startTime = Date.now();
   let lastErrors: string[] = [];
 
-  while (Date.now() - startTime < timeout) {
+  while (getRemainingTimeout(startTime, timeout) > 0) {
     try {
       const errors = await runChecks(element, driver, options);
       

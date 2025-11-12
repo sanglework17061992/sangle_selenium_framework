@@ -1,55 +1,226 @@
 # SaniumTS Selenium Framework
 
-A TypeScript Selenium framework with Playwright-style actionability checks:
-- **SanElement** - Custom web element wrapper with intelligent auto-wait and actionability checks
-- **ActionabilityChecker** - Visibility, stability, enabled, editable, and receives events checks
-- **SanAssertion** - Fluent assertion API with auto-retry for locators
-- **DriverManager** - Register and manage multiple browser factories
-- **Test Webapp** - Comprehensive Node.js test application for validation
-- **Page Object Model** - Clean UI abstraction layer
+A modern TypeScript Selenium framework with Playwright-style actionability checks and intelligent auto-wait capabilities.
 
 ## Key Features
 
-- **Playwright-Style Actionability** - Auto-wait for visible, stable, enabled, editable, and receives events  
-- **Type-Safe Actions** - ActionType enum for all interactions (CLICK, TYPE, HOVER, etc.)  
-- **Force Option** - Bypass actionability checks when needed: `{ force: true }`  
-- **Custom Timeouts** - Configure per-action timeouts: `{ timeout: 15000 }`  
-- **Auto-Retry Assertions** - Assertions automatically retry for locators  
-- **Comprehensive Test Webapp** - 40+ test scenarios on http://localhost:3001  
+- **🎯 Playwright-Style Actionability** - Auto-wait with Check enum: `VISIBLE`, `STABLE`, `ENABLED`, `EDITABLE`
+- **🔒 Type-Safe Actions** - ActionType enum for all interactions (CLICK, TYPE, HOVER, etc.)
+- **⚡ Smart Auto-Wait** - Automatic waiting and retry logic with configurable timeouts
+- **🎨 Fluent Assertions** - Chainable assertion API with built-in retry mechanisms
+- **📊 Multi-Reporter Support** - Run Allure and Mochawesome reporters simultaneously
+- **🏗️ Clean Architecture** - Page Object Model with separation of concerns
+- **🔧 Zero Duplication** - DRY principles with shared utilities across all modules
 
-## Test Webapp
+## Quick Start
 
-> **NOTE FOR REVIEWERS:** The test webapp has been moved to a separate repository to keep this framework focused on core functionality.  
-> To run the `test-webapp` tests in this project, please clone and run:
-> ```bash
-> git clone https://github.com/sanglework17061992/test-webapp
-> cd test-webapp
-> npm install
-> npm start
-> ```
-> The test webapp will be available at **http://localhost:3001**
+### Installation
 
-A complete Express.js testing environment with 6 test pages covering all actionability scenarios:
+```bash
+npm install
+```
 
-**Access at:** http://localhost:3001
+### Run Tests
 
-### Available Test Pages:
-1. **Delayed Elements** - Test auto-wait with configurable delays (0-10s)
-2. **Form Interactions** - All input types, checkboxes, radios, selects
-3. **Actionability Tests** - Visibility, stability, enabled, editable, receives events
-4. **Overlay Tests** - Loading overlays, modals, obscured elements
-5. **Dynamic Content** - DOM mutations, AJAX content
-6. **Home** - Navigation hub with documentation
+```bash
+# Run tests with default reporter
+npm test
+
+# Run with multi-reporter (Allure + Mochawesome)
+npm run test:multi
+
+# Clean old reports and run tests
+npm run test:clean
+npm run test:multi:clean
+```
+
+### View Reports
+
+```bash
+# Allure Report
+npm run report:allure
+
+# Mochawesome Report
+npm run report:mochawesome
+```
+
+## Core Components
+
+### 1. ActionabilityChecker - Smart Auto-Wait System
+
+The `ActionabilityChecker` module provides Playwright-style actionability validation with type-safe checks.
+
+#### Check Enum
+
+```typescript
+export enum Check {
+  VISIBLE = 'visible',    // Element is visible and has non-zero size
+  STABLE = 'stable',      // Element position is stable (not animating)
+  ENABLED = 'enabled',    // Element is enabled (not disabled)
+  EDITABLE = 'editable',  // Element is editable (not readonly)
+}
+```
+
+#### Key Features
+
+- **Type-Safe Checks** - Enum-based validation prevents typos
+- **Configurable Requirements** - Each action type has specific check requirements
+- **Timeout Management** - Shared `getRemainingTimeout()` utility for DRY code
+- **Polling Strategy** - Efficient 100ms polling with stability verification
+
+#### Usage Example
+
+```typescript
+import { waitForActionability, Check } from './core/elements/ActionabilityChecker';
+
+await waitForActionability(element, driver, {
+  checks: [Check.VISIBLE, Check.STABLE, Check.ENABLED],
+  timeout: 10000
+});
+```
+
+#### Action Requirements (ActionConfig)
+
+Different actions require different checks:
+
+```typescript
+const ACTION_REQUIREMENTS: Record<ActionType, ActionabilityOptions> = {
+  [ActionType.CLICK]: { checks: [Check.VISIBLE, Check.STABLE, Check.ENABLED] },
+  [ActionType.TYPE]: { checks: [Check.VISIBLE, Check.ENABLED, Check.EDITABLE] },
+  [ActionType.CLEAR]: { checks: [Check.VISIBLE, Check.ENABLED, Check.EDITABLE] },
+  [ActionType.HOVER]: { checks: [Check.VISIBLE, Check.STABLE] },
+  // ... more actions
+};
+```
+
+### 2. SanElement - Unified Element Wrapper
+
+Smart element wrapper with auto-wait and actionability checks built-in.
+
+#### Core Features
+
+```typescript
+// Basic interactions with auto-wait
+await element.click();
+await element.type('text');
+await element.clear();
+
+// Checkbox operations
+await checkbox.check();
+await checkbox.uncheck();
+await checkbox.toggleCheckbox();
+const isChecked = await checkbox.isChecked();
+
+// Mouse interactions
+await element.doubleClick();
+await element.rightClick();
+await element.hover();
+await element.dragAndDrop(targetElement);
+
+// Dropdown operations
+await dropdown.selectByValue('value');
+await dropdown.selectByText('Option 1');
+await dropdown.selectByIndex(0);
+
+// Reading element state
+const text = await element.getText();
+const value = await element.getAttribute('value');
+const isDisplayed = await element.isDisplayed();
+
+// Collection operations
+const count = await elements.count();
+const texts = await elements.getTexts();
+const allElements = await elements.getElements();
+await elements.clickAll();
+```
+
+#### Smart Options
+
+```typescript
+// Bypass actionability checks
+await element.click({ force: true });
+
+// Custom timeout
+await element.click({ timeout: 15000 });
+
+// Both options
+await element.type('text', { force: true, timeout: 5000 });
+```
+
+### 3. SanAssertion - Fluent Assertion API
+
+Chainable assertions with auto-retry for better test stability.
+
+```typescript
+import { expectElement } from './assertion';
+
+// Visibility assertions
+await expectElement(loginButton).toBeVisible();
+await expectElement(errorMessage).toBeHidden();
+
+// Text assertions
+await expectElement(title).toHaveText('Welcome');
+await expectElement(message).toContainText('Success');
+
+// Attribute assertions
+await expectElement(link).toHaveAttribute('href', '/home');
+await expectElement(input).toHaveValue('username');
+await expectElement(div).toHaveClass('active');
+
+// State assertions
+await expectElement(submitButton).toBeEnabled();
+await expectElement(loadingSpinner).toBeDisabled();
+```
+
+### 4. Shared Utilities - DRY Principles
+
+#### Timeout Management
+
+All modules share the same timeout calculation logic:
+
+```typescript
+import { getRemainingTimeout } from './core/elements/ActionabilityChecker';
+
+const startTime = Date.now();
+while (getRemainingTimeout(startTime, timeout) > 0) {
+  // Retry logic
+}
+```
+
+**Used across:**
+- `ActionabilityChecker` - waitForActionability polling
+- `SanElement` - findElement retry logic
+- `AssertionUtils` - waitUntil retry mechanism
+
+#### Reporter Utilities (ReporterUtils)
+
+Shared utilities for all reporters eliminate code duplication:
+
+```typescript
+// Screenshot capture
+await captureScreenshot(driver, outputPath);
+
+// Filename sanitization
+const safeFilename = sanitizeFilename(testName);
+
+// Directory management
+await ensureDirectoryExists(reportDir);
+
+// CLI reporter detection
+const hasCliReporter = hasCliReporter();
+
+// Parallel mode detection
+const isParallel = isParallelMode();
+```
 
 ## Framework Architecture
 
-```
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                           USER LAYER                                        │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  Test Files (.spec.ts)                                                      │
-│  └── todo.spec.ts        ──► Todo application tests                        │
+│  └── todo.spec.ts        ──► TodoMVC application tests                     │
 │                                                                             │
 │  Page Objects                                                               │
 │  ├── BasePage (Abstract)                                                    │
@@ -69,36 +240,46 @@ A complete Express.js testing environment with 6 test pages covering all actiona
 │  ├── BrowserConfig {name, headless, noSandbox, args}                       │
 │  ├── TimeoutConfig {default, element, pageLoad}                            │
 │  ├── TestConfig {environment, retryCount, retryInterval, parallel}         │
-│  └── AppConfig {baseUrl, loginUrl, productsUrl, username, password}        │
+│  ├── ReportingConfig {reporterTypes: ReporterType[], screenshotOnFailure} │
+│  └── AppConfig {baseUrl, loginUrl, username, password}                     │
 │                                                                             │
 │  DriverManager                                                              │
 │  ├── register(name, factory)                                                │
 │  ├── getDriver(name?, options?)                                             │
-```
 │  └── getConfiguredDriver()                                                  │
 │                                                                             │
-│  BrowserFactory (Interface)                                                 │
-│  ├── DefaultChromeFactory ────┐                                             │
-│  └── DefaultFirefoxFactory ───┼──► WebDriver Instance                      │
+│  ActionabilityChecker (Core auto-wait module)                               │
+│  ├── Check Enum: VISIBLE, STABLE, ENABLED, EDITABLE                        │
+│  ├── waitForActionability(element, driver, options)                        │
+│  ├── delay(ms) - Async delay utility                                       │
+│  └── getRemainingTimeout(startTime, totalTimeout) - Shared utility         │
 │                                                                             │
 │  SanElement (Unified wrapper)                                               │
 │  ├── Basic: click(), type(), getText(), getAttribute(), isDisplayed()      │
-│  ├── Checkboxes: check(), uncheck(), isChecked(), toggle()                 │
+│  ├── Checkboxes: check(), uncheck(), isChecked(), toggleCheckbox()         │
 │  ├── Mouse: doubleClick(), rightClick(), hover(), dragAndDrop()            │
 │  ├── Dropdowns: selectByValue/Text/Index(), getSelectedValue/Text()        │
 │  ├── Scrolling: scrollIntoView()                                           │
 │  ├── Waiting: waitUntilVisible/Clickable/Present()                         │
 │  ├── Collections: count(), getTexts(), getElements(), clickAll()           │
+│  └── Uses: ActionabilityChecker, ActionConfig, getRemainingTimeout         │
 │                                                                             │
 │  SanAssertion (Fluent API)                                                  │
 │  ├── expectElement(element) ───► Fluent assertions                         │
 │  ├── toBeVisible(), toHaveText(), toContainText()                          │
 │  ├── toHaveAttribute(), toHaveClass(), toHaveValue()                       │
-│  └── Retry logic with configurable timeouts                                │
+│  ├── Retry logic with configurable timeouts                                │
+│  └── Uses: AssertionUtils.waitUntil() with getRemainingTimeout             │
+│                                                                             │
+│  Reporters (Multi-reporter support)                                         │
+│  ├── CompositeReporter - Runs multiple reporters simultaneously            │
+│  ├── AllureReporter - Rich interactive HTML reports                        │
+│  ├── MochawesomeReporter - Clean modern HTML reports                       │
+│  └── ReporterUtils - Shared screenshot, filename, directory utilities      │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Key Relationships
+### Key Flows
 
 #### Configuration Flow
 ```
@@ -112,617 +293,367 @@ ConfigLoader.getBrowserConfig() → DriverManager.getConfiguredDriver() → WebD
 
 #### Element Interaction Flow
 ```
-PageObject.$(locator) → SanElement → WebElement interactions (single or collections)
+PageObject.$(locator) → SanElement.findElement() → 
+  → ActionabilityChecker.waitForActionability() → 
+  → WebDriver action → Result
 ```
 
 #### Assertion Flow
 ```
-expectElement(sanElement) → SanAssertion fluent API → Retry-based verifications
+expectElement(sanElement) → SanAssertion → 
+  → AssertionUtils.waitUntil() → 
+  → Retry with getRemainingTimeout() → Pass/Fail
 ```
 
-#### Test Flow
+#### Reporter Flow
 ```
-Test → PageObject methods → SanElement actions → SanAssertion → Verification
+Test execution → BaseTest hooks → 
+  → CompositeReporter → [AllureReporter, MochawesomeReporter] → 
+  → ReporterUtils (screenshots, filenames) → Reports generated
 ```
 
-### 4-Layer Architecture Benefits
-
-#### User Layer
-- **Test Code**: Focus on business logic and test scenarios
-- **Page Objects**: Clean UI abstraction with auto-waiting elements
-- **Separation**: User code is isolated from framework internals
-
-#### Framework Layer
-- **SanElement**: Unified wrapper for single elements and collections
-- **DriverManager**: Browser factory with multiple browser support
-- **SanAssertion**: Fluent API with retry logic and timeouts
-- **ConfigLoader**: Centralized configuration management
-
-### Design Patterns Used
+### Design Patterns
 
 - **Singleton**: ConfigLoader for global configuration
-- **Factory**: DriverManager for browser creation
-- **Decorator**: SanElement wraps WebElement with auto-wait and advanced methods
-- **Fluent Interface**: SanAssertion for readable, chainable assertions
-- **Page Object Model**: BasePage and TodoPage for UI abstraction
-- **Strategy**: BrowserFactory interface for different browser implementations
-- **Unified Interface**: SanElement handles both single elements and collections
+- **Factory**: DriverManager for browser creation  
+- **Decorator**: SanElement wraps WebElement with auto-wait
+- **Fluent Interface**: SanAssertion for chainable assertions
+- **Page Object Model**: BasePage and page classes for UI abstraction
+- **Composite**: CompositeReporter runs multiple reporters
+- **DRY Utilities**: Shared functions (getRemainingTimeout, ReporterUtils) eliminate duplication
 
-### Framework Capabilities
+## Configuration
 
-#### SanElement Features
-- **Auto-waiting**: All operations wait for elements to be ready
-- **Single Elements**: click(), type(), getText(), etc.
-- **Collections**: count(), getTexts(), getElements(), clickAll()
-- **Checkboxes**: check(), uncheck(), isChecked(), toggle()
-- **Mouse Actions**: doubleClick(), rightClick(), hover(), dragAndDrop()
-- **Dropdowns**: selectByValue/Text/Index(), getSelectedValue/Text()
-- **Advanced**: scrollIntoView(), waitUntilVisible/Clickable/Present()
-
-#### SanAssertion Features
-- **Fluent API**: expectElement().toBeVisible().toHaveText()
-- **Retry Logic**: Automatic retries with configurable timeouts
-- **Rich Assertions**: Text, attributes, visibility, state checks
-- **Type Safety**: Full TypeScript support with IntelliSense
-
-## Class Diagram
-
-```mermaid
-classDiagram
-    %% Configuration Layer
-    class ConfigLoader {
-        +config: FrameworkConfig
-        +getInstance(): ConfigLoader
-        +getConfig(): FrameworkConfig
-        +getBrowserConfig(): BrowserConfig
-        +getTimeoutConfig(): TimeoutConfig
-        +getTestConfig(): TestConfig
-        +getAppConfig(): AppConfig
-        +reload(): void
-        +printConfig(): void
-    }
-
-    %% Driver Layer
-    class DriverManager {
-        -factories: Map~string, BrowserFactory~
-        +register(name: string, factory: BrowserFactory): void
-        +getDriver(name?: BrowserName, options?: any): Promise~WebDriver~
-        +getConfiguredDriver(): Promise~WebDriver~
-    }
-
-    class BrowserFactory {
-        <<interface>>
-        +build(options?: any): Promise~WebDriver~
-    }
-
-    class DefaultChromeFactory {
-        +build(options?: any): Promise~WebDriver~
-    }
-
-    class DefaultFirefoxFactory {
-        +build(options?: any): Promise~WebDriver~
-    }
-
-    %% Core Layer - Unified element wrapper for single elements and collections
-    class SanElement {
-        -driver: ThenableWebDriver
-        -locator: Locator
-        -defaultTimeout: number
-        +constructor(driver: ThenableWebDriver, locator: Locator, defaultTimeout?: number)
-        +click(timeout?: number): Promise~void~
-        +type(text: string, timeout?: number): Promise~void~
-        +getText(timeout?: number): Promise~string~
-        +getAttribute(name: string, timeout?: number): Promise~string|null~
-        +isDisplayed(timeout?: number): Promise~boolean~
-        +raw(timeout?: number): Promise~WebElement~
-        +check(): Promise~void~
-        +uncheck(): Promise~void~
-        +isChecked(): Promise~boolean~
-        +toggle(): Promise~void~
-        +doubleClick(): Promise~void~
-        +rightClick(): Promise~void~
-        +hover(): Promise~void~
-        +dragAndDrop(target: SanElement): Promise~void~
-        +selectByValue(value: string): Promise~void~
-        +selectByText(text: string): Promise~void~
-        +selectByIndex(index: number): Promise~void~
-        +getSelectedValue(): Promise~string~
-        +getSelectedText(): Promise~string~
-        +scrollIntoView(): Promise~void~
-        +waitUntilVisible(): Promise~void~
-        +waitUntilClickable(): Promise~void~
-        +waitUntilPresent(): Promise~void~
-        +count(): Promise~number~
-        +getTexts(): Promise~string[]~
-        +getElements(): Promise~SanElement[]~
-        +clickAll(): Promise~void~
-    }
-
-    %% Assertion Layer
-    class SanAssertion {
-        -element: SanElement
-        -timeout: number
-        +constructor(element: SanElement, timeout?: number)
-        +toHaveText(expectedText: string): Promise~void~
-        +toContainText(expectedSubstring: string): Promise~void~
-        +toHaveAttribute(attributeName: string, expectedValue: string): Promise~void~
-        +toHaveAttributeContaining(attributeName: string, expectedSubstring: string): Promise~void~
-        +toBeVisible(): Promise~void~
-        +toBeHidden(): Promise~void~
-        +toBeEnabled(): Promise~void~
-        +toBeDisabled(): Promise~void~
-        +toHaveClass(className: string): Promise~void~
-        +toHaveValue(expectedValue: string): Promise~void~
-        +toHaveValueContaining(expectedSubstring: string): Promise~void~
-    }
-
-    %% Page Object Layer
-    class BasePage {
-        +driver: ThenableWebDriver
-        +constructor(driver: ThenableWebDriver)
-        +$(locator: Locator): SanElement
-    }
-
-    class TodoPage {
-        +title: SanElement
-        +moreInfo: SanElement
-        +constructor(driver: ThenableWebDriver)
-        +open(): Promise~void~
-    }
-
-    %% Relationships
-    ConfigLoader --> DriverManager : uses
-    ConfigLoader --> SanElement : uses
-    ConfigLoader --> SanAssertion : uses
-
-    DriverManager --> BrowserFactory : manages
-    BrowserFactory <|.. DefaultChromeFactory : implements
-    BrowserFactory <|.. DefaultFirefoxFactory : implements
-
-    SanElement --> SanAssertion : wrapped by
-
-    BasePage <|-- TodoPage : extends
-    BasePage --> SanElement : creates
-
-    %% Usage relationships
-    TodoPage ..> SanAssertion : uses in tests
-    TodoPage ..> DriverManager : uses for navigation
-
-    %% Configuration interfaces
-    class BrowserConfig {
-        +name: string
-        +headless: boolean
-        +noSandbox: boolean
-        +args: string[]
-    }
-
-    class TimeoutConfig {
-        +default: number
-        +element: number
-        +pageLoad: number
-    }
-
-    class TestConfig {
-        +environment: string
-        +retryCount: number
-        +retryInterval: number
-        +parallel: boolean
-        +threadCount: number
-    }
-
-    class AppConfig {
-        +baseUrl: string
-        +loginUrl: string
-        +productsUrl: string
-        +username: string
-        +password: string
-    }
-
-    class FrameworkConfig {
-        +browser: BrowserConfig
-        +timeouts: TimeoutConfig
-        +test: TestConfig
-        +logging: LoggingConfig
-        +reporting: ReportingConfig
-        +app: AppConfig
-    }
-
-    ConfigLoader --> BrowserConfig : contains
-    ConfigLoader --> TimeoutConfig : contains
-    ConfigLoader --> TestConfig : contains
-    ConfigLoader --> AppConfig : contains
-    ConfigLoader --> FrameworkConfig : contains
-```
-
-## Framework Overview
-
-**SaniumTS** is a modern, TypeScript-based Selenium WebDriver testing framework designed for scalable, maintainable web automation testing. It provides a clean 4-layer architecture that separates user test code from framework internals.
-
-### Key Features
-
-- **Unified Element Wrapper**: `SanElement` handles both single elements and collections with auto-waiting
-- **Fluent Assertions**: `SanAssertion` provides readable, retry-enabled assertions
-- **Browser Management**: `DriverManager` supports Chrome, Firefox, and custom browsers
-- **Configuration-Driven**: Environment-based configuration with sensible defaults
-- **Rich Reporting**: Allure integration for detailed test execution reports
-- **Auto-Retry Logic**: Built-in retry mechanisms for flaky elements and assertions
-- **Page Object Model**: Clean abstraction for UI interactions
-
-### Quick Start
-
-1. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-
-2. **Configure environment** (optional - uses sensible defaults):
-   ```bash
-   cp .env .env.local  # for custom configuration
-   ```
-
-3. **Run tests**:
-   ```bash
-   npm test                    # Basic test run
-   npm run test:allure        # With Allure reporting
-   ```
-
-### Core Components
-
-#### SanElement - Smart Element Interactions
-```typescript
-// Single element operations
-await element.click();
-await element.type('Hello World');
-await element.getText();
-
-// Collection operations
-const count = await elements.count();
-const texts = await elements.getTexts();
-
-// Advanced interactions
-await checkbox.check();
-await dropdown.selectByText('Option 1');
-await element.scrollIntoView();
-```
-
-#### SanAssertion - Fluent Test Assertions
-```typescript
-// Fluent assertion API with auto-retry
-await expectElement(loginButton).toBeVisible();
-await expectElement(usernameField).toHaveText('Welcome');
-await expectElement(errorMessage).toContainText('Invalid');
-```
-
-#### DriverManager - Browser Factory
-```typescript
-// Automatic browser setup
-const driver = await DriverManager.getConfiguredDriver();
-
-// Custom browser configuration
-const chromeDriver = await DriverManager.getDriver('chrome', { headless: true });
-```
-
-#### Page Object Model
-```typescript
-export class TodoPage extends BasePage {
-  todoInput = this.byCss('.new-todo');
-  todoList = this.byCss('.todo-list');
-
-  async addTodo(text: string) {
-    await this.todoInput.type(text);
-    await this.todoInput.pressEnter();
-  }
-
-  async getTodoCount() {
-    return await this.todoList.count();
-  }
-}
-```
-
-### Configuration
-
-The framework uses environment-based configuration via `.env` files with sensible defaults:
+### Environment Variables (.env)
 
 ```bash
-# Browser settings
-BROWSER=chrome
-HEADLESS=false
+# Browser Configuration
+BROWSER=chrome                    # chrome | firefox
+HEADLESS=false                   # true | false
+NO_SANDBOX=false                 # true | false (for Docker/CI)
 
-# Timeouts (milliseconds)
-DEFAULT_TIMEOUT=5000
-ELEMENT_TIMEOUT=10000
+# Timeout Configuration (milliseconds)
+DEFAULT_TIMEOUT=10000            # Default wait timeout
+ELEMENT_TIMEOUT=15000            # Element-specific timeout
+PAGE_LOAD_TIMEOUT=30000          # Page load timeout
 
-# Test settings
-ENVIRONMENT=qa
-RETRY_COUNT=3
+# Test Configuration
+ENVIRONMENT=qa                   # dev | qa | staging | production
+RETRY_COUNT=3                    # Number of retries for flaky tests
+RETRY_INTERVAL=1000              # Delay between retries (ms)
+PARALLEL=false                   # Enable parallel execution
+THREAD_COUNT=1                   # Number of parallel threads
 
-# Reporting
-SCREENSHOT_ON_FAILURE=true
+# Logging
+LOG_LEVEL=info                   # debug | info | warn | error
+VERBOSE=false                    # Enable verbose logging
+
+# Reporting - MULTIPLE REPORTERS SUPPORTED
+REPORTER_TYPE=allure,mochawesome # Comma-separated: allure, mochawesome, none
+SCREENSHOT_ON_FAILURE=true       # Capture screenshots on test failure
+
+# Application URLs
+BASE_URL=https://todomvc.com/examples/react/dist/
 ```
 
-### Allure Reporting
+### Multi-Reporter Configuration
 
-Generate beautiful, interactive test reports:
+You can run multiple reporters simultaneously:
 
 ```bash
-# Run tests with reporting
-npm run test:allure
+# Single reporter
+REPORTER_TYPE=allure
 
-# View reports
-npm run report:allure
+# Multiple reporters (recommended)
+REPORTER_TYPE=allure,mochawesome
+
+# No reporter
+REPORTER_TYPE=none
 ```
 
-### Architecture Benefits
-
-- **Separation of Concerns**: User tests isolated from framework internals
-- **Type Safety**: Full TypeScript support with IntelliSense
-- **Extensibility**: Easy to add new browsers, assertions, and page objects
-- **Maintainability**: Clean architecture with clear component responsibilities
-- **Reliability**: Auto-waiting and retry logic reduce test flakiness
-
-### Getting Help
-
-- **Documentation**: Comprehensive README with examples
-- **Examples**: Working TodoMVC test suite included
-- **Configuration**: Environment-based with sensible defaults
-- **Extensibility**: Well-documented extension points
-
-Ready to write reliable, maintainable web automation tests!
-
----
+The framework will automatically create a `CompositeReporter` that runs all specified reporters.
 
 ## Test Reporting
 
-The framework supports **pluggable reporters** that can be used individually or simultaneously via the MultiReporter pattern.
+### Multiple Reporters Support ⭐
 
-### Multiple Reporters Support
+The framework supports running **multiple reporters simultaneously** using the CompositeReporter pattern.
 
-Yes, the framework supports running multiple reporters at the same time using the `MultiReporter` class. You can generate both Allure and Mochawesome reports in a single test run.
-
-**Run all tests with multiple reporters:**
-```bash
-npm run test:multi:all        # Run all tests with Allure + Mochawesome
-npm run test:multi:clean      # Clean old reports and run all tests
-```
-
-**Run specific test file:**
-```bash
-npm run test:multi -- tests/test-webapp/insurance-purchase.e2e.spec.ts
-```
-
-**View the reports:**
-```bash
-npm run report:allure:generate    # Generate Allure HTML report
-npm run report:allure:open        # Open Allure report
-npm run report:mochawesome        # Open Mochawesome report
-```
-
-### Available Reporters
-
-#### 1. Allure Reporter (Default)
-Rich, interactive HTML reports with screenshots, steps, and detailed test history.
-
-**Features:**
-- Interactive dashboard with test history and trends
-- Detailed test steps and timeline view
-- Screenshots automatically attached on failures
-- Test parameters and environment info
-- Flaky test detection
-
-#### 2. Mochawesome Reporter
-Clean, modern HTML reports with screenshots and test context.
-
-**Features:**
-- Clean, modern UI in a single HTML file
-- Screenshots embedded directly
-- Quick pass/fail summary and filters
-- Easy to share (no server needed)
-
-### Quick Start - Viewing Reports
-
-**Recommended: Multiple Reporters (Allure + Mochawesome)**
+### Quick Start
 
 ```bash
-# Run all tests with both reporters
+# Run all tests with Allure + Mochawesome
 npm run test:multi:clean
 
 # View Allure report
 npm run report:allure
 
-# View Mochawesome report
+# View Mochawesome report  
 npm run report:mochawesome
 ```
 
-**Single Reporter Workflows**
+### Available Reporters
 
-```bash
-# Run all tests with Allure and open report
-npm run test:allure:run
+#### 1. Allure Reporter
+Rich, interactive HTML reports with test history, trends, and detailed execution timeline.
 
-# Run all tests with Mochawesome and open report
-npm run test:mochawesome:run
-```
+**Features:**
+- 📊 Interactive dashboard with test trends
+- 🕒 Detailed test steps and timeline
+- 📸 Screenshots automatically attached on failures
+- 🔍 Flaky test detection
+- 📝 Test parameters and environment info
 
-**Manual Workflows**
+#### 2. Mochawesome Reporter
+Clean, modern single-page HTML reports with embedded screenshots.
 
-```bash
-# Allure - Step by step
-npm run test:allure          # 1. Run tests
-npm run report:allure        # 2. Generate and open report
-npm run report:allure:open   # 3. Or just open existing report
+**Features:**
+- 🎨 Clean, modern UI  
+- 📸 Screenshots embedded directly
+- ⚡ Fast loading (single HTML file)
+- 🔍 Quick pass/fail filtering
+- 📤 Easy to share (no server needed)
 
-# Mochawesome - Step by step
-npm run test:mochawesome     # 1. Run tests
-npm run report:mochawesome   # 2. Open report
-```
-
-### Configuration
-
-**Method 1: Environment Variable (`.env` file)**
-
-```properties
-# Choose: allure, mochawesome, or none
-REPORTER_TYPE=allure
-```
-
-**Method 2: Command Line**
-
-```bash
-npm run test:allure          # Override to use Allure
-npm run test:mochawesome     # Override to use Mochawesome
-npm run test:multi:all       # Use both reporters
-```
-
-### Report Locations
-
-| Reporter | Results Location | Report Location |
-|----------|-----------------|-----------------|
-| **Allure** | `allure-results/` | `allure-report/` (after generation) |
-| **Mochawesome** | `mochawesome-report/` | `mochawesome-report/mochawesome.html` |
-
-### Available Commands
+### npm Scripts
 
 | Command | Description |
 |---------|-------------|
-| `npm run test:multi:all` | **RECOMMENDED** - Run all tests with Allure + Mochawesome |
-| `npm run test:multi:clean` | **RECOMMENDED** - Clean old reports and run all tests with both reporters |
-| `npm run test:allure:run` | Clean, run tests, generate & open Allure report |
-| `npm run test:mochawesome:run` | Clean, run tests, generate & open Mochawesome report |
-| `npm run test:allure` | Run tests with Allure reporter |
-| `npm run test:mochawesome` | Run tests with Mochawesome reporter |
-| `npm run test:multi` | Run tests with multiple reporters |
+| `npm test` | Run tests with configured reporter(s) |
+| `npm run test:clean` | Clean reports and run tests |
+| `npm run test:multi` | Run with Allure + Mochawesome |
+| `npm run test:multi:clean` | Clean and run with both reporters |
+| `npm run test:allure:clean` | Clean and run with Allure only |
+| `npm run test:mochawesome:clean` | Clean and run with Mochawesome only |
 | `npm run report:allure` | Generate and open Allure report |
-| `npm run report:allure:open` | Open existing Allure report |
-| `npm run report:allure:generate` | Just generate report (don't open) |
 | `npm run report:mochawesome` | Open Mochawesome HTML report |
-| `npm test` | Run with reporter from `.env` |
 
----
+### Report Locations
 
-## Adding a New Reporter
+| Reporter | Results | Report |
+|----------|---------|--------|
+| **Allure** | `allure-results/` | `allure-report/` (after generation) |
+| **Mochawesome** | `mochawesome-report/` | `mochawesome-report/mochawesome.html` |
 
-The framework's reporter architecture is designed to be extensible. Here's how to add a new reporting library:
+## Page Object Model Example
 
-### Step 1: Install the Reporter Package
+```typescript
+// src/pages/TodoPage.ts
+import { BasePage } from './BasePage';
+import { SanElement } from '../core/elements/SanElement';
 
+export class TodoPage extends BasePage {
+  // Element locators
+  private get newTodoInput(): SanElement {
+    return this.$({ using: 'css', value: '.new-todo' });
+  }
+
+  private get todoList(): SanElement {
+    return this.$({ using: 'css', value: '.todo-list li' });
+  }
+
+  private get clearCompletedBtn(): SanElement {
+    return this.$({ using: 'css', value: '.clear-completed' });
+  }
+
+  // Page actions
+  async open(): Promise<void> {
+    await this.driver.get('https://todomvc.com/examples/react/dist/');
+  }
+
+  async addTodo(text: string): Promise<void> {
+    await this.newTodoInput.type(text);
+    await this.newTodoInput.sendKeys('\n'); // Press Enter
+  }
+
+  async getTodoCount(): Promise<number> {
+    return await this.todoList.count();
+  }
+
+  async getTodoTexts(): Promise<string[]> {
+    return await this.todoList.getTexts();
+  }
+
+  async clearCompleted(): Promise<void> {
+    await this.clearCompletedBtn.click();
+  }
+}
+```
+
+## Test Example
+
+```typescript
+// tests/todo.spec.ts
+import { expect } from 'chai';
+import { DriverManager } from '../src/driver/DriverManager';
+import { TodoPage } from '../src/pages/TodoPage';
+import { expectElement } from '../src/assertion';
+
+describe('Todo App', () => {
+  let driver: ThenableWebDriver;
+  let todoPage: TodoPage;
+
+  before(async () => {
+    driver = await DriverManager.getConfiguredDriver();
+    todoPage = new TodoPage(driver);
+  });
+
+  after(async () => {
+    await driver?.quit();
+  });
+
+  it('should add new todo items', async () => {
+    await todoPage.open();
+    
+    // Add todos
+    await todoPage.addTodo('Buy groceries');
+    await todoPage.addTodo('Walk the dog');
+    
+    // Verify count
+    const count = await todoPage.getTodoCount();
+    expect(count).to.equal(2);
+    
+    // Verify text with fluent assertion
+    const texts = await todoPage.getTodoTexts();
+    expect(texts).to.include('Buy groceries');
+    expect(texts).to.include('Walk the dog');
+  });
+});
+```
+
+## Architecture Benefits
+
+### Separation of Concerns
+- **User Layer**: Tests and Page Objects focus on business logic
+- **Framework Layer**: Infrastructure handles all technical complexity
+- **Clean Separation**: User code never deals with waits, retries, or driver management
+
+### Type Safety
+- **TypeScript Throughout**: Full IntelliSense support
+- **Enum-Based**: Check, ActionType, ReporterType prevent typos
+- **Compile-Time Safety**: Catch errors before runtime
+
+### Extensibility
+- **Pluggable Reporters**: Add new reporters without changing tests
+- **Custom Browsers**: Implement BrowserFactory for new browser types
+- **Custom Assertions**: Extend SanAssertion for domain-specific checks
+
+### Maintainability
+- **DRY Principles**: Shared utilities (getRemainingTimeout, ReporterUtils)
+- **Single Responsibility**: Each module has one clear purpose
+- **32-78% Line Reduction**: Removed duplication and verbose comments
+
+### Reliability
+- **Auto-Wait**: All actions wait for actionability automatically
+- **Auto-Retry**: Assertions retry automatically with configurable timeouts
+- **Flaky Test Reduction**: Smart polling and stability checks
+
+## Advanced Topics
+
+### Force Option - Bypass Actionability Checks
+
+Sometimes you need to interact with elements that don't pass standard checks:
+
+```typescript
+// Click hidden element
+await element.click({ force: true });
+
+// Type into readonly field
+await input.type('text', { force: true });
+
+// Clear disabled field
+await field.clear({ force: true });
+```
+
+### Custom Timeouts
+
+Override default timeouts per action:
+
+```typescript
+// Wait up to 30 seconds for slow element
+await slowElement.click({ timeout: 30000 });
+
+// Quick timeout for expected fast element
+await fastElement.click({ timeout: 2000 });
+```
+
+### Working with Collections
+
+```typescript
+// Get all matching elements
+const items = await this.$({ using: 'css', value: '.item' });
+
+// Count elements
+const count = await items.count();
+
+// Get all texts
+const texts = await items.getTexts();
+
+// Get individual elements
+const elements = await items.getElements();
+for (const element of elements) {
+  await element.click();
+}
+
+// Click all at once
+await items.clickAll();
+```
+
+### Checkbox Operations
+
+```typescript
+// Ensure checkbox is checked (idempotent)
+await checkbox.check();
+
+// Ensure checkbox is unchecked (idempotent)
+await checkbox.uncheck();
+
+// Toggle state
+await checkbox.toggleCheckbox();
+
+// Check current state
+const isChecked = await checkbox.isChecked();
+```
+
+## Troubleshooting
+
+### Element Not Found
+```
+TimeoutError: Timeout finding element with locator {"using":"css","value":".missing"}
+```
+**Solution**: Verify locator is correct, increase timeout, or check if element exists in DOM
+
+### Element Not Actionable
+```
+Error: Timeout waiting for element to be actionable. Failed checks: Element is not visible
+```
+**Solution**: Check if element is hidden, overlapped, or still animating. Use `{ force: true }` if intentional.
+
+### Tests Timing Out
+**Solution**: Increase timeouts in `.env`:
 ```bash
-npm install --save-dev your-reporter-package
+DEFAULT_TIMEOUT=20000
+ELEMENT_TIMEOUT=30000
 ```
 
-### Step 2: Create a Reporter Wrapper Class
-
-Create `src/reporters/YourCustomReporter.ts` implementing the `TestReporter` interface:
-
-```typescript
-import { TestReporter } from '../base/BaseTest';
-import { ThenableWebDriver } from 'selenium-webdriver';
-
-export class YourCustomReporter implements TestReporter {
-  private driver: ThenableWebDriver | null = null;
-
-  async beforeAll?(): Promise<void> {
-    // Setup: create directories, initialize reporter
-  }
-
-  async afterAll?(): Promise<void> {
-    // Cleanup: generate final report
-  }
-
-  async beforeEach?(): Promise<void> {
-    // Log test start, setup context
-  }
-
-  async afterEach?(): Promise<void> {
-    // Log test end, save results
-  }
-
-  async onTestFailure?(test: Mocha.Test): Promise<void> {
-    if (this.driver) {
-      const screenshot = await this.driver.takeScreenshot();
-      // Save screenshot with your reporter
-    }
-  }
-
-  setDriver?(driver: ThenableWebDriver): void {
-    this.driver = driver;
-  }
-}
+### Reports Not Generating
+**Solution**: Check REPORTER_TYPE in `.env` and ensure reporter dependencies are installed:
+```bash
+npm install --save-dev allure-commandline allure-mocha mochawesome
 ```
 
-### Step 3: Add Reporter Type to Config
+## Contributing
 
-Update `src/config/ConfigLoader.ts`:
+We welcome contributions! Areas for improvement:
+- Additional browser support (Edge, Safari)
+- More assertion methods
+- Performance optimizations
+- Additional reporters
+- Documentation improvements
 
-```typescript
-export enum ReporterType {
-  ALLURE = 'allure',
-  MOCHAWESOME = 'mochawesome',
-  YOUR_CUSTOM = 'your-custom',  // Add here
-  NONE = 'none'
-}
-```
+## License
 
-### Step 4: Update Reporter Factory
-
-Update `src/reporters/index.ts`:
-
-```typescript
-import { YourCustomReporter } from './YourCustomReporter';
-
-export function createReporter(type?: string): TestReporter {
-  const config = ConfigLoader.getInstance().getConfig();
-  const reporterType = type || config.reporting.reporterType;
-
-  switch (reporterType) {
-    case ReporterType.ALLURE:
-      return new AllureReporter();
-    case ReporterType.MOCHAWESOME:
-      return new MochawesomeReporter();
-    case ReporterType.YOUR_CUSTOM:  // Add case
-      return new YourCustomReporter();
-    case ReporterType.NONE:
-      return new NoOpReporter();
-    default:
-      return new NoOpReporter();
-  }
-}
-
-export { YourCustomReporter };
-```
-
-### Step 5: Configure and Use
-
-**Update `.env`:**
-```properties
-REPORTER_TYPE=your-custom
-```
-
-**Add npm scripts (optional):**
-```json
-{
-  "scripts": {
-    "test:your-custom": "mocha --reporter your-custom-reporter",
-    "report:your-custom": "open your-report/index.html"
-  }
-}
-```
-
-**Your tests automatically use it:**
-```typescript
-import { createReporter } from '../../src/reporters';
-import { TodoTest } from './TodoTest';
-
-const test = new TodoTest(createReporter());  // Uses config
-```
-
-### Benefits of This Architecture
-
-- **Pluggable** - Add/remove reporters without changing test code  
-- **Config-Driven** - Switch via .env file  
-- **Type-Safe** - TypeScript interface ensures consistency  
-- **Flexible** - Support multiple reporters  
-- **Clean** - Reporter logic separated from tests  
+MIT
 
 ---
 
-Ready to write reliable, maintainable web automation tests!
+**Happy Testing! 🚀**

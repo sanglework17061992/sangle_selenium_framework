@@ -1,7 +1,7 @@
 import { By, ThenableWebDriver, WebElement, until } from 'selenium-webdriver';
 import { configLoader } from '../../config/ConfigLoader';
 import { DriverContext } from '../../driver/DriverManager';
-import { waitForActionability, ActionabilityOptions, delay } from './ActionabilityChecker';
+import { waitForActionability, ActionabilityOptions, delay, getRemainingTimeout } from './ActionabilityChecker';
 import { getActionRequirements } from './ActionConfig';
 import { ActionType } from '../../types/Enums';
 
@@ -43,11 +43,6 @@ export class SanElement {
   private getActions() {
     return this.driver.actions({ bridge: true });
   }
-  
-  private getRemainingTimeout(startTime: number, totalTimeout: number): number {
-    const elapsed = Date.now() - startTime;
-    return Math.max(0, totalTimeout - elapsed);
-  }
 
   /**
    * Find and prepare element for interaction or reading
@@ -70,14 +65,14 @@ export class SanElement {
     const timeout = options?.timeout ?? this.defaultTimeout;
     const startTime = Date.now();
     
-    while (this.getRemainingTimeout(startTime, timeout) > 0) {
+    while (getRemainingTimeout(startTime, timeout) > 0) {
       try {
-        const remainingTime = this.getRemainingTimeout(startTime, timeout);
+        const remainingTime = getRemainingTimeout(startTime, timeout);
         await this.driver.wait(until.elementLocated(by), remainingTime);
         const element = await this.driver.findElement(by);
         
         if (actionType === null) {
-          const visibilityTimeout = this.getRemainingTimeout(startTime, timeout);
+          const visibilityTimeout = getRemainingTimeout(startTime, timeout);
           await this.driver.wait(until.elementIsVisible(element), visibilityTimeout);
           return element;
         }
@@ -93,7 +88,7 @@ export class SanElement {
         if (!force) {
           const requirements: ActionabilityOptions = {
             ...getActionRequirements(actionType),
-            timeout: this.getRemainingTimeout(startTime, timeout)
+            timeout: getRemainingTimeout(startTime, timeout)
           };
           
           await waitForActionability(
@@ -105,7 +100,7 @@ export class SanElement {
         
         return element;
       } catch (error) {
-        if (this.getRemainingTimeout(startTime, timeout) <= 0) {
+        if (getRemainingTimeout(startTime, timeout) <= 0) {
           throw error;
         }
         await delay(SanElement.RETRY_INTERVAL);
