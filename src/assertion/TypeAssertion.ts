@@ -7,8 +7,6 @@
  * Can be used anywhere in your tests for asserting:
  * - Numbers, strings, booleans
  * - Arrays and their contents
- * - Objects and their properties
- * - Null/undefined checks
  * 
  * @example
  * // Assert primitive values
@@ -18,11 +16,6 @@
  * 
  * // Assert arrays
  * expect(items).toInclude('apple');
- * expect(tags).toHaveMembers(['test', 'demo']);
- * 
- * // Assert numbers
- * expect(score).toBeGreaterThan(50);
- * expect(age).toBeLessThan(100);
  */
 
 import * as assert from './shared/AssertionUtils';
@@ -125,42 +118,6 @@ export class TypeAssertion<T> {
     this.handleAssertion(
       () => assert.isFalse(this.actualValue),
       `Expected ${this.actualValue} to be false`,
-      message
-    );
-  }
-
-  /**
-   * Assert that a number is greater than the expected value
-   * @example expect(score).toBeGreaterThan(50)
-   */
-  toBeGreaterThan(expected: number, message?: string): void {
-    this.handleAssertion(
-      () => assert.greaterThan(this.actualValue as any, expected),
-      `Expected ${this.actualValue} to be greater than ${expected}`,
-      message
-    );
-  }
-
-  /**
-   * Assert that the value is null
-   * @example expect(result).toBeNull()
-   */
-  toBeNull(message?: string): void {
-    this.handleAssertion(
-      () => assert.isNull(this.actualValue),
-      `Expected ${this.actualValue} to be null`,
-      message
-    );
-  }
-
-  /**
-   * Assert that the value is undefined
-   * @example expect(result).toBeUndefined()
-   */
-  toBeUndefined(message?: string): void {
-    this.handleAssertion(
-      () => assert.isUndefined(this.actualValue),
-      `Expected ${this.actualValue} to be undefined`,
       message
     );
   }

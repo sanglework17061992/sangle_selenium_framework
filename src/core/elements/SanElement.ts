@@ -1,5 +1,4 @@
 import { By, ThenableWebDriver, WebElement, until } from 'selenium-webdriver';
-import { Select } from 'selenium-webdriver/lib/select.js';
 import { configLoader } from '../../config/ConfigLoader';
 import { DriverContext } from '../../driver/DriverManager';
 import { ActionabilityChecker, ActionabilityOptions } from './ActionabilityChecker';
@@ -183,13 +182,6 @@ export class SanElement {
     }, `get attribute "${name}" from`);
   }
 
-  async isEnabled(timeout?: number): Promise<boolean> {
-    return this.executeSafeRead(async () => {
-      const el = await this.findElementForRead(timeout);
-      return await el.isEnabled();
-    }, false);
-  }
-
   async isDisplayed(timeout?: number): Promise<boolean> {
     return this.executeSafeRead(async () => {
       const el = await this.findElementForRead(timeout);
@@ -213,22 +205,6 @@ export class SanElement {
     }, 'clear');
   }
 
-  // Checkbox methods
-  async check(options?: ActionOptions) {
-    const el = await this.findElementWithActionability(ActionType.CHECK, options);
-    const isChecked = await el.isSelected();
-    if (!isChecked) {
-      await el.click();
-    }
-  }
-
-  async isChecked(timeout?: number): Promise<boolean> {
-    return this.executeSafeRead(async () => {
-      const el = await this.findElementForRead(timeout);
-      return await el.isSelected();
-    }, false);
-  }
-
   // Mouse actions
   async hover(options?: ActionOptions) {
     return this.executeAction(async () => {
@@ -236,35 +212,6 @@ export class SanElement {
       const actions = this.getActions();
       await actions.move({ origin: el }).perform();
     }, 'hover over');
-  }
-
-  /**
-   * Get Select wrapper for dropdown element
-   * @param element WebElement to wrap
-   * @returns Select instance
-   */
-  private getSelectElement(element: WebElement): Select {
-    return new Select(element);
-  }
-
-  // Select dropdown methods
-  async selectByValue(value: string, options?: ActionOptions) {
-    const el = await this.findElementWithActionability(ActionType.SELECT, options);
-    const selectElement = this.getSelectElement(el);
-    await selectElement.selectByValue(value);
-  }
-
-  async selectByText(text: string, options?: ActionOptions) {
-    const el = await this.findElementWithActionability(ActionType.SELECT, options);
-    const selectElement = this.getSelectElement(el);
-    await selectElement.selectByVisibleText(text);
-  }
-
-  // Advanced waiting methods
-  async waitUntilVisible(timeout?: number) {
-    const by = toBy(this.locator);
-    const t = timeout ?? this.defaultTimeout;
-    await this.driver.wait(until.elementIsVisible(await this.driver.findElement(by)), t);
   }
 
   private async typeKeys(keys: string, options?: ActionOptions): Promise<void> {

@@ -58,10 +58,6 @@ export class TodoPage extends BasePage {
     return await this.todoItems.count();
   }
 
-  async getTodoCountText(): Promise<string> {
-    return await this.todoCount.getText();
-  }
-
   async clearCompleted(): Promise<void> {
     await this.clearCompletedBtn.click();
   }
@@ -76,9 +72,5 @@ export class TodoPage extends BasePage {
 
   async filterByCompleted(): Promise<void> {
     await this.filterCompleted.click();
-  }
-
-  async isClearCompletedVisible(): Promise<boolean> {
-    return await this.clearCompletedBtn.isDisplayed();
   }
 }
