@@ -1,6 +1,6 @@
 import { describe, it, before, after, beforeEach, afterEach } from 'mocha';
 import { InsurancePurchasePage } from '../../src/pages/test-webapp/InsurancePurchasePage';
-import { expect } from '../../src/assertion/SanAssertion';
+import { expect } from '../../src/assertion';
 import { BaseTest as GenericBaseTest, MultiReporter } from '../../src/base/BaseTest';
 import { createAllureReporter, createMochawesomeReporter } from '../../src/reporters';
 import { ThenableWebDriver } from 'selenium-webdriver';
