@@ -32,7 +32,7 @@ async function delay(ms: number): Promise<void> {
  * Check if element is visible (non-empty bounding box, not visibility:hidden)
  * According to Playwright: element has non-empty bounding box and does not have visibility:hidden
  */
-export async function isVisible(element: WebElement): Promise<boolean> {
+async function isVisible(element: WebElement): Promise<boolean> {
   try {
     // Check if displayed (Selenium built-in)
     if (!(await element.isDisplayed())) return false;
@@ -58,7 +58,7 @@ export async function isVisible(element: WebElement): Promise<boolean> {
  * Check if element is stable (same bounding box for consecutive animation frames)
  * Element is stable when it maintains the same bounding box for at least two consecutive checks
  */
-export async function isStable(element: WebElement): Promise<boolean> {
+async function isStable(element: WebElement): Promise<boolean> {
   try {
     const boxes: BoundingBox[] = [];
     
@@ -94,7 +94,7 @@ export async function isStable(element: WebElement): Promise<boolean> {
  * Check if element receives pointer events (not obscured by other elements)
  * Uses document.elementFromPoint to check if element is the hit target at its center point
  */
-export async function receivesEvents(element: WebElement, driver: ThenableWebDriver): Promise<boolean> {
+async function receivesEvents(element: WebElement, driver: ThenableWebDriver): Promise<boolean> {
   try {
     const rect = await element.getRect();
     const centerX = rect.x + rect.width / 2;
@@ -123,7 +123,7 @@ export async function receivesEvents(element: WebElement, driver: ThenableWebDri
  * - it's part of a <fieldset> with [disabled] attribute
  * - it has [aria-disabled=true] attribute
  */
-export async function isEnabled(element: WebElement): Promise<boolean> {
+async function isEnabled(element: WebElement): Promise<boolean> {
   try {
     // Check Selenium's isEnabled (handles disabled attribute and fieldset)
     if (!(await element.isEnabled())) return false;
@@ -147,7 +147,7 @@ export async function isEnabled(element: WebElement): Promise<boolean> {
  * - it has [readonly] attribute
  * - it has [aria-readonly=true] attribute with supporting role
  */
-export async function isEditable(element: WebElement): Promise<boolean> {
+async function isEditable(element: WebElement): Promise<boolean> {
   try {
     // First check if enabled
     if (!(await isEnabled(element))) return false;
