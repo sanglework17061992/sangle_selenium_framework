@@ -27,13 +27,15 @@ function toBy(locator: Locator) {
 export class SanElement {
   private readonly locator: Locator;
   private readonly defaultTimeout: number;
+  private readonly parentElement?: SanElement;
   
   private static readonly SCROLL_SETTLE_TIME = 50;
   private static readonly RETRY_INTERVAL = 100;
 
-  constructor(locator: Locator, defaultTimeout?: number) {
+  constructor(locator: Locator, defaultTimeout?: number, parentElement?: SanElement) {
     this.locator = locator;
     this.defaultTimeout = defaultTimeout ?? configLoader.getTimeoutConfig().element;
+    this.parentElement = parentElement;
   }
 
   private get driver(): ThenableWebDriver {
@@ -86,6 +88,18 @@ export class SanElement {
 
   private async locateElement(by: By, startTime: number, timeout: number): Promise<WebElement> {
     const remainingTime = getRemainingTimeout(startTime, timeout);
+    
+    // If there's a parent element, find within parent context
+    if (this.parentElement) {
+      const parentWebElement = await this.parentElement.raw(remainingTime);
+      await this.driver.wait(async () => {
+        const elements = await parentWebElement.findElements(by);
+        return elements.length > 0;
+      }, remainingTime);
+      return parentWebElement.findElement(by);
+    }
+    
+    // Otherwise, find from driver root
     await this.driver.wait(until.elementLocated(by), remainingTime);
     return this.driver.findElement(by);
   }
@@ -283,6 +297,67 @@ export class SanElement {
   async count(timeout?: number): Promise<number> {
     const elements = await this.findElements(timeout);
     return elements.length;
+  }
+
+  // Chaining methods - find child elements
+  
+  /**
+   * Find a child element using CSS selector
+   * @example parentElement.find('.child-class')
+   */
+  find(selector: string): SanElement {
+    return new SanElement({ using: 'css', value: selector }, this.defaultTimeout, this);
+  }
+
+  /**
+   * Find a child element using CSS selector (alias for find)
+   * @example parentElement.byCss('.child-class')
+   */
+  byCss(selector: string): SanElement {
+    return new SanElement({ using: 'css', value: selector }, this.defaultTimeout, this);
+  }
+
+  /**
+   * Find a child element using XPath
+   * @example parentElement.byXpath('.//div[@class="child"]')
+   */
+  byXpath(xpath: string): SanElement {
+    return new SanElement({ using: 'xpath', value: xpath }, this.defaultTimeout, this);
+  }
+
+  /**
+   * Find a child element by ID
+   * @example parentElement.byId('child-id')
+   */
+  byId(id: string): SanElement {
+    return new SanElement({ using: 'id', value: id }, this.defaultTimeout, this);
+  }
+
+  /**
+   * Find a child element by name attribute
+   * @example parentElement.byName('child-name')
+   */
+  byName(name: string): SanElement {
+    return new SanElement({ using: 'name', value: name }, this.defaultTimeout, this);
+  }
+
+  /**
+   * Find a child element by class name
+   * @example parentElement.byClass('child-class')
+   */
+  byClass(className: string): SanElement {
+    return new SanElement({ using: 'class', value: className }, this.defaultTimeout, this);
+  }
+
+  /**
+   * Get the nth element from a list (0-based index)
+   * @example todoList.nth(0) // First item
+   */
+  nth(index: number): SanElement {
+    const selector = this.locator.using === 'css' 
+      ? `${this.locator.value}:nth-of-type(${index + 1})`
+      : this.locator.value;
+    return new SanElement({ using: this.locator.using, value: selector }, this.defaultTimeout, this.parentElement);
   }
 }
 

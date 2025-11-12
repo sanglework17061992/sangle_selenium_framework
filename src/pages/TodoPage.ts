@@ -37,11 +37,11 @@ export class TodoPage extends BasePage {
     this.filterActive = this.byCss('a[href="#/active"]');
     this.filterCompleted = this.byCss('a[href="#/completed"]');
     
-    // Initialize dynamic locators
-    this.todoItem = (index: number) => this.byCss(`.todo-list li:nth-child(${index + 1})`);
-    this.todoCheckbox = (index: number) => this.byCss(`.todo-list li:nth-child(${index + 1}) .toggle`);
-    this.todoLabel = (index: number) => this.byCss(`.todo-list li:nth-child(${index + 1}) label`);
-    this.todoDeleteBtn = (index: number) => this.byCss(`.todo-list li:nth-child(${index + 1}) .destroy`);
+    // Initialize dynamic locators using chaining
+    this.todoItem = (index: number) => this.todoList.find('li').nth(index);
+    this.todoCheckbox = (index: number) => this.todoItem(index).find('.toggle');
+    this.todoLabel = (index: number) => this.todoItem(index).find('label');
+    this.todoDeleteBtn = (index: number) => this.todoItem(index).find('.destroy');
   }
 
   async addTodo(todoText: string): Promise<void> {
