@@ -1,7 +1,7 @@
 import { By, ThenableWebDriver, WebElement, until } from 'selenium-webdriver';
 import { configLoader } from '../../config/ConfigLoader';
 import { DriverContext } from '../../driver/DriverManager';
-import { waitForActionability, ActionabilityOptions } from './ActionabilityChecker';
+import { waitForActionability, ActionabilityOptions, delay } from './ActionabilityChecker';
 import { getActionRequirements } from './ActionConfig';
 import { ActionType } from '../../types/Enums';
 
@@ -100,7 +100,7 @@ export class SanElement {
           'arguments[0].scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });',
           element
         );
-        await new Promise(resolve => setTimeout(resolve, SanElement.SCROLL_SETTLE_TIME));
+        await delay(SanElement.SCROLL_SETTLE_TIME);
         
         // Step 3: Wait for element to be actionable (unless forced)
         if (!force) {
@@ -122,7 +122,7 @@ export class SanElement {
         if (this.getRemainingTimeout(startTime, timeout) <= 0) {
           throw error;
         }
-        await new Promise(resolve => setTimeout(resolve, SanElement.RETRY_INTERVAL));
+        await delay(SanElement.RETRY_INTERVAL);
       }
     }
     

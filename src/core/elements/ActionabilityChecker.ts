@@ -23,7 +23,7 @@ const STABILITY_CHECK_INTERVAL = 50;
 const STABILITY_REQUIRED_MATCHES = 2;
 const POLL_INTERVAL = 100;
 
-async function delay(ms: number): Promise<void> {
+export async function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
