@@ -56,7 +56,6 @@ export class SanElement {
    * - Scroll into view
    * - Wait for element actionable (unless force = true)
    */
-  // eslint-disable-next-line sonarjs/no-identical-functions
   private async findElement(
     actionType: ActionType | null = null,
     options?: ActionOptions
@@ -67,38 +66,13 @@ export class SanElement {
     
     while (getRemainingTimeout(startTime, timeout) > 0) {
       try {
-        const remainingTime = getRemainingTimeout(startTime, timeout);
-        await this.driver.wait(until.elementLocated(by), remainingTime);
-        const element = await this.driver.findElement(by);
+        const element = await this.locateElement(by, startTime, timeout);
         
         if (actionType === null) {
-          const visibilityTimeout = getRemainingTimeout(startTime, timeout);
-          await this.driver.wait(until.elementIsVisible(element), visibilityTimeout);
-          return element;
+          return await this.waitForVisibility(element, startTime, timeout);
         }
         
-        const force = options?.force ?? false;
-        
-        await this.driver.executeScript(
-          'arguments[0].scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });',
-          element
-        );
-        await delay(SanElement.SCROLL_SETTLE_TIME);
-        
-        if (!force) {
-          const requirements: ActionabilityOptions = {
-            ...getActionRequirements(actionType),
-            timeout: getRemainingTimeout(startTime, timeout)
-          };
-          
-          await waitForActionability(
-            element,
-            this.driver,
-            requirements
-          );
-        }
-        
-        return element;
+        return await this.setupForAction(element, actionType, options, startTime, timeout);
       } catch (error) {
         if (getRemainingTimeout(startTime, timeout) <= 0) {
           throw error;
@@ -108,6 +82,56 @@ export class SanElement {
     }
     
     throw new Error(`Timeout finding element with locator ${JSON.stringify(this.locator)} after ${timeout}ms`);
+  }
+
+  private async locateElement(by: By, startTime: number, timeout: number): Promise<WebElement> {
+    const remainingTime = getRemainingTimeout(startTime, timeout);
+    await this.driver.wait(until.elementLocated(by), remainingTime);
+    return this.driver.findElement(by);
+  }
+
+  private async waitForVisibility(element: WebElement, startTime: number, timeout: number): Promise<WebElement> {
+    const visibilityTimeout = getRemainingTimeout(startTime, timeout);
+    await this.driver.wait(until.elementIsVisible(element), visibilityTimeout);
+    return element;
+  }
+
+  private async setupForAction(
+    element: WebElement,
+    actionType: ActionType,
+    options: ActionOptions | undefined,
+    startTime: number,
+    timeout: number
+  ): Promise<WebElement> {
+    await this.scrollIntoView(element);
+    
+    if (!options?.force) {
+      await this.waitForActionable(element, actionType, startTime, timeout);
+    }
+    
+    return element;
+  }
+
+  private async scrollIntoView(element: WebElement): Promise<void> {
+    await this.driver.executeScript(
+      'arguments[0].scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });',
+      element
+    );
+    await delay(SanElement.SCROLL_SETTLE_TIME);
+  }
+
+  private async waitForActionable(
+    element: WebElement,
+    actionType: ActionType,
+    startTime: number,
+    timeout: number
+  ): Promise<void> {
+    const requirements: ActionabilityOptions = {
+      ...getActionRequirements(actionType),
+      timeout: getRemainingTimeout(startTime, timeout)
+    };
+    
+    await waitForActionability(element, this.driver, requirements);
   }
 
   private async executeAction<T>(
