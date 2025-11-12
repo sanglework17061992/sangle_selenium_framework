@@ -3,12 +3,13 @@ import SanElement, { Locator } from '../core/elements/SanElement';
 import { DriverContext } from '../driver/DriverManager';
 
 export abstract class BasePage {
-  protected driver: ThenableWebDriver;
-
   constructor(driver: ThenableWebDriver) {
-    this.driver = driver;
     // Set the driver in the central context for SanElement instances
     DriverContext.setDriver(driver);
+  }
+
+  protected get driver(): ThenableWebDriver {
+    return DriverContext.getDriver();
   }
 
   protected $(locator: Locator) {

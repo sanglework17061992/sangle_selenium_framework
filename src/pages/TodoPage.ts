@@ -44,7 +44,6 @@ export class TodoPage extends BasePage {
     this.todoDeleteBtn = (index: number) => this.byCss(`.todo-list li:nth-child(${index + 1}) .destroy`);
   }
 
-  // Actions
   async addTodo(todoText: string): Promise<void> {
     await this.newTodoInput.type(todoText, '\n');
   }
@@ -74,10 +73,6 @@ export class TodoPage extends BasePage {
     const item = this.todoItem(index);
     await item.hover();
     
-    // Wait a bit for CSS transition to complete
-    await delay(100);
-    
-    // Click the delete button (use force as button might still be transitioning)
     const deleteBtn = this.todoDeleteBtn(index);
     await deleteBtn.click({ force: true });
   }
