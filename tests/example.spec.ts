@@ -9,12 +9,12 @@ describe('SaniumTS Framework - Foundation', () => {
     logger.setLevel(logLevel);
     logger.info(`Log level: ${logLevel}`);
     
-    // Initialize driver from .env config
+    // Initialize driver
     await driverManager.createDriver();
   });
 
   after(async () => {
-    // Cleanup driver after all tests
+    // Cleanup driver
     await driverManager.quitDriver();
   });
 

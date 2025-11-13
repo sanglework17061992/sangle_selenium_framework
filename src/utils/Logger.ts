@@ -1,9 +1,5 @@
 import { LogLevel } from '../types/Enums';
 
-/**
- * Simple Logger utility for framework logging
- * Instance-based to support parallel execution
- */
 export class Logger {
   private currentLevel: LogLevel;
 
@@ -60,5 +56,5 @@ export class Logger {
   }
 }
 
-// Export a default instance for convenience (can be replaced per test/session)
+// Export a default instance
 export const logger = new Logger();

@@ -1,10 +1,6 @@
-import { BrowserConfig } from '../config/ConfigLoader';
+import { BrowserConfig } from '../types/ConfigTypes';
 import { DriverOptions } from './BrowserFactory';
 
-/**
- * Builder for driver configuration
- * Provides fluent API for creating driver configs
- */
 export class DriverConfig {
   private readonly config: BrowserConfig;
   private options: DriverOptions;
@@ -18,7 +14,7 @@ export class DriverConfig {
    * Set browser type
    */
   browser(name: string): this {
-    this.config.name = name as any; // Will be validated by registry
+    this.config.name = name as any;
     return this;
   }
 

@@ -1,21 +1,10 @@
 import { config } from 'dotenv';
 import { BrowserType, LogLevel } from '../types/Enums';
+import { BrowserConfig, TimeoutConfig } from '../types/ConfigTypes';
 import { DEFAULT_CONFIG, VALIDATION } from './Constants';
 
 // Load environment variables from .env file
 config();
-
-export interface BrowserConfig {
-  name: BrowserType;
-  headless: boolean;
-  noSandbox: boolean;
-}
-
-export interface TimeoutConfig {
-  default: number;
-  element: number;
-  pageLoad: number;
-}
 
 /**
  * ConfigLoader - Loads configuration from environment variables

@@ -50,7 +50,14 @@ export class DriverManager {
       this.log.info(`Initializing ${browserName} driver`);
 
       const factory = this.registry.get(browserName);
-      const driver = await factory.createWebDriver(browserConfig, options);
+      
+      // Extract factory-specific config (remove name field)
+      const factoryConfig = {
+        headless: browserConfig.headless,
+        noSandbox: browserConfig.noSandbox
+      };
+      
+      const driver = await factory.createWebDriver(factoryConfig, options);
       
       this.currentDriver = driver;
       this.log.info(`${browserName} driver created successfully`);
@@ -92,6 +99,7 @@ export class DriverManager {
 
   /**
    * Quit driver and clear context
+   * Note: Does not throw on quit errors to ensure graceful cleanup
    */
   async quitDriver(): Promise<void> {
     if (this.currentDriver) {
@@ -99,8 +107,9 @@ export class DriverManager {
         await this.currentDriver.quit();
         this.log.info('Driver quit successfully');
       } catch (error) {
+        // Log but don't throw - cleanup should be graceful
         this.log.error(`Error quitting driver: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        throw error;
+        this.log.warn('Driver reference cleared despite quit error');
       } finally {
         this.currentDriver = null;
       }
