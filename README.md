@@ -28,26 +28,6 @@ ELEMENT_TIMEOUT=10000
 PAGE_LOAD_TIMEOUT=30000
 ```
 
-## Quick Start
-
-```typescript
-import DriverManager from './src/driver/DriverManager';
-import { configLoader } from './src/config/ConfigLoader';
-
-async function main() {
-  const driver = await DriverManager.getConfiguredDriver();
-  
-  try {
-    await driver.get(configLoader.getBaseUrl());
-    console.log('Page title:', await driver.getTitle());
-  } finally {
-    await driver.quit();
-  }
-}
-
-main();
-```
-
 ## Project Structure
 
 ```
@@ -66,7 +46,3 @@ src/
 - ✅ Multi-browser support (Chrome, Firefox)
 - ✅ Environment-based configuration
 - ✅ Extensible driver factory pattern
-
-## License
-
-MIT
