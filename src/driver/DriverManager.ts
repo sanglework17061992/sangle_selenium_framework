@@ -1,8 +1,11 @@
 import { Builder, WebDriver, ThenableWebDriver } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 import firefox from 'selenium-webdriver/firefox.js';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { configLoader, BrowserType } from '../config/ConfigLoader';
 import { logger } from '../utils/Logger';
+import { CHROME_ARGS, FIREFOX_ARGS } from '../config/Constants';
 
 export type BrowserName = BrowserType | string;
 
@@ -45,25 +48,37 @@ abstract class BaseBrowserFactory implements BrowserFactory {
   protected abstract applyHeadlessMode(opts: BrowserOptions): void;
   protected abstract configureBuilder(builder: Builder, opts: BrowserOptions): Builder;
 
+  /**
+   * Merge config and runtime options
+   */
+  protected mergeOptions(config: { headless?: boolean; noSandbox?: boolean }, options?: DriverOptions) {
+    return {
+      headless: config.headless || options?.headless || false,
+      noSandbox: config.noSandbox || options?.noSandbox || false,
+      args: options?.args || []
+    };
+  }
+
   async createWebDriver(options?: DriverOptions): Promise<WebDriver> {
     const config = configLoader.getBrowserConfig();
     const opts = this.createOptions();
+    const merged = this.mergeOptions(config, options);
 
-    logger.debug(`Creating ${this.getBrowserName()} driver with headless=${config.headless || options?.headless}`);
+    logger.debug(`Creating ${this.getBrowserName()} driver with headless=${merged.headless}`);
 
     // Apply headless mode
-    if (config.headless || options?.headless) {
+    if (merged.headless) {
       this.applyHeadlessMode(opts);
     }
 
     // Apply no-sandbox (Chrome-specific)
-    if ((config.noSandbox || options?.noSandbox) && opts instanceof chrome.Options) {
-      opts.addArguments('--no-sandbox', '--disable-dev-shm-usage');
+    if (merged.noSandbox && opts instanceof chrome.Options) {
+      opts.addArguments(CHROME_ARGS.NO_SANDBOX, CHROME_ARGS.DISABLE_DEV_SHM);
     }
 
-    // Add any additional args from options
-    if (options?.args) {
-      opts.addArguments(...options.args);
+    // Add any additional args
+    if (merged.args.length > 0) {
+      opts.addArguments(...merged.args);
     }
 
     return this.configureBuilder(new Builder().forBrowser(this.getBrowserName()), opts).build();
@@ -80,7 +95,7 @@ class DefaultChromeFactory extends BaseBrowserFactory {
   }
 
   protected applyHeadlessMode(opts: BrowserOptions): void {
-    (opts as chrome.Options).addArguments('--headless=new');
+    (opts as chrome.Options).addArguments(CHROME_ARGS.HEADLESS);
   }
 
   protected configureBuilder(builder: Builder, opts: BrowserOptions): Builder {
@@ -91,8 +106,9 @@ class DefaultChromeFactory extends BaseBrowserFactory {
 class DefaultFirefoxFactory extends BaseBrowserFactory {
   protected createOptions(): firefox.Options {
     const opts = new firefox.Options();
-    // Use a temporary profile to avoid profile lock issues
-    opts.addArguments('-profile', '/tmp/firefox-profile-' + Date.now());
+    // Use OS-agnostic temporary profile to avoid profile lock issues
+    const tempProfile = join(tmpdir(), `firefox-profile-${Date.now()}`);
+    opts.addArguments(FIREFOX_ARGS.PROFILE, tempProfile);
     return opts;
   }
 
@@ -101,7 +117,7 @@ class DefaultFirefoxFactory extends BaseBrowserFactory {
   }
 
   protected applyHeadlessMode(opts: BrowserOptions): void {
-    (opts as firefox.Options).addArguments('-headless');
+    (opts as firefox.Options).addArguments(FIREFOX_ARGS.HEADLESS);
   }
 
   protected configureBuilder(builder: Builder, opts: BrowserOptions): Builder {
