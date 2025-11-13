@@ -10,15 +10,6 @@ export interface BrowserConfig {
 }
 
 /**
- * Browser factory configuration (subset without name)
- * Used by factories that already know which browser they're creating
- */
-export interface BrowserFactoryConfig {
-  headless: boolean;
-  noSandbox: boolean;
-}
-
-/**
  * Timeout configuration for waits and operations
  */
 export interface TimeoutConfig {

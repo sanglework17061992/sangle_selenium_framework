@@ -50,14 +50,7 @@ export class DriverManager {
       this.log.info(`Initializing ${browserName} driver`);
 
       const factory = this.registry.get(browserName);
-      
-      // Extract factory-specific config (remove name field)
-      const factoryConfig = {
-        headless: browserConfig.headless,
-        noSandbox: browserConfig.noSandbox
-      };
-      
-      const driver = await factory.createWebDriver(factoryConfig, options);
+      const driver = await factory.createWebDriver(browserConfig, options);
       
       this.currentDriver = driver;
       this.log.info(`${browserName} driver created successfully`);

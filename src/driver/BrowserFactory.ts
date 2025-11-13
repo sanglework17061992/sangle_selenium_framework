@@ -4,7 +4,7 @@ import firefox from 'selenium-webdriver/firefox.js';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { BrowserType } from '../types/Enums';
-import { BrowserFactoryConfig } from '../types/ConfigTypes';
+import { BrowserConfig } from '../types/ConfigTypes';
 import { logger } from '../utils/Logger';
 import { CHROME_ARGS, FIREFOX_ARGS } from '../config/Constants';
 
@@ -15,7 +15,7 @@ export interface DriverOptions {
 }
 
 export interface BrowserFactory {
-  createWebDriver(config: BrowserFactoryConfig, options?: DriverOptions): Promise<WebDriver>;
+  createWebDriver(config: BrowserConfig, options?: DriverOptions): Promise<WebDriver>;
 }
 
 /**
@@ -23,12 +23,12 @@ export interface BrowserFactory {
  */
 abstract class BaseBrowserFactory implements BrowserFactory {
   protected abstract getBrowserName(): string;
-  protected abstract createBuilder(config: BrowserFactoryConfig, options?: DriverOptions): Builder;
+  protected abstract createBuilder(config: BrowserConfig, options?: DriverOptions): Builder;
 
   /**
    * Validate and merge configuration options
    */
-  protected mergeConfig(config: BrowserFactoryConfig, options?: DriverOptions) {
+  protected mergeConfig(config: BrowserConfig, options?: DriverOptions) {
     if (!config) {
       throw new Error('Browser configuration is required');
     }
@@ -40,7 +40,7 @@ abstract class BaseBrowserFactory implements BrowserFactory {
     };
   }
 
-  async createWebDriver(config: BrowserFactoryConfig, options?: DriverOptions): Promise<WebDriver> {
+  async createWebDriver(config: BrowserConfig, options?: DriverOptions): Promise<WebDriver> {
     try {
       const merged = this.mergeConfig(config, options);
       const browserName = this.getBrowserName();
@@ -65,7 +65,7 @@ export class ChromeFactory extends BaseBrowserFactory {
     return BrowserType.CHROME;
   }
 
-  protected createBuilder(config: BrowserFactoryConfig, options?: DriverOptions): Builder {
+  protected createBuilder(config: BrowserConfig, options?: DriverOptions): Builder {
     const chromeOptions = new chrome.Options();
     const merged = this.mergeConfig(config, options);
 
@@ -96,7 +96,7 @@ export class FirefoxFactory extends BaseBrowserFactory {
     return BrowserType.FIREFOX;
   }
 
-  protected createBuilder(config: BrowserFactoryConfig, options?: DriverOptions): Builder {
+  protected createBuilder(config: BrowserConfig, options?: DriverOptions): Builder {
     const firefoxOptions = new firefox.Options();
     const merged = this.mergeConfig(config, options);
 
