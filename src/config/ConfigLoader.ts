@@ -95,26 +95,16 @@ class ConfigLoader {
 
   /**
    * Get base URL for application under test
-   * @throws Error if BASE_URL is not set or invalid
+   * @throws Error if BASE_URL is not set
    */
   getBaseUrl(): string {
     const baseUrl = process.env.BASE_URL;
     
     if (!baseUrl || baseUrl.trim() === '') {
-      throw new Error(
-        'BASE_URL is not configured in .env file. Please set a valid URL.'
-      );
+      throw new Error('BASE_URL is not configured in .env file');
     }
 
-    // Validate URL format
-    try {
-      new URL(baseUrl);
-      return baseUrl;
-    } catch {
-      throw new Error(
-        `Invalid BASE_URL in .env file: "${baseUrl}". Please provide a valid URL (e.g., https://example.com)`
-      );
-    }
+    return baseUrl;
   }
 
   /**
