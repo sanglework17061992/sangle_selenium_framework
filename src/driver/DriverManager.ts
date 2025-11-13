@@ -33,7 +33,7 @@ export class DriverManager {
       throw new Error(`No browser registered for: ${browserName}`);
     }
     
-    const driver = await factory.createWebDriver(options);
+    const driver = await factory.createWebDriver(config, options);
     this.currentDriver = driver;
     logger.info(`${browserName} driver created successfully`);
     
