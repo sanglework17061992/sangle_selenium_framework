@@ -18,6 +18,21 @@ export interface BrowserFactory {
 
 /**
  * Base factory with proper type safety and extensibility
+ * 
+ * To add a new browser:
+ * 1. Add browser type to BrowserType enum (e.g., EDGE = 'edge')
+ * 2. Add browser-specific arguments to Constants.ts (e.g., EDGE_ARGS)
+ * 3. Create new factory class extending BaseBrowserFactory
+ * 4. Implement getBrowserName() and createBuilder() methods
+ * 5. Register factory in DriverManager.createDefaultRegistry()
+ * 
+ * Example:
+ * export class EdgeFactory extends BaseBrowserFactory {
+ *   protected getBrowserName(): string { return BrowserType.EDGE; }
+ *   protected createBuilder(config, options) { 
+ *     // Configure Edge options and return Builder
+ *   }
+ * }
  */
 abstract class BaseBrowserFactory implements BrowserFactory {
   protected abstract getBrowserName(): string;
