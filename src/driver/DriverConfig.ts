@@ -6,7 +6,7 @@ import { DriverOptions } from './BrowserFactory';
  * Provides fluent API for creating driver configs
  */
 export class DriverConfig {
-  private config: BrowserConfig;
+  private readonly config: BrowserConfig;
   private options: DriverOptions;
 
   constructor(baseConfig: BrowserConfig) {
@@ -17,7 +17,7 @@ export class DriverConfig {
   /**
    * Set browser type
    */
-  browser(name: string): DriverConfig {
+  browser(name: string): this {
     this.config.name = name as any; // Will be validated by registry
     return this;
   }
@@ -25,7 +25,7 @@ export class DriverConfig {
   /**
    * Set headless mode
    */
-  headless(enabled: boolean = true): DriverConfig {
+  headless(enabled: boolean = true): this {
     this.config.headless = enabled;
     return this;
   }
@@ -33,7 +33,7 @@ export class DriverConfig {
   /**
    * Set no-sandbox mode
    */
-  noSandbox(enabled: boolean = true): DriverConfig {
+  noSandbox(enabled: boolean = true): this {
     this.config.noSandbox = enabled;
     return this;
   }
@@ -41,7 +41,7 @@ export class DriverConfig {
   /**
    * Add browser arguments
    */
-  args(...args: string[]): DriverConfig {
+  args(...args: string[]): this {
     this.options.args = [...(this.options.args || []), ...args];
     return this;
   }
@@ -49,7 +49,7 @@ export class DriverConfig {
   /**
    * Override options
    */
-  withOptions(options: DriverOptions): DriverConfig {
+  withOptions(options: DriverOptions): this {
     this.options = { ...this.options, ...options };
     return this;
   }
