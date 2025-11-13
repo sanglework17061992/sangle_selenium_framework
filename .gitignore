@@ -1,0 +1,16 @@
+node_modules
+
+# Allure reports and results (too heavy for git)
+allure-report/
+allure-results/
+
+# Mochawesome reports (too heavy for git)
+mochawesome-report/
+.mochawesome-report/
+
+# Test output logs
+test-output.log
+*.log
+
+# Build output
+dist/
