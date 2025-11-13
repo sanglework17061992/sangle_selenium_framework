@@ -1,69 +1,121 @@
 import { WebDriver } from 'selenium-webdriver';
 import { BrowserType } from '../types/Enums';
-import { configLoader } from '../config/ConfigLoader';
-import { logger } from '../utils/Logger';
+import { configLoader, ConfigLoader } from '../config/ConfigLoader';
+import { logger, Logger } from '../utils/Logger';
 import { BrowserFactory, DriverOptions, ChromeFactory, FirefoxFactory } from './BrowserFactory';
+import { BrowserRegistry } from './BrowserRegistry';
+import { DriverConfig } from './DriverConfig';
 
 /**
- * Central driver manager with context
- * Handles driver lifecycle and provides global access
+ * Instance-based driver manager with dependency injection
+ * Handles driver lifecycle and provides controlled access
  */
 export class DriverManager {
-  private static currentDriver: WebDriver | null = null;
-  private static readonly factories: Map<string, BrowserFactory> = new Map();
+  private currentDriver: WebDriver | null = null;
+  private readonly registry: BrowserRegistry;
+
+  constructor(
+    private readonly config: ConfigLoader,
+    private readonly log: Logger,
+    registry?: BrowserRegistry
+  ) {
+    this.registry = registry || this.createDefaultRegistry();
+  }
+
+  /**
+   * Create default registry with Chrome and Firefox
+   */
+  private createDefaultRegistry(): BrowserRegistry {
+    const registry = new BrowserRegistry();
+    registry.register(BrowserType.CHROME, new ChromeFactory());
+    registry.register(BrowserType.FIREFOX, new FirefoxFactory());
+    return registry;
+  }
 
   /**
    * Register a browser factory
    */
-  static register(name: string, factory: BrowserFactory) {
-    this.factories.set(name.toLowerCase(), factory);
+  register(name: string, factory: BrowserFactory): void {
+    this.registry.register(name, factory);
   }
 
   /**
-   * Create driver and store for global access
+   * Create driver with configuration
    */
-  static async createDriver(name?: string, options?: DriverOptions) {
-    const config = configLoader.getBrowserConfig();
-    const browserName = (name || config.name).toLowerCase();
+  async createDriver(name?: string, options?: DriverOptions): Promise<WebDriver> {
+    try {
+      const browserConfig = this.config.getBrowserConfig();
+      const browserName = name || browserConfig.name;
 
-    logger.info(`Initializing ${browserName} driver`);
+      this.log.info(`Initializing ${browserName} driver`);
 
-    const factory = this.factories.get(browserName);
-    if (!factory) {
-      throw new Error(`No browser registered for: ${browserName}`);
+      const factory = this.registry.get(browserName);
+      const driver = await factory.createWebDriver(browserConfig, options);
+      
+      this.currentDriver = driver;
+      this.log.info(`${browserName} driver created successfully`);
+      
+      return driver;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      this.log.error(`Failed to create driver: ${errorMsg}`);
+      throw error;
     }
+  }
+
+  /**
+   * Create driver with fluent configuration
+   */
+  async createDriverWithConfig(configBuilder: (builder: DriverConfig) => DriverConfig): Promise<WebDriver> {
+    const baseConfig = this.config.getBrowserConfig();
+    const { config, options } = configBuilder(new DriverConfig(baseConfig)).build();
     
-    const driver = await factory.createWebDriver(config, options);
-    this.currentDriver = driver;
-    logger.info(`${browserName} driver created successfully`);
-    
-    return driver;
+    return this.createDriver(config.name, options);
   }
 
   /**
    * Get current driver
    */
-  static getDriver(): WebDriver {
+  getDriver(): WebDriver {
     if (!this.currentDriver) {
-      throw new Error('Driver not initialized. Call DriverManager.createDriver() first.');
+      throw new Error('Driver not initialized. Call createDriver() first.');
     }
     return this.currentDriver;
   }
 
   /**
+   * Check if driver is initialized
+   */
+  hasDriver(): boolean {
+    return this.currentDriver !== null;
+  }
+
+  /**
    * Quit driver and clear context
    */
-  static async quitDriver() {
+  async quitDriver(): Promise<void> {
     if (this.currentDriver) {
-      await this.currentDriver.quit();
-      this.currentDriver = null;
-      logger.info('Driver quit successfully');
+      try {
+        await this.currentDriver.quit();
+        this.log.info('Driver quit successfully');
+      } catch (error) {
+        this.log.error(`Error quitting driver: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw error;
+      } finally {
+        this.currentDriver = null;
+      }
     }
+  }
+
+  /**
+   * Get available browser names
+   */
+  getAvailableBrowsers(): string[] {
+    return this.registry.getRegisteredBrowsers();
   }
 }
 
-// Register default browser factories
-DriverManager.register(BrowserType.CHROME, new ChromeFactory());
-DriverManager.register(BrowserType.FIREFOX, new FirefoxFactory());
+// Export default instance for convenience (backwards compatibility)
+export const defaultDriverManager = new DriverManager(configLoader, logger);
 
-export default DriverManager;
+export default defaultDriverManager;

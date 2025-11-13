@@ -1,5 +1,5 @@
 import { describe, it, before, after } from 'mocha';
-import DriverManager from '../src/driver/DriverManager';
+import driverManager from '../src/driver/DriverManager';
 import { configLoader } from '../src/config/ConfigLoader';
 import { logger } from '../src/utils/Logger';
 
@@ -10,17 +10,17 @@ describe('SaniumTS Framework - Foundation', () => {
     logger.info(`Log level: ${logLevel}`);
     
     // Initialize driver from .env config
-    await DriverManager.createDriver();
+    await driverManager.createDriver();
   });
 
   after(async () => {
     // Cleanup driver after all tests
-    await DriverManager.quitDriver();
+    await driverManager.quitDriver();
   });
 
   describe('Browser Driver', () => {
     it('should initialize driver and navigate to base URL', async () => {
-      const driver = DriverManager.getDriver();
+      const driver = driverManager.getDriver();
       const baseUrl = configLoader.getBaseUrl();
 
       logger.info(`Navigating to: ${baseUrl}`);

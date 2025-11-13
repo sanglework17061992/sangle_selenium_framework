@@ -21,7 +21,7 @@ export interface TimeoutConfig {
  * ConfigLoader - Loads configuration from environment variables
  * Provides type-safe access to framework configuration
  */
-class ConfigLoader {
+export class ConfigLoader {
   private static instance: ConfigLoader;
 
   private constructor() {}
