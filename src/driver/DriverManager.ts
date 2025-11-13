@@ -80,7 +80,7 @@ export class DriverManager {
   }
 
   /**
-   * Quit driver and clear context
+   * Quit driver
    */
   async quitDriver(): Promise<void> {
     if (this.currentDriver) {
@@ -90,7 +90,6 @@ export class DriverManager {
       } catch (error) {
         // Log but don't throw - cleanup should be graceful
         this.log.error(`Error quitting driver: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        this.log.warn('Driver reference cleared despite quit error');
       } finally {
         this.currentDriver = null;
       }
