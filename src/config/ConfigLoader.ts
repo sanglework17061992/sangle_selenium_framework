@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
 import { BrowserType, LogLevel } from '../types/Enums';
+import { DEFAULT_CONFIG, VALIDATION } from './Constants';
 
 // Re-export for convenience
 export { BrowserType, LogLevel } from '../types/Enums';
@@ -39,13 +40,37 @@ class ConfigLoader {
    * Get browser configuration
    */
   getBrowserConfig(): BrowserConfig {
-    const browserName = (process.env.BROWSER || 'chrome').toLowerCase();
+    const browserName = (process.env.BROWSER || DEFAULT_CONFIG.BROWSER).toLowerCase();
+    
+    // Validate browser name
+    if (browserName.trim() === '') {
+      throw new Error('BROWSER cannot be empty');
+    }
     
     return {
-      name: browserName === 'firefox' ? BrowserType.FIREFOX : BrowserType.CHROME,
+      name: browserName === BrowserType.FIREFOX ? BrowserType.FIREFOX : BrowserType.CHROME,
       headless: process.env.HEADLESS === 'true',
       noSandbox: process.env.NO_SANDBOX === 'true'
     };
+  }
+
+  /**
+   * Validate and parse timeout value
+   */
+  private validateTimeout(value: string, name: string): number {
+    const timeout = Number.parseInt(value, 10);
+    
+    if (Number.isNaN(timeout)) {
+      throw new TypeError(`${name} must be a valid number`);
+    }
+    
+    if (timeout < VALIDATION.MIN_TIMEOUT || timeout > VALIDATION.MAX_TIMEOUT) {
+      throw new Error(
+        `${name} must be between ${VALIDATION.MIN_TIMEOUT} and ${VALIDATION.MAX_TIMEOUT}ms`
+      );
+    }
+    
+    return timeout;
   }
 
   /**
@@ -53,9 +78,18 @@ class ConfigLoader {
    */
   getTimeoutConfig(): TimeoutConfig {
     return {
-      default: parseInt(process.env.DEFAULT_TIMEOUT || '5000', 10),
-      element: parseInt(process.env.ELEMENT_TIMEOUT || '10000', 10),
-      pageLoad: parseInt(process.env.PAGE_LOAD_TIMEOUT || '30000', 10)
+      default: this.validateTimeout(
+        process.env.DEFAULT_TIMEOUT || String(DEFAULT_CONFIG.TIMEOUT),
+        'DEFAULT_TIMEOUT'
+      ),
+      element: this.validateTimeout(
+        process.env.ELEMENT_TIMEOUT || String(DEFAULT_CONFIG.ELEMENT_TIMEOUT),
+        'ELEMENT_TIMEOUT'
+      ),
+      pageLoad: this.validateTimeout(
+        process.env.PAGE_LOAD_TIMEOUT || String(DEFAULT_CONFIG.PAGE_LOAD_TIMEOUT),
+        'PAGE_LOAD_TIMEOUT'
+      )
     };
   }
 
@@ -87,7 +121,7 @@ class ConfigLoader {
    * Get log level from configuration
    */
   getLogLevel(): LogLevel {
-    const level = (process.env.LOG_LEVEL || 'INFO').toUpperCase();
+    const level = (process.env.LOG_LEVEL || DEFAULT_CONFIG.LOG_LEVEL).toUpperCase();
     
     if (Object.values(LogLevel).includes(level as LogLevel)) {
       return level as LogLevel;
