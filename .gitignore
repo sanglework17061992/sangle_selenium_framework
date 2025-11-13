@@ -1,16 +1,29 @@
-node_modules
-
-# Allure reports and results (too heavy for git)
-allure-report/
-allure-results/
-
-# Mochawesome reports (too heavy for git)
-mochawesome-report/
-.mochawesome-report/
-
-# Test output logs
-test-output.log
-*.log
+# Dependencies
+node_modules/
 
 # Build output
 dist/
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test reports (generated, not committed)
+allure-report/
+allure-results/
+mochawesome-report/
+
+# Temporary files
+*.tmp
+.temp/
