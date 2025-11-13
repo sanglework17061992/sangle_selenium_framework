@@ -39,30 +39,9 @@ export class BrowserRegistry {
   }
 
   /**
-   * Check if a browser factory is registered
-   */
-  has(name: string): boolean {
-    return this.factories.has(name.toLowerCase().trim());
-  }
-
-  /**
    * Get all registered browser names
    */
   getRegisteredBrowsers(): string[] {
     return Array.from(this.factories.keys());
-  }
-
-  /**
-   * Unregister a browser factory
-   */
-  unregister(name: string): boolean {
-    return this.factories.delete(name.toLowerCase().trim());
-  }
-
-  /**
-   * Clear all registered factories
-   */
-  clear(): void {
-    this.factories.clear();
   }
 }

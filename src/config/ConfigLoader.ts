@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { BrowserType, LogLevel } from '../types/Enums';
-import { BrowserConfig, TimeoutConfig } from '../types/ConfigTypes';
-import { DEFAULT_CONFIG, VALIDATION } from './Constants';
+import { BrowserConfig } from '../types/ConfigTypes';
+import { DEFAULT_CONFIG } from './Constants';
 
 // Load environment variables from .env file
 config();
@@ -36,45 +36,6 @@ export class ConfigLoader {
       name: browserName === BrowserType.FIREFOX ? BrowserType.FIREFOX : BrowserType.CHROME,
       headless: process.env.HEADLESS === 'true',
       noSandbox: process.env.NO_SANDBOX === 'true'
-    };
-  }
-
-  /**
-   * Validate and parse timeout value
-   */
-  private validateTimeout(value: string, name: string): number {
-    const timeout = Number.parseInt(value, 10);
-    
-    if (Number.isNaN(timeout)) {
-      throw new TypeError(`${name} must be a valid number`);
-    }
-    
-    if (timeout < VALIDATION.MIN_TIMEOUT || timeout > VALIDATION.MAX_TIMEOUT) {
-      throw new Error(
-        `${name} must be between ${VALIDATION.MIN_TIMEOUT} and ${VALIDATION.MAX_TIMEOUT}ms`
-      );
-    }
-    
-    return timeout;
-  }
-
-  /**
-   * Get timeout configuration in milliseconds
-   */
-  getTimeoutConfig(): TimeoutConfig {
-    return {
-      default: this.validateTimeout(
-        process.env.DEFAULT_TIMEOUT || String(DEFAULT_CONFIG.TIMEOUT),
-        'DEFAULT_TIMEOUT'
-      ),
-      element: this.validateTimeout(
-        process.env.ELEMENT_TIMEOUT || String(DEFAULT_CONFIG.ELEMENT_TIMEOUT),
-        'ELEMENT_TIMEOUT'
-      ),
-      pageLoad: this.validateTimeout(
-        process.env.PAGE_LOAD_TIMEOUT || String(DEFAULT_CONFIG.PAGE_LOAD_TIMEOUT),
-        'PAGE_LOAD_TIMEOUT'
-      )
     };
   }
 

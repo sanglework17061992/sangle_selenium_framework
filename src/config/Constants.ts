@@ -19,13 +19,4 @@ export const FIREFOX_ARGS = {
 export const DEFAULT_CONFIG = {
   BROWSER: BrowserType.CHROME,
   LOG_LEVEL: 'INFO',
-  TIMEOUT: 5000,
-  ELEMENT_TIMEOUT: 10000,
-  PAGE_LOAD_TIMEOUT: 30000,
-};
-
-// Validation constraints
-export const VALIDATION = {
-  MIN_TIMEOUT: 0,
-  MAX_TIMEOUT: 300000, // 5 minutes
 };
