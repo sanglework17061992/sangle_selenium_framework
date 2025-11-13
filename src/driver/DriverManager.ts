@@ -4,7 +4,6 @@ import { configLoader, ConfigLoader } from '../config/ConfigLoader';
 import { logger, Logger } from '../utils/Logger';
 import { BrowserFactory, DriverOptions, ChromeFactory, FirefoxFactory } from './BrowserFactory';
 import { BrowserRegistry } from './BrowserRegistry';
-import { DriverConfig } from './DriverConfig';
 
 /**
  * Instance-based driver manager with dependency injection
@@ -64,16 +63,6 @@ export class DriverManager {
   }
 
   /**
-   * Create driver with fluent configuration
-   */
-  async createDriverWithConfig(configBuilder: (builder: DriverConfig) => DriverConfig): Promise<WebDriver> {
-    const baseConfig = this.config.getBrowserConfig();
-    const { config, options } = configBuilder(new DriverConfig(baseConfig)).build();
-    
-    return this.createDriver(config.name, options);
-  }
-
-  /**
    * Get current driver
    */
   getDriver(): WebDriver {
@@ -92,7 +81,6 @@ export class DriverManager {
 
   /**
    * Quit driver and clear context
-   * Note: Does not throw on quit errors to ensure graceful cleanup
    */
   async quitDriver(): Promise<void> {
     if (this.currentDriver) {
