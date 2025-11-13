@@ -13,7 +13,6 @@ export const CHROME_ARGS = {
 
 export const FIREFOX_ARGS = {
   HEADLESS: '-headless',
-  PROFILE: '-profile',
 } as const;
 
 // Default configuration values

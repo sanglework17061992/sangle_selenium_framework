@@ -8,7 +8,6 @@ config();
 
 /**
  * ConfigLoader - Loads configuration from environment variables
- * Provides type-safe access to framework configuration
  */
 export class ConfigLoader {
   private static instance: ConfigLoader;

@@ -1,8 +1,6 @@
 import { Builder, WebDriver } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 import firefox from 'selenium-webdriver/firefox.js';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 import { BrowserType } from '../types/Enums';
 import { BrowserConfig } from '../types/ConfigTypes';
 import { logger } from '../utils/Logger';
@@ -99,10 +97,6 @@ export class FirefoxFactory extends BaseBrowserFactory {
   protected createBuilder(config: BrowserConfig, options?: DriverOptions): Builder {
     const firefoxOptions = new firefox.Options();
     const merged = this.mergeConfig(config, options);
-
-    // Use OS-agnostic temporary profile to avoid profile lock issues
-    const tempProfile = join(tmpdir(), `firefox-profile-${Date.now()}`);
-    firefoxOptions.addArguments(FIREFOX_ARGS.PROFILE, tempProfile);
 
     // Apply headless mode
     if (merged.headless) {
