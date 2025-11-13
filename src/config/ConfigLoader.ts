@@ -2,9 +2,6 @@ import { config } from 'dotenv';
 import { BrowserType, LogLevel } from '../types/Enums';
 import { DEFAULT_CONFIG, VALIDATION } from './Constants';
 
-// Re-export for convenience
-export { BrowserType, LogLevel } from '../types/Enums';
-
 // Load environment variables from .env file
 config();
 

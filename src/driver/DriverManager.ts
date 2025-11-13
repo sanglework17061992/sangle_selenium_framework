@@ -3,7 +3,8 @@ import chrome from 'selenium-webdriver/chrome.js';
 import firefox from 'selenium-webdriver/firefox.js';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { configLoader, BrowserType } from '../config/ConfigLoader';
+import { BrowserType } from '../types/Enums';
+import { configLoader } from '../config/ConfigLoader';
 import { logger } from '../utils/Logger';
 import { CHROME_ARGS, FIREFOX_ARGS } from '../config/Constants';
 
