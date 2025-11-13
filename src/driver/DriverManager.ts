@@ -73,13 +73,6 @@ export class DriverManager {
   }
 
   /**
-   * Check if driver is initialized
-   */
-  hasDriver(): boolean {
-    return this.currentDriver !== null;
-  }
-
-  /**
    * Quit driver
    */
   async quitDriver(): Promise<void> {
@@ -88,23 +81,15 @@ export class DriverManager {
         await this.currentDriver.quit();
         this.log.info('Driver quit successfully');
       } catch (error) {
-        // Log but don't throw - cleanup should be graceful
         this.log.error(`Error quitting driver: ${error instanceof Error ? error.message : 'Unknown error'}`);
       } finally {
         this.currentDriver = null;
       }
     }
   }
-
-  /**
-   * Get available browser names
-   */
-  getAvailableBrowsers(): string[] {
-    return this.registry.getRegisteredBrowsers();
-  }
 }
 
-// Export default instance for convenience (backwards compatibility)
+// Export default instance
 export const defaultDriverManager = new DriverManager(configLoader, logger);
 
 export default defaultDriverManager;
