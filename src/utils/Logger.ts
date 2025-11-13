@@ -39,12 +39,6 @@ export class Logger {
     }
   }
 
-  warn(message: string): void {
-    if (this.shouldLog(LogLevel.WARN)) {
-      console.warn(this.formatMessage(LogLevel.WARN, message));
-    }
-  }
-
   error(message: string, error?: Error): void {
     if (this.shouldLog(LogLevel.ERROR)) {
       const errorMessage = error ? `${message}: ${error.message}` : message;
