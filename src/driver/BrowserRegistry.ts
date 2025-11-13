@@ -11,7 +11,7 @@ export class BrowserRegistry {
    * Register a browser factory
    */
   register(name: string, factory: BrowserFactory): void {
-    if (!name || !name.trim()) {
+    if (!name?.trim()) {
       throw new Error('Browser name cannot be empty');
     }
     if (!factory) {
@@ -25,7 +25,7 @@ export class BrowserRegistry {
    * Get a browser factory by name
    */
   get(name: string): BrowserFactory {
-    if (!name || !name.trim()) {
+    if (!name?.trim()) {
       throw new Error('Browser name cannot be empty');
     }
     
