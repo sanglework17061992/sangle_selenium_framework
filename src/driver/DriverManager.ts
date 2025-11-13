@@ -1,4 +1,4 @@
-import { Builder, WebDriver, ThenableWebDriver } from 'selenium-webdriver';
+import { Builder, WebDriver } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 import firefox from 'selenium-webdriver/firefox.js';
 import { tmpdir } from 'node:os';
@@ -22,15 +22,15 @@ export interface BrowserFactory {
 
 // Central driver context - framework manages this
 export class DriverContext {
-  private static currentDriver: ThenableWebDriver | null = null;
+  private static currentDriver: WebDriver | null = null;
 
-  static setDriver(driver: ThenableWebDriver) {
+  static setDriver(driver: WebDriver) {
     this.currentDriver = driver;
   }
 
-  static getDriver(): ThenableWebDriver {
+  static getDriver(): WebDriver {
     if (!this.currentDriver) {
-      throw new Error('Driver not initialized. Call DriverContext.setDriver() first.');
+      throw new Error('Driver not initialized. Call DriverManager.getConfiguredDriver() first.');
     }
     return this.currentDriver;
   }
@@ -148,6 +148,10 @@ export class DriverManager {
     
     const driver = await factory.createWebDriver(options);
     logger.info(`${browserName} driver created successfully`);
+    
+    // Set driver in context for framework-wide access
+    DriverContext.setDriver(driver);
+    
     return driver;
   }
 
@@ -158,6 +162,16 @@ export class DriverManager {
     const config = configLoader.getBrowserConfig();
     logger.info('Using configured driver from .env');
     return this.getDriver(config.name);
+  }
+
+  /**
+   * Quit driver and clear context
+   */
+  static async quitDriver() {
+    const driver = DriverContext.getDriver();
+    await driver.quit();
+    DriverContext.clearDriver();
+    logger.info('Driver quit and context cleared');
   }
 }
 
