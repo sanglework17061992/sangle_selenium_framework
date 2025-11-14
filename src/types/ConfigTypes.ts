@@ -9,3 +9,10 @@ export interface BrowserConfig {
   noSandbox: boolean;
   args?: string[];
 }
+
+/**
+ * Timeout configuration for element operations
+ */
+export interface TimeoutConfig {
+  element: number;
+}

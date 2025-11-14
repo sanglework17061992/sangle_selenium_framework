@@ -1,6 +1,6 @@
 import { config } from 'dotenv';
 import { BrowserType, LogLevel } from '../types/Enums';
-import { BrowserConfig } from '../types/ConfigTypes';
+import { BrowserConfig, TimeoutConfig } from '../types/ConfigTypes';
 import { DEFAULT_CONFIG } from './Constants';
 
 // Load environment variables from .env file
@@ -79,6 +79,19 @@ export class ConfigLoader {
     }
     
     return LogLevel.INFO;
+  }
+
+  /**
+   * Get timeout configuration for element operations
+   */
+  getTimeoutConfig(): TimeoutConfig {
+    const elementTimeout = process.env.ELEMENT_TIMEOUT 
+      ? Number.parseInt(process.env.ELEMENT_TIMEOUT, 10) 
+      : DEFAULT_CONFIG.ELEMENT_TIMEOUT;
+
+    return {
+      element: Number.isNaN(elementTimeout) ? DEFAULT_CONFIG.ELEMENT_TIMEOUT : elementTimeout
+    };
   }
 }
 

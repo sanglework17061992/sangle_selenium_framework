@@ -21,4 +21,5 @@ export const DEFAULT_CONFIG = {
   LOG_LEVEL: 'info',
   HEADLESS: false,
   NO_SANDBOX: false,
+  ELEMENT_TIMEOUT: 30000,
 };
