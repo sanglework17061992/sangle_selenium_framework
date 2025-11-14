@@ -22,23 +22,38 @@ export class ConfigLoader {
   }
 
   /**
+   * Parse environment variable as boolean with fallback default
+   */
+  private parseBooleanConfig(envValue: string | undefined, defaultValue: boolean): boolean {
+    if (envValue === undefined) {
+      return defaultValue;
+    }
+    return envValue.toLowerCase() === 'true';
+  }
+
+  /**
    * Get browser configuration
    */
   getBrowserConfig(): BrowserConfig {
     const browserName = (process.env.BROWSER || DEFAULT_CONFIG.BROWSER).toLowerCase();
-    
+
     // Validate browser name
     if (browserName.trim() === '') {
       throw new Error('BROWSER cannot be empty');
     }
-    
-    return {
-      name: browserName === BrowserType.FIREFOX ? BrowserType.FIREFOX : BrowserType.CHROME,
-      headless: process.env.HEADLESS === 'true',
-      noSandbox: process.env.NO_SANDBOX === 'true'
-    };
-  }
 
+    // Validate against supported browser types
+    const supportedBrowser = Object.values(BrowserType).find(
+      type => type.toLowerCase() === browserName
+    );
+
+    return {
+      name: supportedBrowser || BrowserType.CHROME, // Default to Chrome if unsupported
+      headless: this.parseBooleanConfig(process.env.HEADLESS, DEFAULT_CONFIG.HEADLESS),
+      noSandbox: this.parseBooleanConfig(process.env.NO_SANDBOX, DEFAULT_CONFIG.NO_SANDBOX)
+    };
+  }  
+  
   /**
    * Get base URL for application under test
    * @throws Error if BASE_URL is not set

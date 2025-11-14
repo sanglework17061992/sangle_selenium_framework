@@ -3,12 +3,12 @@ import { LogLevel } from '../types/Enums';
 export class Logger {
   private currentLevel: LogLevel;
 
-  private static readonly levels: Record<LogLevel, number> = {
-    [LogLevel.DEBUG]: 0,
-    [LogLevel.INFO]: 1,
-    [LogLevel.WARN]: 2,
-    [LogLevel.ERROR]: 3
-  };
+  private static readonly levels: LogLevel[] = [
+    LogLevel.DEBUG,
+    LogLevel.INFO,
+    LogLevel.WARN,
+    LogLevel.ERROR
+  ];
 
   constructor(level: LogLevel = LogLevel.INFO) {
     this.currentLevel = level;
@@ -19,7 +19,7 @@ export class Logger {
   }
 
   private shouldLog(level: LogLevel): boolean {
-    return Logger.levels[level] >= Logger.levels[this.currentLevel];
+    return Logger.levels.indexOf(level) >= Logger.levels.indexOf(this.currentLevel);
   }
 
   private formatMessage(level: LogLevel, message: string): string {
