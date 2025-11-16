@@ -4,7 +4,6 @@ import { driverManager } from '../../driver/DriverManager';
 import { actionabilityChecker } from './ActionabilityChecker';
 import { elementFinder } from './ElementFinder';
 import { ActionType } from '../../types/Enums';
-import { getRemainingTimeout } from '../../utils/SeleniumUtils';
 
 export { ActionType } from '../../types/Enums';
 export type Locator = { using: 'css' | 'xpath' | 'id' | 'name' | 'class'; value: string };
@@ -45,6 +44,11 @@ export class SanElement {
     return this.driver.actions({ bridge: true });
   }
 
+  private getRemainingTimeout(startTime: number, totalTimeout: number): number {
+    const elapsed = Date.now() - startTime;
+    return Math.max(0, totalTimeout - elapsed);
+  }
+
   /**
    * Find and prepare element for interaction or reading
    */
@@ -68,7 +72,7 @@ export class SanElement {
     // Wait for actionability if action type specified
     if (actionType && !options?.force) {
       const startTime = Date.now();
-      const remainingTimeout = getRemainingTimeout(startTime, timeout);
+      const remainingTimeout = this.getRemainingTimeout(startTime, timeout);
       await actionabilityChecker.waitUntilReady(actionType, element, remainingTimeout);
     }
 

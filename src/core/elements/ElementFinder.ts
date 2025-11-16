@@ -1,6 +1,4 @@
 import { By, WebElement, WebDriver } from 'selenium-webdriver';
-import { delay, DEFAULT_RETRY_INTERVAL } from '../../utils/SeleniumUtils';
-import { retryUntilTimeout } from '../../utils/RetryUtils';
 
 /**
  * Core utility class for finding and preparing elements
@@ -8,6 +6,40 @@ import { retryUntilTimeout } from '../../utils/RetryUtils';
  */
 export class ElementFinder {
   private readonly SCROLL_SETTLE_TIME = 50;
+  private readonly DEFAULT_RETRY_INTERVAL = 100;
+
+  // Helper functions
+  private async delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  private async retryUntilTimeout<T>(
+    operation: () => Promise<T | null>,
+    startTime: number,
+    timeout: number,
+    errorMessage: string
+  ): Promise<T> {
+    while (this.getRemainingTimeout(startTime, timeout) > 0) {
+      try {
+        const result = await operation();
+        if (result !== null) return result;
+      } catch (error: any) {
+        // Continue retrying for common Selenium errors
+        if (error.name !== 'StaleElementReferenceError' && 
+            error.name !== 'NoSuchElementError' &&
+            !error.message?.includes('no such element')) {
+          throw error;
+        }
+      }
+      await this.delay(this.DEFAULT_RETRY_INTERVAL);
+    }
+    throw new Error(`${errorMessage} - timeout after ${timeout}ms`);
+  }
+
+  private getRemainingTimeout(startTime: number, totalTimeout: number): number {
+    const elapsed = Date.now() - startTime;
+    return Math.max(0, totalTimeout - elapsed);
+  }
 
   /**
    * Locate element with retry logic
@@ -19,7 +51,7 @@ export class ElementFinder {
     timeout: number,
     parentElement?: WebElement
   ): Promise<WebElement> {
-    return retryUntilTimeout(
+    return this.retryUntilTimeout(
       async () => {
         if (parentElement) {
           const elements = await parentElement.findElements(by);
@@ -30,8 +62,7 @@ export class ElementFinder {
       },
       startTime,
       timeout,
-      `Locate element`,
-      DEFAULT_RETRY_INTERVAL
+      `Locate element`
     );
   }
 
@@ -43,14 +74,13 @@ export class ElementFinder {
     startTime: number,
     timeout: number
   ): Promise<WebElement> {
-    return retryUntilTimeout(
+    return this.retryUntilTimeout(
       async () => {
         return (await element.isDisplayed()) ? element : null;
       },
       startTime,
       timeout,
-      'Element visibility check',
-      DEFAULT_RETRY_INTERVAL
+      'Element visibility check'
     );
   }
 
@@ -63,7 +93,7 @@ export class ElementFinder {
         'arguments[0].scrollIntoView({ behavior: "instant", block: "center", inline: "center" });',
         element
       );
-      await delay(this.SCROLL_SETTLE_TIME);
+      await this.delay(this.SCROLL_SETTLE_TIME);
     } catch (error: any) {
       if (error.name !== 'InvalidElementStateError' && 
           error.name !== 'ElementNotInteractableError') {

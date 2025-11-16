@@ -1,5 +1,4 @@
 import { WebElement, ThenableWebDriver } from 'selenium-webdriver';
-import { delay, getRemainingTimeout, DEFAULT_RETRY_INTERVAL } from '../../utils/SeleniumUtils';
 import { ActionType, Check } from '../../types/Enums';
 import { getActionRequirements } from './ActionConfig';
 
@@ -16,6 +15,7 @@ export interface ActionabilityOptions {
  */
 export class ActionabilityChecker {
   private readonly strategies: Record<Check, (element: WebElement) => Promise<void>>;
+  private readonly DEFAULT_RETRY_INTERVAL = 100;
 
   constructor() {
     this.strategies = {
@@ -24,6 +24,16 @@ export class ActionabilityChecker {
       [Check.ENABLED]: this.checkEnabled.bind(this),
       [Check.EDITABLE]: this.checkEditable.bind(this),
     };
+  }
+
+  // Helper functions
+  private async delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  private getRemainingTimeout(startTime: number, totalTimeout: number): number {
+    const elapsed = Date.now() - startTime;
+    return Math.max(0, totalTimeout - elapsed);
   }
 
   /**
@@ -47,7 +57,7 @@ export class ActionabilityChecker {
   async waitUntilReady(actionType: ActionType, element: WebElement, timeout: number = 30000): Promise<void> {
     const startTime = Date.now();
     
-    while (getRemainingTimeout(startTime, timeout) > 0) {
+    while (this.getRemainingTimeout(startTime, timeout) > 0) {
       try {
         await this.ensure(actionType, element);
         return; // All checks passed
@@ -55,7 +65,7 @@ export class ActionabilityChecker {
         // Continue waiting
       }
       
-      await delay(DEFAULT_RETRY_INTERVAL);
+      await this.delay(this.DEFAULT_RETRY_INTERVAL);
     }
     
     // Generate detailed error on timeout
@@ -113,7 +123,7 @@ export class ActionabilityChecker {
     };
 
     const first = await getPosition();
-    await delay(50); // Wait between measurements
+    await this.delay(50); // Wait between measurements
     const second = await getPosition();
 
     if (
