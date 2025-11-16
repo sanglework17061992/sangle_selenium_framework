@@ -2,7 +2,7 @@ import { describe, it, before, after } from 'mocha';
 import driverManager from '../src/driver/DriverManager';
 import { configLoader } from '../src/config/ConfigLoader';
 import { logger } from '../src/utils/Logger';
-import SanElement, { LocatorType } from '../src/core/elements/SanElement';
+import SanElement from '../src/core/elements/SanElement';
 
 describe('SaniumTS Framework - Foundation', () => {
   before(async () => {

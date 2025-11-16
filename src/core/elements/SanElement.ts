@@ -1,18 +1,18 @@
 import { By, WebElement } from 'selenium-webdriver';
 import { configLoader } from '../../config/ConfigLoader';
 import { driverManager } from '../../driver/DriverManager';
-import { waitForActionability } from './ActionabilityChecker';
-import { getActionRequirements } from './ActionConfig';
-import { ActionType, LocatorType } from '../../types/Enums';
-import { delay, getRemainingTimeout, DEFAULT_RETRY_INTERVAL } from '../../utils/SeleniumUtils';
-import { retryUntilTimeout } from '../../utils/RetryUtils';
+import { actionabilityChecker } from './ActionabilityChecker';
+import { elementFinder } from './ElementFinder';
+import { ActionType } from '../../types/Enums';
+import { getRemainingTimeout } from '../../utils/SeleniumUtils';
 
-export { ActionType, LocatorType } from '../../types/Enums';
+export { ActionType } from '../../types/Enums';
 export type Locator = { using: 'css' | 'xpath' | 'id' | 'name' | 'class'; value: string };
 
 export interface ActionOptions {
   timeout?: number;
   force?: boolean;
+  scroll?: boolean;
 }
 
 function toBy(locator: Locator) {
@@ -30,9 +30,6 @@ export class SanElement {
   private readonly locator: Locator;
   private readonly defaultTimeout: number;
   private readonly parentElement?: SanElement;
-  
-  private static readonly SCROLL_SETTLE_TIME = 50;
-  private static readonly BASIC_WAIT_TIME = 1000;
 
   constructor(locator: Locator, defaultTimeout?: number, parentElement?: SanElement) {
     this.locator = locator;
@@ -56,83 +53,26 @@ export class SanElement {
     options?: ActionOptions
   ): Promise<WebElement> {
     const timeout = options?.timeout ?? this.defaultTimeout;
-    const startTime = Date.now();
+    const shouldScroll = options?.scroll ?? false;
 
-    // Step 1: Locate element
-    const element = await this.locateElement(toBy(this.locator), startTime, timeout);
+    // Use ElementFinder for the core finding logic
+    const parentWebElement = this.parentElement ? await this.parentElement.raw() : undefined;
+    const element = await elementFinder.findAndPrepareElement(
+      toBy(this.locator),
+      this.driver,
+      timeout,
+      shouldScroll,
+      parentWebElement
+    );
 
-    // Step 2: Wait for visibility
-    await this.waitForVisibility(element, startTime, timeout);
-
-    // Step 3: Scroll into view
-    await this.scrollIntoView(element);
-
-    // Step 4: Wait for actionability if action type specified
+    // Wait for actionability if action type specified
     if (actionType && !options?.force) {
-      const actionRequirements = getActionRequirements(actionType);
+      const startTime = Date.now();
       const remainingTimeout = getRemainingTimeout(startTime, timeout);
-      
-      await waitForActionability(element, {
-        ...actionRequirements,
-        timeout: remainingTimeout
-      });
+      await actionabilityChecker.waitUntilReady(actionType, element, remainingTimeout);
     }
 
     return element;
-  }
-
-  /**
-   * Locate element with retry logic
-   */
-  private async locateElement(by: By, startTime: number, timeout: number): Promise<WebElement> {
-    return retryUntilTimeout(
-      async () => {
-        if (this.parentElement) {
-          const parentWebElement = await this.parentElement.raw();
-          const elements = await parentWebElement.findElements(by);
-          return elements.length > 0 ? elements[0] : null;
-        } else {
-          return this.driver.findElement(by);
-        }
-      },
-      startTime,
-      timeout,
-      `Locate element ${JSON.stringify(this.locator)}`,
-      DEFAULT_RETRY_INTERVAL
-    );
-  }
-
-  /**
-   * Wait for element to be visible
-   */
-  private async waitForVisibility(element: WebElement, startTime: number, timeout: number): Promise<WebElement> {
-    return retryUntilTimeout(
-      async () => {
-        return (await element.isDisplayed()) ? element : null;
-      },
-      startTime,
-      timeout,
-      'Element visibility check',
-      DEFAULT_RETRY_INTERVAL
-    );
-  }
-
-  /**
-   * Scroll element into view if needed
-   */
-  private async scrollIntoView(element: WebElement): Promise<void> {
-    try {
-      await this.driver.executeScript(
-        'arguments[0].scrollIntoView({ behavior: "instant", block: "center", inline: "center" });',
-        element
-      );
-      await delay(SanElement.SCROLL_SETTLE_TIME);
-    } catch (error: any) {
-      if (error.name !== 'InvalidElementStateError' && 
-          error.name !== 'ElementNotInteractableError') {
-        console.warn(`Scroll failed: ${error.message}`);
-      }
-    }
   }
 
   // Public API methods
@@ -160,7 +100,7 @@ export class SanElement {
     }
     
     if (keys) {
-      await this.typeKeys(keys, options);
+      await element.sendKeys(keys);
     }
   }
 
@@ -237,53 +177,12 @@ export class SanElement {
   }
 
   /**
-   * Type special keys
+   * Explicitly scroll element into view
+   * Use this when you need manual control over scrolling behavior
    */
-  private async typeKeys(keys: string, options?: ActionOptions): Promise<void> {
-    const element = await this.findElement(ActionType.TYPE, options);
-    await element.sendKeys(keys);
-  }
-
-  /**
-   * Find multiple elements with basic wait
-   */
-  private async findElements(timeout?: number): Promise<WebElement[]> {
-    const by = toBy(this.locator);
-    await delay(timeout || SanElement.BASIC_WAIT_TIME);
-    return this.driver.findElements(by);
-  }
-
-  /**
-   * Get count of matching elements
-   */
-  async count(timeout?: number): Promise<number> {
-    const elements = await this.findElements(timeout);
-    return elements.length;
-  }
-
-  // Chaining methods - find child elements
-  
-  /**
-   * Find a child element with specified locator type
-   * @example parentElement.findChild(LocatorType.CSS, '.child-class')
-   * @example parentElement.findChild(LocatorType.XPATH, './/div')
-   * @example parentElement.findChild(LocatorType.ID, 'child-id')
-   */
-  findChild(type: LocatorType, value: string): SanElement {
-    return new SanElement({ using: type, value }, this.defaultTimeout, this);
-  }
-
-  /**
-   * Get the nth element from a list (0-based index)
-   * @example todoList.nth(0) // First item
-   */
-  nth(index: number): SanElement {
-    if (this.locator.using !== 'css') {
-      throw new Error(`nth() only supports CSS selectors, got: ${this.locator.using}`);
-    }
-    
-    const selector = `${this.locator.value}:nth-of-type(${index + 1})`;
-    return new SanElement({ using: this.locator.using, value: selector }, this.defaultTimeout, this.parentElement);
+  async scrollIntoView(): Promise<void> {
+    const element = await this.findElement(null);
+    await elementFinder.scrollIntoView(element, this.driver);
   }
 }
 

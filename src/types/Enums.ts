@@ -29,6 +29,17 @@ export enum ActionType {
 }
 
 /**
+ * Check types for element actionability
+ * These define what conditions must be met before performing actions
+ */
+export enum Check {
+  VISIBLE = 'visible',
+  STABLE = 'stable',
+  ENABLED = 'enabled',
+  EDITABLE = 'editable',
+}
+
+/**
  * Locator types for element selection
  */
 export enum LocatorType {
