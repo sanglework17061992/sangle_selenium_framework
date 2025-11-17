@@ -157,15 +157,20 @@ export class ActionabilityChecker {
       `
       const el = arguments[0];
       const tagName = el.tagName.toLowerCase();
-      const type = el.type ? el.type.toLowerCase() : '';
-      const readOnly = el.readOnly;
-      const contentEditable = el.contentEditable;
       
-      return (
-        (tagName === 'input' && ['text', 'password', 'email', 'url', 'tel', 'search', 'number', 'date', 'time', 'datetime-local', 'month', 'week', 'color'].includes(type) && !readOnly) ||
-        (tagName === 'textarea' && !readOnly) ||
-        contentEditable === 'true'
-      );
+      // Simple editable checks for common cases
+      if (tagName === 'input') {
+        const type = (el.type || 'text').toLowerCase();
+        const isTextInput = ['text', 'password', 'email', 'search', 'tel', 'url'].includes(type);
+        return isTextInput && !el.readOnly && !el.disabled;
+      }
+      
+      if (tagName === 'textarea') {
+        return !el.readOnly && !el.disabled;
+      }
+      
+      // ContentEditable
+      return el.contentEditable === 'true';
       `,
       element
     );
