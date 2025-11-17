@@ -14,6 +14,10 @@ export interface ActionOptions {
   scroll?: boolean;
 }
 
+export interface ReadOptions {
+  timeout?: number;
+}
+
 function toBy(locator: Locator) {
   switch (locator.using) {
     case 'css': return By.css(locator.value);
@@ -60,7 +64,7 @@ export class SanElement {
     const shouldScroll = options?.scroll ?? false;
 
     // Use ElementFinder for the core finding logic
-    const parentWebElement = this.parentElement ? await this.parentElement.raw() : undefined;
+    const parentWebElement = this.parentElement ? await this.parentElement.findElement(null) : undefined;
     const element = await elementFinder.findAndPrepareElement(
       toBy(this.locator),
       this.driver,
@@ -92,51 +96,49 @@ export class SanElement {
   /**
    * Type text into the element with auto-wait
    */
-  async type(text?: string, keys?: string, options?: ActionOptions): Promise<void> {
-    if (!text && !keys) {
-      throw new Error('Either text or keys must be provided');
+  async type(text: string, options?: ActionOptions): Promise<void> {
+    if (!text) {
+      throw new Error(`Cannot type empty text into element with locator: ${JSON.stringify(this.locator)}`);
     }
 
     const element = await this.findElement(ActionType.TYPE, options);
-    
-    if (text) {
-      await element.sendKeys(text);
+    await element.sendKeys(text);
+  }
+
+  /**
+   * Send special keys to the element with auto-wait
+   */
+  async sendKeys(keys: string, options?: ActionOptions): Promise<void> {
+    if (!keys) {
+      throw new Error(`Cannot send empty keys to element with locator: ${JSON.stringify(this.locator)}`);
     }
-    
-    if (keys) {
-      await element.sendKeys(keys);
-    }
+
+    const element = await this.findElement(ActionType.TYPE, options);
+    await element.sendKeys(keys);
   }
 
   /**
    * Get text content with auto-wait
    */
-  async getText(timeout?: number): Promise<string> {
-    const element = await this.findElement(null, { timeout });
+  async getText(options?: ReadOptions): Promise<string> {
+    const element = await this.findElement(null, { timeout: options?.timeout });
     return element.getText();
   }
 
   /**
    * Get attribute value with auto-wait
    */
-  async getAttribute(name: string, timeout?: number): Promise<string | null> {
-    const element = await this.findElement(null, { timeout });
+  async getAttribute(name: string, options?: ReadOptions): Promise<string | null> {
+    const element = await this.findElement(null, { timeout: options?.timeout });
     return element.getAttribute(name);
   }
 
   /**
    * Check if element is displayed with auto-wait
    */
-  async isDisplayed(timeout?: number): Promise<boolean> {
-    const element = await this.findElement(null, { timeout });
+  async isDisplayed(options?: ReadOptions): Promise<boolean> {
+    const element = await this.findElement(null, { timeout: options?.timeout });
     return element.isDisplayed();
-  }
-
-  /**
-   * Get raw WebElement for advanced operations
-   */
-  async raw(timeout?: number): Promise<WebElement> {
-    return this.findElement(null, { timeout });
   }
 
   /**
@@ -151,24 +153,26 @@ export class SanElement {
    * Check/uncheck checkbox or radio button
    */
   async check(options?: ActionOptions): Promise<void> {
-    const isChecked = await this.isChecked(options?.timeout);
+    const element = await this.findElement(ActionType.CHECK, options);
+    const isChecked = await element.isSelected();
     if (!isChecked) {
-      await this.click(options);
+      await element.click();
     }
   }
 
   async uncheck(options?: ActionOptions): Promise<void> {
-    const isChecked = await this.isChecked(options?.timeout);
+    const element = await this.findElement(ActionType.UNCHECK, options);
+    const isChecked = await element.isSelected();
     if (isChecked) {
-      await this.click(options);
+      await element.click();
     }
   }
 
   /**
    * Check if checkbox/radio is checked
    */
-  async isChecked(timeout?: number): Promise<boolean> {
-    const element = await this.findElement(null, { timeout });
+  async isChecked(options?: ReadOptions): Promise<boolean> {
+    const element = await this.findElement(null, { timeout: options?.timeout });
     return element.isSelected();
   }
 
