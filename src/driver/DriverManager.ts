@@ -96,7 +96,7 @@ export class DriverManager {
   }
 }
 
-// Export shared instance
-export const driverManager = new DriverManager(configLoader, logger);
+// Export default instance
+export const defaultDriverManager = new DriverManager(configLoader, logger);
 
-export default driverManager;
+export default defaultDriverManager;

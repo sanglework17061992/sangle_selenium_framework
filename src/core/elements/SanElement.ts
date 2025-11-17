@@ -1,6 +1,6 @@
 import { By, WebElement } from 'selenium-webdriver';
 import { configLoader } from '../../config/ConfigLoader';
-import { driverManager } from '../../driver/DriverManager';
+import { defaultDriverManager } from '../../driver/DriverManager';
 import { actionabilityChecker } from './ActionabilityChecker';
 import { elementFinder } from './ElementFinder';
 import { ActionType } from '../../types/Enums';
@@ -41,7 +41,7 @@ export class SanElement {
   }
 
   private get driver() {
-    return driverManager.getDriver();
+    return defaultDriverManager.getDriver();
   }
 
   private getActions() {
