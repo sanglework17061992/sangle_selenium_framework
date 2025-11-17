@@ -27,10 +27,6 @@ export class ActionabilityChecker {
   }
 
   // Helper functions
-  private async delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
   private getRemainingTimeout(startTime: number, totalTimeout: number): number {
     const elapsed = Date.now() - startTime;
     return Math.max(0, totalTimeout - elapsed);
@@ -65,7 +61,7 @@ export class ActionabilityChecker {
         // Continue waiting
       }
       
-      await this.delay(this.DEFAULT_RETRY_INTERVAL);
+      await new Promise(resolve => setTimeout(resolve, this.DEFAULT_RETRY_INTERVAL));
     }
     
     // Generate detailed error on timeout
@@ -123,7 +119,6 @@ export class ActionabilityChecker {
     };
 
     const first = await getPosition();
-    await this.delay(50); // Wait between measurements
     const second = await getPosition();
 
     if (
