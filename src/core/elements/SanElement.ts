@@ -65,7 +65,7 @@ export class SanElement {
 
     // Use ElementFinder for the core finding logic
     const parentWebElement = this.parentElement ? await this.parentElement.findElement(ActionType.READ) : undefined;
-    const element = await elementFinder.findAndPrepareElement(
+    const element = await elementFinder.locateAndPrepareElement(
       toBy(this.locator),
       this.driver,
       timeout,

@@ -93,9 +93,9 @@ export class ElementFinder {
   }
 
   /**
-   * Complete element finding pipeline with all necessary steps
+   * Locate and prepare element for interaction with readiness checks
    */
-  async findAndPrepareElement(
+  async locateAndPrepareElement(
     by: By,
     driver: WebDriver,
     timeout: number,
