@@ -1,6 +1,7 @@
 import { WebElement, ThenableWebDriver } from 'selenium-webdriver';
 import { ActionType, Check } from '../../types/Enums';
 import { getActionRequirements } from './ActionConfig';
+import { TIMING } from '../../config/Constants';
 
 export { Check } from '../../types/Enums';
 
@@ -14,7 +15,6 @@ export interface ActionabilityOptions {
  * Uses strategy pattern internally for clean, maintainable code
  */
 export class ActionabilityChecker {
-  private readonly DEFAULT_RETRY_INTERVAL = 100;
 
   // Helper functions
   private getRemainingTimeout(startTime: number, totalTimeout: number): number {
@@ -65,7 +65,7 @@ export class ActionabilityChecker {
         // Continue waiting
       }
       
-      await new Promise(resolve => setTimeout(resolve, this.DEFAULT_RETRY_INTERVAL));
+      await new Promise(resolve => setTimeout(resolve, TIMING.DEFAULT_RETRY_INTERVAL));
     }
     
     // Generate detailed error on timeout

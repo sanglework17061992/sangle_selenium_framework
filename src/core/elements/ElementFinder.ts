@@ -1,11 +1,11 @@
 import { By, WebElement, WebDriver } from 'selenium-webdriver';
+import { TIMING } from '../../config/Constants';
 
 /**
  * Core utility class for finding and preparing elements
  * Extracted from SanElement to separate concerns and improve maintainability
  */
 export class ElementFinder {
-  private readonly DEFAULT_RETRY_INTERVAL = 100;
 
   // Helper functions
   private async retryUntilTimeout<T>(
@@ -26,7 +26,7 @@ export class ElementFinder {
           throw error;
         }
       }
-      await new Promise(resolve => setTimeout(resolve, this.DEFAULT_RETRY_INTERVAL));
+      await new Promise(resolve => setTimeout(resolve, TIMING.DEFAULT_RETRY_INTERVAL));
     }
     throw new Error(`${errorMessage} - timeout after ${timeout}ms`);
   }

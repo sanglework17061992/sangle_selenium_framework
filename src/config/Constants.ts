@@ -23,3 +23,8 @@ export const DEFAULT_CONFIG = {
   NO_SANDBOX: false,
   ELEMENT_TIMEOUT: 30000,
 };
+
+// Framework timing constants
+export const TIMING = {
+  DEFAULT_RETRY_INTERVAL: 100,
+} as const;
