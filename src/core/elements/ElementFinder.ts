@@ -5,14 +5,9 @@ import { By, WebElement, WebDriver } from 'selenium-webdriver';
  * Extracted from SanElement to separate concerns and improve maintainability
  */
 export class ElementFinder {
-  private readonly SCROLL_SETTLE_TIME = 50;
   private readonly DEFAULT_RETRY_INTERVAL = 100;
 
   // Helper functions
-  private async delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
   private async retryUntilTimeout<T>(
     operation: () => Promise<T | null>,
     startTime: number,
@@ -31,7 +26,7 @@ export class ElementFinder {
           throw error;
         }
       }
-      await this.delay(this.DEFAULT_RETRY_INTERVAL);
+      await new Promise(resolve => setTimeout(resolve, this.DEFAULT_RETRY_INTERVAL));
     }
     throw new Error(`${errorMessage} - timeout after ${timeout}ms`);
   }
@@ -93,7 +88,6 @@ export class ElementFinder {
         'arguments[0].scrollIntoView({ behavior: "instant", block: "center", inline: "center" });',
         element
       );
-      await this.delay(this.SCROLL_SETTLE_TIME);
     } catch (error: any) {
       if (error.name !== 'InvalidElementStateError' && 
           error.name !== 'ElementNotInteractableError') {
