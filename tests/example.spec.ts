@@ -1,4 +1,5 @@
 import { describe, it, before, after } from 'mocha';
+import { Key } from 'selenium-webdriver';
 import driverManager from '../src/driver/DriverManager';
 import { configLoader } from '../src/config/ConfigLoader';
 import { logger } from '../src/utils/Logger';
@@ -48,7 +49,6 @@ describe('SaniumTS Framework - Foundation', () => {
       await todoInput.type(todoText);
       
       // Press Enter to add the todo (using special key)
-      const { Key } = await import('selenium-webdriver');
       await todoInput.sendKeys(Key.RETURN);
       
       // Verify the item was added by checking if it appears in the list
