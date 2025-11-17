@@ -3,6 +3,7 @@ import { ActionType, Check } from '../../types/Enums';
 import { getActionRequirements } from './ActionConfig';
 import { TIMING } from '../../config/Constants';
 import { sleep, getRemainingTimeout } from '../../utils/TimeUtils';
+import { configLoader } from '../../config/ConfigLoader';
 
 export { Check } from '../../types/Enums';
 
@@ -48,10 +49,11 @@ export class ActionabilityChecker {
   /**
    * Wait for element to become actionable for the specified action type
    */
-  async waitUntilReady(actionType: ActionType, element: WebElement, timeout: number = 30000): Promise<void> {
+  async waitUntilReady(actionType: ActionType, element: WebElement, timeout?: number): Promise<void> {
+    const effectiveTimeout = timeout ?? configLoader.getTimeoutConfig().element;
     const startTime = Date.now();
     
-    while (getRemainingTimeout(startTime, timeout) > 0) {
+    while (getRemainingTimeout(startTime, effectiveTimeout) > 0) {
       try {
         await this.validateActionRequirements(actionType, element);
         return; // All checks passed
@@ -75,7 +77,7 @@ export class ActionabilityChecker {
     }
     
     throw new Error(
-      `Element not ready for ${actionType} within ${timeout}ms. ` +
+      `Element not ready for ${actionType} within ${effectiveTimeout}ms. ` +
       `Failed: ${failedChecks.join(', ')}`
     );
   }
