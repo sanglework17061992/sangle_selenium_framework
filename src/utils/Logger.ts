@@ -1,54 +1,71 @@
+import winston from 'winston';
 import { LogLevel } from '../types/Enums';
+import path from 'node:path';
 
+// Create logs directory
+const logDir = 'logs';
+
+// logger configuration
+const winstonLogger = winston.createLogger({
+  level: LogLevel.INFO,
+  format: winston.format.combine(
+    winston.format.timestamp({
+      format: 'YYYY-MM-DD HH:mm:ss'
+    }),
+    winston.format.errors({ stack: true }),
+    winston.format.printf(({ timestamp, level, message, stack }) => {
+      const stackTrace = stack && typeof stack === 'string' ? '\n' + stack : '';
+      return `[${timestamp}] [${level.toUpperCase()}] ${message}${stackTrace}`;
+    })
+  ),
+  transports: [
+    new winston.transports.Console({
+      silent: process.env.NODE_ENV === 'test'
+    }),
+    new winston.transports.File({
+      filename: path.join(logDir, 'error.log'),
+      level: 'error'
+    }),
+    new winston.transports.File({
+      filename: path.join(logDir, 'combined.log')
+    })
+  ],
+  silent: process.env.NODE_ENV === 'test'
+});
+
+// Wrapper class to maintain existing API
 export class Logger {
-  private currentLevel: LogLevel;
-
-  private static readonly levels: LogLevel[] = [
-    LogLevel.DEBUG,
-    LogLevel.INFO,
-    LogLevel.WARN,
-    LogLevel.ERROR
-  ];
+  private currentLevel: LogLevel = LogLevel.INFO;
 
   constructor(level: LogLevel = LogLevel.INFO) {
-    this.currentLevel = level;
+    this.setLevel(level);
   }
 
   setLevel(level: LogLevel): void {
     this.currentLevel = level;
-  }
-
-  private shouldLog(level: LogLevel): boolean {
-    return Logger.levels.indexOf(level) >= Logger.levels.indexOf(this.currentLevel);
-  }
-
-  private formatMessage(level: LogLevel, message: string): string {
-    const timestamp = new Date().toISOString();
-    return `[${timestamp}] [${level}] ${message}`;
+    winstonLogger.level = level;
   }
 
   debug(message: string): void {
-    if (this.shouldLog(LogLevel.DEBUG)) {
-      console.log(this.formatMessage(LogLevel.DEBUG, message));
-    }
+    winstonLogger.debug(message);
   }
 
   info(message: string): void {
-    if (this.shouldLog(LogLevel.INFO)) {
-      console.log(this.formatMessage(LogLevel.INFO, message));
-    }
+    winstonLogger.info(message);
+  }
+
+  warn(message: string): void {
+    winstonLogger.warn(message);
   }
 
   error(message: string, error?: Error): void {
-    if (this.shouldLog(LogLevel.ERROR)) {
-      const errorMessage = error ? `${message}: ${error.message}` : message;
-      console.error(this.formatMessage(LogLevel.ERROR, errorMessage));
-      if (error?.stack) {
-        console.error(error.stack);
-      }
+    if (error) {
+      winstonLogger.error(`${message}: ${error.message}`, { stack: error.stack });
+    } else {
+      winstonLogger.error(message);
     }
   }
 }
 
-// Export a default instance
+// Export
 export const logger = new Logger();

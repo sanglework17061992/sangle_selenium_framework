@@ -5,7 +5,8 @@
   "type": "commonjs",
   "scripts": {
     "build": "tsc",
-    "test": "mocha",
+    "test": "NODE_ENV=test mocha",
+    "test:dev": "mocha",
     "test:example": "mocha tests/example.spec.ts"
   },
   "keywords": [
@@ -18,11 +19,13 @@
   "license": "MIT",
   "dependencies": {
     "dotenv": "^16.3.1",
-    "selenium-webdriver": "^4.21.0"
+    "selenium-webdriver": "^4.21.0",
+    "winston": "^3.18.3"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/selenium-webdriver": "^4.1.0",
+    "@types/winston": "^2.4.4",
     "chromedriver": "^141.0.6",
     "geckodriver": "^4.1.0",
     "mocha": "^10.8.2",

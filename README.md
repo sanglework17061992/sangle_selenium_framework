@@ -46,3 +46,14 @@ src/
 - ✅ Multi-browser support (Chrome, Firefox)
 - ✅ Environment-based configuration
 - ✅ Extensible driver factory pattern
+- ✅ Winston-based logging with file output
+
+## Running Tests
+
+```bash
+# Clean test output (recommended for CI)
+npm test
+
+# Development mode with detailed logs
+npm run test:dev
+```

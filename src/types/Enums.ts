@@ -10,8 +10,8 @@ export enum BrowserType {
  * Log levels for framework logging
  */
 export enum LogLevel {
-  DEBUG = 'DEBUG',
-  INFO = 'INFO',
-  WARN = 'WARN',
-  ERROR = 'ERROR'
+  DEBUG = 'debug',
+  INFO = 'info',
+  WARN = 'warn',
+  ERROR = 'error'
 }

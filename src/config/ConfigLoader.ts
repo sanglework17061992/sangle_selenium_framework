@@ -72,7 +72,7 @@ export class ConfigLoader {
    * Get log level from configuration
    */
   getLogLevel(): LogLevel {
-    const level = (process.env.LOG_LEVEL || DEFAULT_CONFIG.LOG_LEVEL).toUpperCase();
+    const level = (process.env.LOG_LEVEL || DEFAULT_CONFIG.LOG_LEVEL).toLowerCase();
     
     if (Object.values(LogLevel).includes(level as LogLevel)) {
       return level as LogLevel;

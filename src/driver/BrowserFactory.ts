@@ -33,15 +33,14 @@ abstract class BaseBrowserFactory implements BrowserFactory {
   protected abstract createBuilder(config: BrowserConfig): Builder;
 
   async createWebDriver(config: BrowserConfig): Promise<WebDriver> {
+    const browserName = this.getBrowserName();
+    
     try {
-      const browserName = this.getBrowserName();
-
       logger.debug(`Creating ${browserName} driver with headless=${config.headless}`);
 
       const builder = this.createBuilder(config);
       return await builder.build();
     } catch (error) {
-      const browserName = this.getBrowserName();
       logger.error(`Failed to create ${browserName} driver: ${error instanceof Error ? error.message : 'Unknown error'}`);
       throw error;
     }

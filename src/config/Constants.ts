@@ -18,7 +18,7 @@ export const FIREFOX_ARGS = {
 // Default configuration values
 export const DEFAULT_CONFIG = {
   BROWSER: BrowserType.CHROME,
-  LOG_LEVEL: 'INFO',
+  LOG_LEVEL: 'info',
   HEADLESS: false,
   NO_SANDBOX: false,
 };
