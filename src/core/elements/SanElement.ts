@@ -57,14 +57,14 @@ export class SanElement {
    * Find and prepare element for interaction or reading
    */
   private async findElement(
-    actionType: ActionType | null,
+    actionType: ActionType,
     options?: ActionOptions
   ): Promise<WebElement> {
     const timeout = options?.timeout ?? this.defaultTimeout;
     const shouldScroll = options?.scroll ?? false;
 
     // Use ElementFinder for the core finding logic
-    const parentWebElement = this.parentElement ? await this.parentElement.findElement(null) : undefined;
+    const parentWebElement = this.parentElement ? await this.parentElement.findElement(ActionType.READ) : undefined;
     const element = await elementFinder.findAndPrepareElement(
       toBy(this.locator),
       this.driver,
@@ -73,8 +73,8 @@ export class SanElement {
       parentWebElement
     );
 
-    // Wait for actionability if action type specified
-    if (actionType && !options?.force) {
+    // Wait for actionability if not force mode
+    if (!options?.force) {
       const startTime = Date.now();
       const remainingTimeout = this.getRemainingTimeout(startTime, timeout);
       await actionabilityChecker.waitUntilReady(actionType, element, remainingTimeout);
@@ -121,7 +121,7 @@ export class SanElement {
    * Get text content with auto-wait
    */
   async getText(options?: ReadOptions): Promise<string> {
-    const element = await this.findElement(null, { timeout: options?.timeout });
+    const element = await this.findElement(ActionType.READ, { timeout: options?.timeout });
     return element.getText();
   }
 
@@ -129,7 +129,7 @@ export class SanElement {
    * Get attribute value with auto-wait
    */
   async getAttribute(name: string, options?: ReadOptions): Promise<string | null> {
-    const element = await this.findElement(null, { timeout: options?.timeout });
+    const element = await this.findElement(ActionType.READ, { timeout: options?.timeout });
     return element.getAttribute(name);
   }
 
@@ -137,7 +137,7 @@ export class SanElement {
    * Check if element is displayed with auto-wait
    */
   async isDisplayed(options?: ReadOptions): Promise<boolean> {
-    const element = await this.findElement(null, { timeout: options?.timeout });
+    const element = await this.findElement(ActionType.READ, { timeout: options?.timeout });
     return element.isDisplayed();
   }
 
@@ -172,7 +172,7 @@ export class SanElement {
    * Check if checkbox/radio is checked
    */
   async isChecked(options?: ReadOptions): Promise<boolean> {
-    const element = await this.findElement(null, { timeout: options?.timeout });
+    const element = await this.findElement(ActionType.READ, { timeout: options?.timeout });
     return element.isSelected();
   }
 
@@ -189,7 +189,7 @@ export class SanElement {
    * Use this when you need manual control over scrolling behavior
    */
   async scrollIntoView(): Promise<void> {
-    const element = await this.findElement(null);
+    const element = await this.findElement(ActionType.READ);
     await elementFinder.scrollIntoView(element, this.driver);
   }
 }

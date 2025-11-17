@@ -1,6 +1,6 @@
 import { By, WebElement, WebDriver } from 'selenium-webdriver';
 import { TIMING } from '../../config/Constants';
-import { sleep, TimeUtils } from '../../utils/TimeUtils';
+import { sleep, getRemainingTimeout } from '../../utils/TimeUtils';
 
 /**
  * Core utility class for finding and preparing elements
@@ -15,7 +15,7 @@ export class ElementFinder {
     timeout: number,
     errorMessage: string
   ): Promise<T> {
-    while (TimeUtils.getRemainingTimeout(startTime, timeout) > 0) {
+    while (getRemainingTimeout(startTime, timeout) > 0) {
       try {
         const result = await operation();
         if (result !== null) return result;

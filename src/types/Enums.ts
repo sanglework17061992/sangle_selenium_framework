@@ -25,7 +25,9 @@ export enum ActionType {
   CLEAR = 'clear',
   CHECK = 'check',
   UNCHECK = 'uncheck',
-  HOVER = 'hover'
+  HOVER = 'hover',
+  // Read operation
+  READ = 'read'
 }
 
 /**

@@ -18,5 +18,6 @@ export class TimeUtils {
   }
 }
 
-// Export convenience function for common usage
+// Export convenience functions for common usage
 export const sleep = TimeUtils.sleep;
+export const getRemainingTimeout = TimeUtils.getRemainingTimeout;
