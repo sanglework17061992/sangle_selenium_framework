@@ -2,6 +2,7 @@ import { WebElement, ThenableWebDriver } from 'selenium-webdriver';
 import { ActionType, Check } from '../../types/Enums';
 import { getActionRequirements } from './ActionConfig';
 import { TIMING } from '../../config/Constants';
+import { sleep, TimeUtils } from '../../utils/TimeUtils';
 
 export { Check } from '../../types/Enums';
 
@@ -17,10 +18,6 @@ export interface ActionabilityOptions {
 export class ActionabilityChecker {
 
   // Helper functions
-  private getRemainingTimeout(startTime: number, totalTimeout: number): number {
-    const elapsed = Date.now() - startTime;
-    return Math.max(0, totalTimeout - elapsed);
-  }
 
   /**
    * Ensure element meets all requirements for the specified action type
@@ -57,7 +54,7 @@ export class ActionabilityChecker {
   async waitUntilReady(actionType: ActionType, element: WebElement, timeout: number = 30000): Promise<void> {
     const startTime = Date.now();
     
-    while (this.getRemainingTimeout(startTime, timeout) > 0) {
+    while (TimeUtils.getRemainingTimeout(startTime, timeout) > 0) {
       try {
         await this.ensure(actionType, element);
         return; // All checks passed
@@ -65,7 +62,7 @@ export class ActionabilityChecker {
         // Continue waiting
       }
       
-      await new Promise(resolve => setTimeout(resolve, TIMING.DEFAULT_RETRY_INTERVAL));
+      await sleep(TIMING.DEFAULT_RETRY_INTERVAL);
     }
     
     // Generate detailed error on timeout
