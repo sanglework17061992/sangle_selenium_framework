@@ -14,17 +14,7 @@ export interface ActionabilityOptions {
  * Uses strategy pattern internally for clean, maintainable code
  */
 export class ActionabilityChecker {
-  private readonly strategies: Record<Check, (element: WebElement) => Promise<void>>;
   private readonly DEFAULT_RETRY_INTERVAL = 100;
-
-  constructor() {
-    this.strategies = {
-      [Check.VISIBLE]: this.checkVisible.bind(this),
-      [Check.STABLE]: this.checkStable.bind(this),
-      [Check.ENABLED]: this.checkEnabled.bind(this),
-      [Check.EDITABLE]: this.checkEditable.bind(this),
-    };
-  }
 
   // Helper functions
   private getRemainingTimeout(startTime: number, totalTimeout: number): number {
@@ -39,11 +29,25 @@ export class ActionabilityChecker {
     const { checks } = getActionRequirements(actionType);
 
     for (const check of checks) {
-      const checkFn = this.strategies[check];
-      if (!checkFn) {
+      await this.runCheck(check, element);
+    }
+  }
+
+  /**
+   * Run a specific check on an element
+   */
+  private async runCheck(check: Check, element: WebElement): Promise<void> {
+    switch (check) {
+      case Check.VISIBLE:
+        return this.checkVisible(element);
+      case Check.STABLE:
+        return this.checkStable(element);
+      case Check.ENABLED:
+        return this.checkEnabled(element);
+      case Check.EDITABLE:
+        return this.checkEditable(element);
+      default:
         throw new Error(`Unknown actionability check: ${check}`);
-      }
-      await checkFn(element);
     }
   }
 
@@ -70,7 +74,7 @@ export class ActionabilityChecker {
     
     for (const check of checks) {
       try {
-        await this.strategies[check](element);
+        await this.runCheck(check, element);
       } catch (error: any) {
         failedChecks.push(`${check} (${error.message})`);
       }
