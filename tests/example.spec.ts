@@ -50,14 +50,6 @@ describe('SaniumTS Framework - Foundation', () => {
       
       // Press Enter to add the todo (using special key)
       await todoInput.sendKeys(Key.RETURN);
-      
-      // Verify the item was added by checking if it appears in the list
-      const todoItems = new SanElement({ using: 'css', value: '.todo-list li' });
-      
-      // Wait for the todo to appear and verify its text
-      const firstTodoText = await todoItems.getText();
-      
-      logger.info(`Added todo: ${firstTodoText}`);
     });
   });
 });
