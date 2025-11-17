@@ -12,26 +12,25 @@ export interface ActionabilityOptions {
 }
 
 /**
- * Single class to handle all element actionability checks
- * Uses strategy pattern internally for clean, maintainable code
+ * Class to handle all element actionability checks
  */
 export class ActionabilityChecker {
 
   /**
-   * Ensure element meets all requirements for the specified action type
+   * Validate that element meets all requirements for the specified action type
    */
-  async ensure(actionType: ActionType, element: WebElement): Promise<void> {
+  async validateActionRequirements(actionType: ActionType, element: WebElement): Promise<void> {
     const { checks } = getActionRequirements(actionType);
 
     for (const check of checks) {
-      await this.runCheck(check, element);
+      await this.executeElementCheck(check, element);
     }
   }
 
   /**
-   * Run a specific check on an element
+   * Execute a specific check on an element
    */
-  private async runCheck(check: Check, element: WebElement): Promise<void> {
+  private async executeElementCheck(check: Check, element: WebElement): Promise<void> {
     switch (check) {
       case Check.VISIBLE:
         return this.checkVisible(element);
@@ -54,7 +53,7 @@ export class ActionabilityChecker {
     
     while (getRemainingTimeout(startTime, timeout) > 0) {
       try {
-        await this.ensure(actionType, element);
+        await this.validateActionRequirements(actionType, element);
         return; // All checks passed
       } catch {
         // Continue waiting
@@ -69,7 +68,7 @@ export class ActionabilityChecker {
     
     for (const check of checks) {
       try {
-        await this.runCheck(check, element);
+        await this.executeElementCheck(check, element);
       } catch (error: any) {
         failedChecks.push(`${check} (${error.message})`);
       }
