@@ -2,7 +2,8 @@ import { WebDriver } from 'selenium-webdriver';
 import { BrowserType } from '../types/Enums';
 import { configLoader, ConfigLoader } from '../config/ConfigLoader';
 import { logger, Logger } from '../utils/Logger';
-import { BrowserFactory, DriverOptions, ChromeFactory, FirefoxFactory } from './BrowserFactory';
+import { BrowserFactory, ChromeFactory, FirefoxFactory } from './BrowserFactory';
+import { BrowserConfig } from '../types/ConfigTypes';
 import { BrowserRegistry } from './BrowserRegistry';
 
 /**
@@ -41,7 +42,7 @@ export class DriverManager {
   /**
    * Create driver with configuration
    */
-  async createDriver(name?: string, options?: DriverOptions): Promise<WebDriver> {
+  async createDriver(name?: string, additionalConfig?: Partial<BrowserConfig>): Promise<WebDriver> {
     try {
       const browserConfig = this.config.getBrowserConfig();
       const browserName = name || browserConfig.name;
@@ -49,7 +50,13 @@ export class DriverManager {
       this.log.info(`Initializing ${browserName} driver`);
 
       const factory = this.registry.get(browserName);
-      const driver = await factory.createWebDriver(browserConfig, options);
+      
+      // Merge additional config if provided
+      const finalConfig = additionalConfig 
+        ? { ...browserConfig, ...additionalConfig }
+        : browserConfig;
+        
+      const driver = await factory.createWebDriver(finalConfig);
       
       this.currentDriver = driver;
       this.log.info(`${browserName} driver created successfully`);

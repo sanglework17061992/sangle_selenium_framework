@@ -7,4 +7,5 @@ export interface BrowserConfig {
   name: BrowserType;
   headless: boolean;
   noSandbox: boolean;
+  args?: string[];
 }

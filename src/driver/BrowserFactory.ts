@@ -4,16 +4,10 @@ import firefox from 'selenium-webdriver/firefox.js';
 import { BrowserType } from '../types/Enums';
 import { BrowserConfig } from '../types/ConfigTypes';
 import { logger } from '../utils/Logger';
-import { CHROME_ARGS, FIREFOX_ARGS } from '../config/Constants';
-
-export interface DriverOptions {
-  headless?: boolean;
-  noSandbox?: boolean;
-  args?: string[];
-}
+import { FIREFOX_ARGS, CHROME_ARGS } from '../config/Constants';
 
 export interface BrowserFactory {
-  createWebDriver(config: BrowserConfig, options?: DriverOptions): Promise<WebDriver>;
+  createWebDriver(config: BrowserConfig): Promise<WebDriver>;
 }
 
 /**
@@ -36,31 +30,15 @@ export interface BrowserFactory {
  */
 abstract class BaseBrowserFactory implements BrowserFactory {
   protected abstract getBrowserName(): string;
-  protected abstract createBuilder(config: BrowserConfig, options?: DriverOptions): Builder;
+  protected abstract createBuilder(config: BrowserConfig): Builder;
 
-  /**
-   * Validate and merge configuration options
-   */
-  protected mergeConfig(config: BrowserConfig, options?: DriverOptions) {
-    if (!config) {
-      throw new Error('Browser configuration is required');
-    }
-
-    return {
-      headless: config.headless || options?.headless || false,
-      noSandbox: config.noSandbox || options?.noSandbox || false,
-      args: options?.args || []
-    };
-  }
-
-  async createWebDriver(config: BrowserConfig, options?: DriverOptions): Promise<WebDriver> {
+  async createWebDriver(config: BrowserConfig): Promise<WebDriver> {
     try {
-      const merged = this.mergeConfig(config, options);
       const browserName = this.getBrowserName();
 
-      logger.debug(`Creating ${browserName} driver with headless=${merged.headless}`);
+      logger.debug(`Creating ${browserName} driver with headless=${config.headless}`);
 
-      const builder = this.createBuilder(config, options);
+      const builder = this.createBuilder(config);
       return await builder.build();
     } catch (error) {
       const browserName = this.getBrowserName();
@@ -78,23 +56,22 @@ export class ChromeFactory extends BaseBrowserFactory {
     return BrowserType.CHROME;
   }
 
-  protected createBuilder(config: BrowserConfig, options?: DriverOptions): Builder {
+  protected createBuilder(config: BrowserConfig): Builder {
     const chromeOptions = new chrome.Options();
-    const merged = this.mergeConfig(config, options);
 
     // Apply headless mode
-    if (merged.headless) {
+    if (config.headless) {
       chromeOptions.addArguments(CHROME_ARGS.HEADLESS);
     }
 
     // Apply Chrome-specific no-sandbox
-    if (merged.noSandbox) {
+    if (config.noSandbox) {
       chromeOptions.addArguments(CHROME_ARGS.NO_SANDBOX, CHROME_ARGS.DISABLE_DEV_SHM);
     }
 
     // Add additional arguments
-    if (merged.args.length > 0) {
-      chromeOptions.addArguments(...merged.args);
+    if (config.args && config.args.length > 0) {
+      chromeOptions.addArguments(...config.args);
     }
 
     return new Builder().forBrowser(this.getBrowserName()).setChromeOptions(chromeOptions);
@@ -109,18 +86,17 @@ export class FirefoxFactory extends BaseBrowserFactory {
     return BrowserType.FIREFOX;
   }
 
-  protected createBuilder(config: BrowserConfig, options?: DriverOptions): Builder {
+  protected createBuilder(config: BrowserConfig): Builder {
     const firefoxOptions = new firefox.Options();
-    const merged = this.mergeConfig(config, options);
 
     // Apply headless mode
-    if (merged.headless) {
+    if (config.headless) {
       firefoxOptions.addArguments(FIREFOX_ARGS.HEADLESS);
     }
 
     // Add additional arguments
-    if (merged.args.length > 0) {
-      firefoxOptions.addArguments(...merged.args);
+    if (config.args && config.args.length > 0) {
+      firefoxOptions.addArguments(...config.args);
     }
 
     return new Builder().forBrowser(this.getBrowserName()).setFirefoxOptions(firefoxOptions);
