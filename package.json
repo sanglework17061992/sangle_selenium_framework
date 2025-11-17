@@ -1,0 +1,35 @@
+{
+  "name": "sanium-ts-selenium",
+  "version": "0.1.0",
+  "description": "TypeScript Selenium Framework with Playwright-style Auto-Wait",
+  "type": "commonjs",
+  "scripts": {
+    "build": "tsc",
+    "test": "NODE_ENV=test mocha",
+    "test:dev": "mocha",
+    "test:example": "mocha tests/example.spec.ts"
+  },
+  "keywords": [
+    "selenium",
+    "typescript",
+    "automation",
+    "testing"
+  ],
+  "author": "SaniumTS Developer",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "selenium-webdriver": "^4.21.0",
+    "winston": "^3.18.3"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/selenium-webdriver": "^4.1.0",
+    "@types/winston": "^2.4.4",
+    "chromedriver": "^141.0.6",
+    "geckodriver": "^4.1.0",
+    "mocha": "^10.8.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
+  }
+}
