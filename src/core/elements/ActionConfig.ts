@@ -2,7 +2,7 @@ import { Check, ActionType } from '../../types/Enums';
 
 /**
  * Action requirements for each action type
- * Note: Check.VISIBLE is implicitly added for all actions
+ * Note: Check.VISIBLE is always checked implicitly in ActionabilityChecker
  */
 const ACTION_CHECKS: Partial<Record<ActionType, readonly Check[]>> = {
   [ActionType.CLICK]: [Check.STABLE, Check.ENABLED],
@@ -13,11 +13,9 @@ const ACTION_CHECKS: Partial<Record<ActionType, readonly Check[]>> = {
 
 /**
  * Get required checks for an action type
- * Note: Check.VISIBLE is implicitly added for all actions
+ * Note: Check.VISIBLE is always checked implicitly in ActionabilityChecker
  */
 export function getActionRequirements(actionType: ActionType): { checks: readonly Check[] } {
   const explicitChecks = ACTION_CHECKS[actionType] ?? [];
-  // VISIBLE is implicit for all actions
-  const allChecks: Check[] = [Check.VISIBLE, ...explicitChecks];
-  return { checks: allChecks };
+  return { checks: explicitChecks };
 }

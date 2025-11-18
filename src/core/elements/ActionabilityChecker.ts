@@ -19,10 +19,14 @@ export class ActionabilityChecker {
 
   /**
    * Validate that element meets all requirements for the specified action type
+   * Note: Check.VISIBLE is always checked first (implicit for all actions)
    */
   async validateActionRequirements(actionType: ActionType, element: WebElement): Promise<void> {
+    // Always check visibility first (implicit for all actions)
+    await this.checkVisible(element);
+    
+    // Then check explicit requirements for the action type
     const { checks } = getActionRequirements(actionType);
-
     for (const check of checks) {
       await this.executeElementCheck(check, element);
     }
