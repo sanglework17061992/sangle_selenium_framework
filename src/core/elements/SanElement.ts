@@ -1,4 +1,4 @@
-import { By, WebElement } from 'selenium-webdriver';
+import { WebElement } from 'selenium-webdriver';
 import { configLoader } from '../../config/ConfigLoader';
 import { defaultDriverManager } from '../../driver/DriverManager';
 import { actionabilityChecker } from './ActionabilityChecker';
@@ -18,17 +18,6 @@ export interface ReadOptions {
   timeout?: number;
 }
 
-function toBy(locator: Locator) {
-  switch (locator.using) {
-    case 'css': return By.css(locator.value);
-    case 'xpath': return By.xpath(locator.value);
-    case 'id': return By.id(locator.value);
-    case 'name': return By.name(locator.value);
-    case 'class': return By.className(locator.value);
-    default: throw new Error('Unsupported locator');
-  }
-}
-
 export class SanElement {
   private readonly locator: Locator;
   private readonly defaultTimeout: number;
@@ -38,6 +27,23 @@ export class SanElement {
     this.locator = locator;
     this.defaultTimeout = defaultTimeout ?? configLoader.getTimeoutConfig().element;
     this.parentElement = parentElement;
+  }
+
+  // Factory methods for clean API
+  static css(selector: string, timeout?: number): SanElement {
+    return new SanElement({ using: 'css', value: selector }, timeout);
+  }
+
+  static xpath(xpathExpression: string, timeout?: number): SanElement {
+    return new SanElement({ using: 'xpath', value: xpathExpression }, timeout);
+  }
+
+  static id(elementId: string, timeout?: number): SanElement {
+    return new SanElement({ using: 'id', value: elementId }, timeout);
+  }
+
+  static className(className: string, timeout?: number): SanElement {
+    return new SanElement({ using: 'class', value: className }, timeout);
   }
 
   private get driver() {
@@ -65,7 +71,7 @@ export class SanElement {
     // Use ElementFinder for the core finding logic
     const parentWebElement = this.parentElement ? await this.parentElement.findElement(ActionType.READ) : undefined;
     const element = await elementFinder.locateAndPrepareElement(
-      toBy(this.locator),
+      elementFinder.toBy(this.locator),
       this.driver,
       timeout,
       parentWebElement

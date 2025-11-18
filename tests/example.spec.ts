@@ -41,8 +41,8 @@ describe('SaniumTS Framework - Foundation', () => {
       // Navigate to TodoMVC app
       await driver.get(baseUrl);
 
-      // Create SanElement for the todo input field
-      const todoInput = new SanElement({ using: 'css', value: '.new-todo' });
+      // Create SanElement for the todo input field using clean API
+      const todoInput = SanElement.css('.new-todo');
       
       // Type a new todo item - SanElement will auto-wait for the input to be ready
       const todoText = 'Test todo item with SanElement';

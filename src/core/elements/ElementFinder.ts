@@ -1,12 +1,27 @@
 import { By, WebElement, WebDriver } from 'selenium-webdriver';
 import { TIMING } from '../../config/Constants';
 import { sleep, getRemainingTimeout } from '../../utils/TimeUtils';
+import { Locator } from './SanElement';
 
 /**
  * ElementFinder - Locates elements with retry logic and stale element recovery
  * Finds elements and waits for visibility with automatic re-finding on stale references
  */
 export class ElementFinder {
+
+  /**
+   * Convert Locator to Selenium By object
+   */
+  toBy(locator: Locator): By {
+    switch (locator.using) {
+      case 'css': return By.css(locator.value);
+      case 'xpath': return By.xpath(locator.value);
+      case 'id': return By.id(locator.value);
+      case 'name': return By.name(locator.value);
+      case 'class': return By.className(locator.value);
+      default: throw new Error('Unsupported locator');
+    }
+  }
 
   /**
    * Wait for element to be visible with stale element recovery
@@ -55,6 +70,18 @@ export class ElementFinder {
 
     // Locate element and wait for visibility (with stale element recovery)
     return this.waitUntilVisible(by, driver, startTime, timeout, parentElement);
+  }
+
+  /**
+   * Locate and prepare element using Locator abstraction (convenience method)
+   */
+  async locateAndPrepareElementByLocator(
+    locator: Locator,
+    driver: WebDriver,
+    timeout: number,
+    parentElement?: WebElement
+  ): Promise<WebElement> {
+    return this.locateAndPrepareElement(this.toBy(locator), driver, timeout, parentElement);
   }
 }
 
