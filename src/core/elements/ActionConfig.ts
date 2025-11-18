@@ -1,19 +1,23 @@
 import { Check, ActionType } from '../../types/Enums';
 
-// Simple array-based action requirements mapping
-const ACTION_CHECKS: Array<[ActionType, readonly Check[]]> = [
-  // Interaction actions - require full checks
-  [ActionType.CLICK, [Check.VISIBLE, Check.STABLE, Check.ENABLED]],
-  [ActionType.CHECK, [Check.VISIBLE, Check.STABLE, Check.ENABLED]],
-  [ActionType.UNCHECK, [Check.VISIBLE, Check.STABLE, Check.ENABLED]],
-  [ActionType.HOVER, [Check.VISIBLE, Check.STABLE]],
-  [ActionType.CLEAR, [Check.VISIBLE, Check.ENABLED, Check.EDITABLE]],
-  [ActionType.TYPE, [Check.VISIBLE, Check.ENABLED, Check.EDITABLE]],
-  // Generic read action - only needs visibility
-  [ActionType.READ, [Check.VISIBLE]],
-];
+/**
+ * Action requirements for each action type
+ * Note: Check.VISIBLE is implicitly added for all actions
+ */
+const ACTION_CHECKS: Partial<Record<ActionType, readonly Check[]>> = {
+  [ActionType.CLICK]: [Check.STABLE, Check.ENABLED],
+  [ActionType.TYPE]: [Check.EDITABLE],
+  [ActionType.READ]: [],
+  // TODO: Implement other actions (CHECK, UNCHECK, HOVER, CLEAR)
+};
 
+/**
+ * Get required checks for an action type
+ * Note: Check.VISIBLE is implicitly added for all actions
+ */
 export function getActionRequirements(actionType: ActionType): { checks: readonly Check[] } {
-  const found = ACTION_CHECKS.find(([type]) => type === actionType);
-  return { checks: found ? found[1] : [] };
+  const explicitChecks = ACTION_CHECKS[actionType] ?? [];
+  // VISIBLE is implicit for all actions
+  const allChecks: Check[] = [Check.VISIBLE, ...explicitChecks];
+  return { checks: allChecks };
 }
