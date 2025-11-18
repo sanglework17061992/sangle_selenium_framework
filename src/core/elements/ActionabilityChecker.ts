@@ -40,10 +40,6 @@ export class ActionabilityChecker {
     let errorMessage = '';
 
     switch (check) {
-      case Check.VISIBLE:
-        passed = await this.checkVisible(element);
-        errorMessage = 'Element is not visible';
-        break;
       case Check.STABLE:
         passed = await this.checkStable(element);
         errorMessage = 'Element position is not stable';
