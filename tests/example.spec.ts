@@ -1,5 +1,4 @@
 import { describe, it, before, after } from 'mocha';
-import { Key } from 'selenium-webdriver';
 import driverManager from '../src/driver/DriverManager';
 import { configLoader } from '../src/config/ConfigLoader';
 import { logger } from '../src/utils/Logger';

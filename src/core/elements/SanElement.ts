@@ -48,10 +48,6 @@ export class SanElement {
     return defaultDriverManager.getDriver();
   }
 
-  private getActions() {
-    return this.driver.actions({ bridge: true });
-  }
-
   private getRemainingTimeout(startTime: number, totalTimeout: number): number {
     const elapsed = Date.now() - startTime;
     return Math.max(0, totalTimeout - elapsed);
@@ -67,7 +63,7 @@ export class SanElement {
     const timeout = options?.timeout ?? configLoader.getTimeoutConfig().element;
 
     // Use ElementFinder for the core finding logic
-    const parentWebElement = this.parentElement ? await this.parentElement.findElement(ActionType.READ) : undefined;
+    const parentWebElement = this.parentElement ? await this.parentElement.findVisibleElement() : undefined;
     const element = await elementFinder.locateAndPrepareElement(
       elementFinder.toBy(this.locator),
       this.driver,
@@ -85,13 +81,34 @@ export class SanElement {
     return element;
   }
 
+  /**
+   * Find element and ensure it's clickable
+   */
+  private async findClickableElement(options?: ActionOptions): Promise<WebElement> {
+    return this.findElement(ActionType.CLICK, options);
+  }
+
+  /**
+   * Find element and ensure it's editable
+   */
+  private async findEditableElement(options?: ActionOptions): Promise<WebElement> {
+    return this.findElement(ActionType.TYPE, options);
+  }
+
+  /**
+   * Find element and ensure it's visible
+   */
+  private async findVisibleElement(options?: ActionOptions): Promise<WebElement> {
+    return this.findElement(ActionType.READ, options);
+  }
+
   // Public API methods - Core interactions
 
   /**
    * Click the element with auto-wait
    */
   async click(options?: ActionOptions): Promise<void> {
-    const element = await this.findElement(ActionType.CLICK, options);
+    const element = await this.findClickableElement(options);
     await element.click();
   }
 
@@ -103,7 +120,7 @@ export class SanElement {
       throw new Error(`Cannot type empty text into element with locator: ${JSON.stringify(this.locator)}`);
     }
 
-    const element = await this.findElement(ActionType.TYPE, options);
+    const element = await this.findEditableElement(options);
     await element.sendKeys(text);
   }
 
@@ -111,7 +128,7 @@ export class SanElement {
    * Get text content with auto-wait
    */
   async getText(options?: ReadOptions): Promise<string> {
-    const element = await this.findElement(ActionType.READ, { timeout: options?.timeout });
+    const element = await this.findVisibleElement({ timeout: options?.timeout });
     return element.getText();
   }
 
@@ -123,7 +140,7 @@ export class SanElement {
   // - check()/uncheck(): Toggle checkbox/radio
   // - isChecked(): Check if checkbox/radio is selected
   // - hover(): Hover over element
-  // - scrollIntoView(): Manually scroll element into view
+  // - scrollIntoView(): Manually scroll element intoTimeout now only configured per-action via  view
 }
 
 export default SanElement;
