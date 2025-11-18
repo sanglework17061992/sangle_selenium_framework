@@ -83,7 +83,7 @@ export class SanElement {
     return element;
   }
 
-  // Public API methods
+  // Public API methods - Core interactions
 
   /**
    * Click the element with auto-wait
@@ -106,18 +106,6 @@ export class SanElement {
   }
 
   /**
-   * Send special keys to the element with auto-wait
-   */
-  async sendKeys(keys: string, options?: ActionOptions): Promise<void> {
-    if (!keys) {
-      throw new Error(`Cannot send empty keys to element with locator: ${JSON.stringify(this.locator)}`);
-    }
-
-    const element = await this.findElement(ActionType.TYPE, options);
-    await element.sendKeys(keys);
-  }
-
-  /**
    * Get text content with auto-wait
    */
   async getText(options?: ReadOptions): Promise<string> {
@@ -125,73 +113,15 @@ export class SanElement {
     return element.getText();
   }
 
-  /**
-   * Get attribute value with auto-wait
-   */
-  async getAttribute(name: string, options?: ReadOptions): Promise<string | null> {
-    const element = await this.findElement(ActionType.READ, { timeout: options?.timeout });
-    return element.getAttribute(name);
-  }
-
-  /**
-   * Check if element is displayed with auto-wait
-   */
-  async isDisplayed(options?: ReadOptions): Promise<boolean> {
-    const element = await this.findElement(ActionType.READ, { timeout: options?.timeout });
-    return element.isDisplayed();
-  }
-
-  /**
-   * Clear the element with auto-wait
-   */
-  async clear(options?: ActionOptions): Promise<void> {
-    const element = await this.findElement(ActionType.CLEAR, options);
-    await element.clear();
-  }
-
-  /**
-   * Check/uncheck checkbox or radio button
-   */
-  async check(options?: ActionOptions): Promise<void> {
-    const element = await this.findElement(ActionType.CHECK, options);
-    const isChecked = await element.isSelected();
-    if (!isChecked) {
-      await element.click();
-    }
-  }
-
-  async uncheck(options?: ActionOptions): Promise<void> {
-    const element = await this.findElement(ActionType.UNCHECK, options);
-    const isChecked = await element.isSelected();
-    if (isChecked) {
-      await element.click();
-    }
-  }
-
-  /**
-   * Check if checkbox/radio is checked
-   */
-  async isChecked(options?: ReadOptions): Promise<boolean> {
-    const element = await this.findElement(ActionType.READ, { timeout: options?.timeout });
-    return element.isSelected();
-  }
-
-  /**
-   * Hover over the element with auto-wait
-   */
-  async hover(options?: ActionOptions): Promise<void> {
-    const element = await this.findElement(ActionType.HOVER, options);
-    await this.getActions().move({ origin: element }).perform();
-  }
-
-  /**
-   * Explicitly scroll element into view
-   * Use this when you need manual control over scrolling behavior
-   */
-  async scrollIntoView(): Promise<void> {
-    const element = await this.findElement(ActionType.READ);
-    await elementFinder.scrollIntoView(element, this.driver);
-  }
+  // TODO: Additional methods for future enhancement
+  // - sendKeys(keys): Send special keys
+  // - getAttribute(name): Get attribute value
+  // - isDisplayed(): Check if element is visible
+  // - clear(): Clear input field
+  // - check()/uncheck(): Toggle checkbox/radio
+  // - isChecked(): Check if checkbox/radio is selected
+  // - hover(): Hover over element
+  // - scrollIntoView(): Manually scroll element into view
 }
 
 export default SanElement;

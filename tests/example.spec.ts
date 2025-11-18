@@ -47,9 +47,7 @@ describe('SaniumTS Framework - Foundation', () => {
       // Type a new todo item - SanElement will auto-wait for the input to be ready
       const todoText = 'Test todo item with SanElement';
       await todoInput.type(todoText);
-      
-      // Press Enter to add the todo (using special key)
-      await todoInput.sendKeys(Key.RETURN);
+    
     });
   });
 });

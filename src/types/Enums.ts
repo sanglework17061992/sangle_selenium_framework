@@ -51,3 +51,25 @@ export enum LocatorType {
   NAME = 'name',
   CLASS = 'class'
 }
+
+/**
+ * Configuration value types for parsing
+ */
+export enum ConfigType {
+  STRING = 'string',
+  NUMBER = 'number',
+  BOOLEAN = 'boolean'
+}
+
+/**
+ * Configuration keys for environment variables
+ * Add new keys here when extending configuration
+ */
+export enum ConfigKey {
+  BROWSER = 'BROWSER',
+  HEADLESS = 'HEADLESS',
+  NO_SANDBOX = 'NO_SANDBOX',
+  BASE_URL = 'BASE_URL',
+  LOG_LEVEL = 'LOG_LEVEL',
+  ELEMENT_TIMEOUT = 'ELEMENT_TIMEOUT'
+}
