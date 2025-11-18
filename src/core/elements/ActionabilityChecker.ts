@@ -165,15 +165,22 @@ export class ActionabilityChecker {
         const el = arguments[0];
         const tagName = el.tagName.toLowerCase();
         
+        // Check disabled state first - throw immediately if disabled
+        if (el.disabled) {
+          return false;
+        }
+        
         // Simple editable checks for common cases
         if (tagName === 'input') {
           const type = (el.type || 'text').toLowerCase();
           const isTextInput = ['text', 'password', 'email', 'search', 'tel', 'url'].includes(type);
-          return isTextInput && !el.readOnly && !el.disabled;
+          const isReadOnly = el.readOnly || el.getAttribute('aria-readonly') === 'true';
+          return isTextInput && !isReadOnly;
         }
         
         if (tagName === 'textarea') {
-          return !el.readOnly && !el.disabled;
+          const isReadOnly = el.readOnly || el.getAttribute('aria-readonly') === 'true';
+          return !isReadOnly;
         }
         
         // ContentEditable
