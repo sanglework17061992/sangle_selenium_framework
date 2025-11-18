@@ -44,11 +44,14 @@ export class ElementFinder {
   ): Promise<WebElement> {
     return this.retryUntilTimeout(
       async () => {
-        if (parentElement) {
-          const elements = await parentElement.findElements(by);
-          return elements.length > 0 ? elements[0] : null;
-        } else {
-          return driver.findElement(by);
+        try {
+          if (parentElement) {
+            return await parentElement.findElement(by);
+          } else {
+            return await driver.findElement(by);
+          }
+        } catch {
+          return null; // Element not found
         }
       },
       startTime,
