@@ -72,32 +72,21 @@ export class ActionabilityChecker {
     const effectiveTimeout = timeout ?? configLoader.getTimeoutConfig().element;
     const startTime = Date.now();
     
+    let lastError: Error | null = null;
+    
     while (getRemainingTimeout(startTime, effectiveTimeout) > 0) {
       try {
         await this.validateActionRequirements(actionType, element);
         return; // All checks passed
-      } catch {
-        // Continue waiting
-      }
-      
-      await sleep(TIMING.DEFAULT_RETRY_INTERVAL);
-    }
-    
-    // Generate detailed error on timeout
-    const { checks } = getActionRequirements(actionType);
-    const failedChecks: string[] = [];
-    
-    for (const check of checks) {
-      try {
-        await this.executeElementCheck(check, element);
       } catch (error: any) {
-        failedChecks.push(`${check} (${error.message})`);
+        lastError = error;
+        await sleep(TIMING.DEFAULT_RETRY_INTERVAL);
       }
     }
     
     throw new Error(
       `Element not ready for ${actionType} within ${effectiveTimeout}ms. ` +
-      `Failed: ${failedChecks.join(', ')}`
+      `${lastError?.message || 'Unknown error'}`
     );
   }
 
