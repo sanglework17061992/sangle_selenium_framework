@@ -116,10 +116,6 @@ export class SanElement {
    * Type text into the element with auto-wait
    */
   async type(text: string, options?: ActionOptions): Promise<void> {
-    if (!text) {
-      throw new Error(`Cannot type empty text into element with locator: ${JSON.stringify(this.locator)}`);
-    }
-
     const element = await this.findEditableElement(options);
     await element.sendKeys(text);
   }
