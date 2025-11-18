@@ -127,7 +127,7 @@ export class ActionabilityChecker {
 
       const first = await getPosition();
       // Wait to ensure element is truly stable
-      await sleep(TIMING.DEFAULT_RETRY_INTERVAL);
+      await sleep(TIMING.STABILITY_CHECK_DELAY);
       const second = await getPosition();
 
       return (

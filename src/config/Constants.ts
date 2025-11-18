@@ -27,4 +27,5 @@ export const DEFAULT_CONFIG = {
 // Framework timing constants
 export const TIMING = {
   DEFAULT_RETRY_INTERVAL: 100,
+  STABILITY_CHECK_DELAY: 250,
 } as const;
