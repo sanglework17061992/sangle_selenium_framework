@@ -33,20 +33,35 @@ export class ActionabilityChecker {
   }
 
   /**
-   * Execute a specific check on an element
+   * Execute a specific check on an element and throw error if failed
    */
   private async executeElementCheck(check: Check, element: WebElement): Promise<void> {
+    let passed = false;
+    let errorMessage = '';
+
     switch (check) {
       case Check.VISIBLE:
-        return this.checkVisible(element);
+        passed = await this.checkVisible(element);
+        errorMessage = 'Element is not visible';
+        break;
       case Check.STABLE:
-        return this.checkStable(element);
+        passed = await this.checkStable(element);
+        errorMessage = 'Element position is not stable';
+        break;
       case Check.ENABLED:
-        return this.checkEnabled(element);
+        passed = await this.checkEnabled(element);
+        errorMessage = 'Element is not enabled';
+        break;
       case Check.EDITABLE:
-        return this.checkEditable(element);
+        passed = await this.checkEditable(element);
+        errorMessage = 'Element is not editable';
+        break;
       default:
         throw new Error(`Unknown actionability check: ${check}`);
+    }
+
+    if (!passed) {
+      throw new Error(errorMessage);
     }
   }
 
@@ -90,93 +105,101 @@ export class ActionabilityChecker {
   // Internal check methods
   // -----------------------------------------------------
 
-  private async checkVisible(element: WebElement): Promise<void> {
-    if (!(await element.isDisplayed())) {
-      throw new Error('Element is not displayed');
-    }
+  private async checkVisible(element: WebElement): Promise<boolean> {
+    try {
+      if (!(await element.isDisplayed())) {
+        return false;
+      }
 
-    const rect = await element.getRect();
-    if (rect.width === 0 || rect.height === 0) {
-      throw new Error('Element has zero size');
-    }
-
-    const driver = element.getDriver() as ThenableWebDriver;
-    const visibility = await driver.executeScript<string>(
-      'return window.getComputedStyle(arguments[0]).visibility;',
-      element
-    );
-    
-    if (visibility === 'hidden') {
-      throw new Error('Element visibility is hidden');
-    }
-  }
-
-  private async checkStable(element: WebElement): Promise<void> {
-    const getPosition = async () => {
       const rect = await element.getRect();
-      return {
-        x: Math.round(rect.x),
-        y: Math.round(rect.y),
-        width: Math.round(rect.width),
-        height: Math.round(rect.height)
+      if (rect.width === 0 || rect.height === 0) {
+        return false;
+      }
+
+      const driver = element.getDriver() as ThenableWebDriver;
+      const visibility = await driver.executeScript<string>(
+        'return window.getComputedStyle(arguments[0]).visibility;',
+        element
+      );
+      
+      return visibility !== 'hidden';
+    } catch {
+      return false;
+    }
+  }
+
+  private async checkStable(element: WebElement): Promise<boolean> {
+    try {
+      const getPosition = async () => {
+        const rect = await element.getRect();
+        return {
+          x: Math.round(rect.x),
+          y: Math.round(rect.y),
+          width: Math.round(rect.width),
+          height: Math.round(rect.height)
+        };
       };
-    };
 
-    const first = await getPosition();
-    const second = await getPosition();
+      const first = await getPosition();
+      const second = await getPosition();
 
-    if (
-      first.x !== second.x ||
-      first.y !== second.y ||
-      first.width !== second.width ||
-      first.height !== second.height
-    ) {
-      throw new Error('Element position is not stable');
+      return (
+        first.x === second.x &&
+        first.y === second.y &&
+        first.width === second.width &&
+        first.height === second.height
+      );
+    } catch {
+      return false;
     }
   }
 
-  private async checkEnabled(element: WebElement): Promise<void> {
-    if (!(await element.isEnabled())) {
-      throw new Error('Element is disabled');
-    }
+  private async checkEnabled(element: WebElement): Promise<boolean> {
+    try {
+      if (!(await element.isEnabled())) {
+        return false;
+      }
 
-    const driver = element.getDriver() as ThenableWebDriver;
-    const ariaDisabled = await driver.executeScript<boolean>(
-      "return arguments[0].getAttribute('aria-disabled') === 'true';",
-      element
-    );
+      const driver = element.getDriver() as ThenableWebDriver;
+      const ariaDisabled = await driver.executeScript<boolean>(
+        "return arguments[0].getAttribute('aria-disabled') === 'true';",
+        element
+      );
 
-    if (ariaDisabled) {
-      throw new Error('Element is aria-disabled');
+      return !ariaDisabled;
+    } catch {
+      return false;
     }
   }
 
-  private async checkEditable(element: WebElement): Promise<void> {
-    const driver = element.getDriver() as ThenableWebDriver;
-    const result = await driver.executeScript<boolean>(
-      `
-      const el = arguments[0];
-      const tagName = el.tagName.toLowerCase();
-      
-      // Simple editable checks for common cases
-      if (tagName === 'input') {
-        const type = (el.type || 'text').toLowerCase();
-        const isTextInput = ['text', 'password', 'email', 'search', 'tel', 'url'].includes(type);
-        return isTextInput && !el.readOnly && !el.disabled;
-      }
-      
-      if (tagName === 'textarea') {
-        return !el.readOnly && !el.disabled;
-      }
-      
-      // ContentEditable
-      return el.contentEditable === 'true';
-      `,
-      element
-    );
+  private async checkEditable(element: WebElement): Promise<boolean> {
+    try {
+      const driver = element.getDriver() as ThenableWebDriver;
+      const result = await driver.executeScript<boolean>(
+        `
+        const el = arguments[0];
+        const tagName = el.tagName.toLowerCase();
+        
+        // Simple editable checks for common cases
+        if (tagName === 'input') {
+          const type = (el.type || 'text').toLowerCase();
+          const isTextInput = ['text', 'password', 'email', 'search', 'tel', 'url'].includes(type);
+          return isTextInput && !el.readOnly && !el.disabled;
+        }
+        
+        if (tagName === 'textarea') {
+          return !el.readOnly && !el.disabled;
+        }
+        
+        // ContentEditable
+        return el.contentEditable === 'true';
+        `,
+        element
+      );
 
-    if (!result) {
-      throw new Error('Element is not editable');
+      return result;
+    } catch {
+      return false;
     }
   }
 }
