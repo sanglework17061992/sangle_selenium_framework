@@ -20,30 +20,28 @@ export interface ReadOptions {
 
 export class SanElement {
   private readonly locator: Locator;
-  private readonly defaultTimeout: number;
   private readonly parentElement?: SanElement;
 
-  constructor(locator: Locator, defaultTimeout?: number, parentElement?: SanElement) {
+  constructor(locator: Locator, parentElement?: SanElement) {
     this.locator = locator;
-    this.defaultTimeout = defaultTimeout ?? configLoader.getTimeoutConfig().element;
     this.parentElement = parentElement;
   }
 
   // Factory methods for clean API
-  static css(selector: string, timeout?: number): SanElement {
-    return new SanElement({ using: 'css', value: selector }, timeout);
+  static css(selector: string): SanElement {
+    return new SanElement({ using: 'css', value: selector });
   }
 
-  static xpath(xpathExpression: string, timeout?: number): SanElement {
-    return new SanElement({ using: 'xpath', value: xpathExpression }, timeout);
+  static xpath(xpathExpression: string): SanElement {
+    return new SanElement({ using: 'xpath', value: xpathExpression });
   }
 
-  static id(elementId: string, timeout?: number): SanElement {
-    return new SanElement({ using: 'id', value: elementId }, timeout);
+  static id(elementId: string): SanElement {
+    return new SanElement({ using: 'id', value: elementId });
   }
 
-  static className(className: string, timeout?: number): SanElement {
-    return new SanElement({ using: 'class', value: className }, timeout);
+  static className(className: string): SanElement {
+    return new SanElement({ using: 'class', value: className });
   }
 
   private get driver() {
@@ -66,7 +64,7 @@ export class SanElement {
     actionType: ActionType,
     options?: ActionOptions
   ): Promise<WebElement> {
-    const timeout = options?.timeout ?? this.defaultTimeout;
+    const timeout = options?.timeout ?? configLoader.getTimeoutConfig().element;
 
     // Use ElementFinder for the core finding logic
     const parentWebElement = this.parentElement ? await this.parentElement.findElement(ActionType.READ) : undefined;
