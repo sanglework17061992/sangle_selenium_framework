@@ -61,7 +61,6 @@ export class SanElement {
     options?: ActionOptions
   ): Promise<WebElement> {
     const timeout = options?.timeout ?? this.defaultTimeout;
-    const shouldScroll = options?.scroll ?? false;
 
     // Use ElementFinder for the core finding logic
     const parentWebElement = this.parentElement ? await this.parentElement.findElement(ActionType.READ) : undefined;
@@ -69,7 +68,6 @@ export class SanElement {
       toBy(this.locator),
       this.driver,
       timeout,
-      shouldScroll,
       parentWebElement
     );
 
