@@ -27,8 +27,8 @@ export class ConfigLoader {
    */
   private parseConfig(
     envKey: ConfigKey,
-    type: ConfigType,
-    defaultValue: any = null
+    defaultValue: any,
+    type: ConfigType = ConfigType.STRING
   ): any {
     const envValue = process.env[envKey];
 
@@ -54,7 +54,7 @@ export class ConfigLoader {
    * Get browser configuration
    */
   getBrowserConfig(): BrowserConfig {
-    const browserName = this.parseConfig(ConfigKey.BROWSER, ConfigType.STRING, DEFAULT_CONFIG.BROWSER).toLowerCase();
+    const browserName = this.parseConfig(ConfigKey.BROWSER, DEFAULT_CONFIG.BROWSER).toLowerCase();
 
     // Validate browser name
     if (browserName.trim() === '') {
@@ -68,8 +68,8 @@ export class ConfigLoader {
 
     return {
       name: supportedBrowser || BrowserType.CHROME, // Default to Chrome if unsupported
-      headless: this.parseConfig(ConfigKey.HEADLESS, ConfigType.BOOLEAN, DEFAULT_CONFIG.HEADLESS),
-      noSandbox: this.parseConfig(ConfigKey.NO_SANDBOX, ConfigType.BOOLEAN, DEFAULT_CONFIG.NO_SANDBOX)
+      headless: this.parseConfig(ConfigKey.HEADLESS, DEFAULT_CONFIG.HEADLESS, ConfigType.BOOLEAN),
+      noSandbox: this.parseConfig(ConfigKey.NO_SANDBOX, DEFAULT_CONFIG.NO_SANDBOX, ConfigType.BOOLEAN)
     };
   }  
   
@@ -78,7 +78,7 @@ export class ConfigLoader {
    * @throws Error if BASE_URL is not set
    */
   getBaseUrl(): string {
-    const baseUrl = this.parseConfig(ConfigKey.BASE_URL, ConfigType.STRING, '');
+    const baseUrl = this.parseConfig(ConfigKey.BASE_URL, '');
     
     if (!baseUrl || baseUrl.trim() === '') {
       throw new Error('BASE_URL is not configured in .env file');
@@ -91,7 +91,7 @@ export class ConfigLoader {
    * Get log level from configuration
    */
   getLogLevel(): LogLevel {
-    const level = this.parseConfig(ConfigKey.LOG_LEVEL, ConfigType.STRING, DEFAULT_CONFIG.LOG_LEVEL).toLowerCase();
+    const level = this.parseConfig(ConfigKey.LOG_LEVEL, DEFAULT_CONFIG.LOG_LEVEL).toLowerCase();
     
     if (Object.values(LogLevel).includes(level as LogLevel)) {
       return level as LogLevel;
@@ -104,7 +104,7 @@ export class ConfigLoader {
    * Get timeout configuration for element operations
    */
   getTimeoutConfig(): TimeoutConfig {
-    const elementTimeout = this.parseConfig(ConfigKey.ELEMENT_TIMEOUT, ConfigType.NUMBER, DEFAULT_CONFIG.ELEMENT_TIMEOUT);
+    const elementTimeout = this.parseConfig(ConfigKey.ELEMENT_TIMEOUT, DEFAULT_CONFIG.ELEMENT_TIMEOUT, ConfigType.NUMBER);
 
     return {
       element: elementTimeout
