@@ -77,20 +77,6 @@ export class SanElement {
   }
 
   /**
-   * Find element and ensure it's clickable
-   */
-  private async findClickableElement(options?: ActionOptions): Promise<WebElement> {
-    return this.findElement(ActionType.CLICK, options);
-  }
-
-  /**
-   * Find element and ensure it's editable
-   */
-  private async findEditableElement(options?: ActionOptions): Promise<WebElement> {
-    return this.findElement(ActionType.TYPE, options);
-  }
-
-  /**
    * Find element and ensure it's visible
    */
   private async findVisibleElement(options?: ActionOptions): Promise<WebElement> {
@@ -100,19 +86,64 @@ export class SanElement {
   // Public API methods - Core interactions
 
   /**
-   * Click the element with auto-wait
+   * Recover from stale element error by re-finding and retrying
    */
-  async click(options?: ActionOptions): Promise<void> {
-    const element = await this.findClickableElement(options);
-    await element.click();
+  private async recoverFromStaleElement<T>(
+    actionType: ActionType,
+    action: (element: WebElement) => Promise<T>,
+    options?: ActionOptions
+  ): Promise<T> {
+    const freshElement = await this.findElement(actionType, options);
+    return await action(freshElement);
   }
 
   /**
-   * Type text into the element with auto-wait
+   * Execute action with automatic stale element recovery
+   * Flow: Find element → Try action → Catch stale → Re-find and retry
+   */
+  private async executeWithRecovery<T>(
+    actionType: ActionType,
+    action: (element: WebElement) => Promise<T>,
+    options?: ActionOptions
+  ): Promise<T> {
+    // Step 1: Find element with actionability checks
+    const element = await this.findElement(actionType, options);
+    
+    try {
+      // Step 2: Execute the action
+      return await action(element);
+    } catch (error: any) {
+      // Step 3: If element becomes stale, recover and retry
+      if (error.name === 'StaleElementReferenceError') {
+        return await this.recoverFromStaleElement(actionType, action, options);
+      }
+      // Step 4: Re-throw other errors
+      throw error;
+    }
+  }
+
+  /**
+   * Click the element with auto-wait and stale element recovery
+   * Requirements: STABLE, ENABLED
+   */
+  async click(options?: ActionOptions): Promise<void> {
+    await this.executeWithRecovery(
+      ActionType.CLICK,
+      (element: WebElement) => element.click(),
+      options
+    );
+  }
+
+  /**
+   * Type text into the element with auto-wait and stale element recovery
+   * Requirements: EDITABLE
    */
   async type(text: string, options?: ActionOptions): Promise<void> {
-    const element = await this.findEditableElement(options);
-    await element.sendKeys(text);
+    await this.executeWithRecovery(
+      ActionType.TYPE,
+      (element: WebElement) => element.sendKeys(text),
+      options
+    );
   }
 
   /**
