@@ -42,17 +42,6 @@ export enum Check {
 }
 
 /**
- * Locator types for element selection
- */
-export enum LocatorType {
-  CSS = 'css',
-  XPATH = 'xpath',
-  ID = 'id',
-  NAME = 'name',
-  CLASS = 'class'
-}
-
-/**
  * Configuration value types for parsing
  */
 export enum ConfigType {

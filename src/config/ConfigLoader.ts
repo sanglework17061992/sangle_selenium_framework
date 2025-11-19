@@ -28,7 +28,7 @@ export class ConfigLoader {
   private parseConfig(
     envKey: ConfigKey,
     type: ConfigType,
-    defaultValue: any
+    defaultValue: any = null
   ): any {
     const envValue = process.env[envKey];
 
@@ -39,8 +39,10 @@ export class ConfigLoader {
     switch (type) {
       case ConfigType.STRING:
         return envValue;
-      case ConfigType.NUMBER:
-        return Number.parseInt(envValue, 10) || defaultValue;
+      case ConfigType.NUMBER: {
+        const parsed = Number(envValue);
+        return Number.isNaN(parsed) ? defaultValue : parsed;
+      }
       case ConfigType.BOOLEAN:
         return envValue.toLowerCase() === 'true';
       default:

@@ -1,9 +1,10 @@
-import { WebElement, ThenableWebDriver } from 'selenium-webdriver';
+import { WebElement } from 'selenium-webdriver';
 import { ActionType, Check } from '../../types/Enums';
 import { getActionRequirements } from './ActionConfig';
 import { TIMING } from '../../config/Constants';
 import { TimeUtils } from '../../utils/TimeUtils';
 import { configLoader } from '../../config/ConfigLoader';
+import { defaultDriverManager } from '../../driver/DriverManager';
 
 export { Check } from '../../types/Enums';
 
@@ -107,6 +108,15 @@ export class ActionabilityChecker {
   // Internal check methods
   // -----------------------------------------------------
 
+  private getDriver() {
+    return defaultDriverManager.getDriver();
+  }
+
+  private async executeScript<T>(script: string, element: WebElement): Promise<T> {
+    const driver = this.getDriver();
+    return driver.executeScript<T>(script, element);
+  }
+
   private async checkVisible(element: WebElement): Promise<boolean> {
     try {
       if (!(await element.isDisplayed())) {
@@ -118,8 +128,7 @@ export class ActionabilityChecker {
         return false;
       }
 
-      const driver = element.getDriver() as ThenableWebDriver;
-      const visibility = await driver.executeScript<string>(
+      const visibility = await this.executeScript<string>(
         'return window.getComputedStyle(arguments[0]).visibility;',
         element
       );
@@ -164,8 +173,7 @@ export class ActionabilityChecker {
         return false;
       }
 
-      const driver = element.getDriver() as ThenableWebDriver;
-      const ariaDisabled = await driver.executeScript<boolean>(
+      const ariaDisabled = await this.executeScript<boolean>(
         "return arguments[0].getAttribute('aria-disabled') === 'true';",
         element
       );
@@ -178,18 +186,18 @@ export class ActionabilityChecker {
 
   private async checkEditable(element: WebElement): Promise<boolean> {
     try {
-      const driver = element.getDriver() as ThenableWebDriver;
-      const result = await driver.executeScript<boolean>(
+      // First check if element is enabled (implicit for editable)
+      const isEnabled = await this.checkEnabled(element);
+      if (!isEnabled) {
+        return false;
+      }
+
+      const result = await this.executeScript<boolean>(
         `
         const el = arguments[0];
         const tagName = el.tagName.toLowerCase();
         
-        // Check disabled state first - throw immediately if disabled
-        if (el.disabled) {
-          return false;
-        }
-        
-        // Simple editable checks for common cases
+        // Check editable type and readonly state
         if (tagName === 'input') {
           const type = (el.type || 'text').toLowerCase();
           const isTextInput = ['text', 'password', 'email', 'search', 'tel', 'url'].includes(type);
