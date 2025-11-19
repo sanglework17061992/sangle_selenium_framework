@@ -12,6 +12,12 @@ export interface ActionabilityOptions {
   timeout?: number;
 }
 
+interface CheckResult {
+  passed: boolean;
+  failedCheck?: Check;
+  reason?: string;
+}
+
 /**
  * Class to handle all element actionability checks
  */
@@ -20,69 +26,80 @@ export class ActionabilityChecker {
   /**
    * Validate that element meets all requirements for the specified action type
    * Note: Check.VISIBLE is always checked first (implicit for all actions)
+   * Returns early on first failed check to avoid unnecessary rechecks
    */
-  async validateActionRequirements(actionType: ActionType, element: WebElement): Promise<void> {
+  async validateActionRequirements(actionType: ActionType, element: WebElement): Promise<CheckResult> {
     // Always check visibility first (implicit for all actions)
-    await this.checkVisible(element);
+    const isVisible = await this.checkVisible(element);
+    if (!isVisible) {
+      return { passed: false, failedCheck: Check.VISIBLE, reason: 'Element is not visible' };
+    }
     
     // Then check explicit requirements for the action type
     const { checks } = getActionRequirements(actionType);
     for (const check of checks) {
-      await this.executeElementCheck(check, element);
+      const isPassed = await this.executeElementCheck(check, element);
+      if (!isPassed) {
+        return { passed: false, failedCheck: check, reason: `Check failed: ${check}` };
+      }
     }
+    
+    return { passed: true };
   }
 
   /**
-   * Execute a specific check on an element and throw error if failed
+   * Execute a specific check on an element and return result
    */
-  private async executeElementCheck(check: Check, element: WebElement): Promise<void> {
-    let passed = false;
-    let errorMessage = '';
-
+  private async executeElementCheck(check: Check, element: WebElement): Promise<boolean> {
     switch (check) {
       case Check.STABLE:
-        passed = await this.checkStable(element);
-        errorMessage = 'Element position is not stable';
-        break;
+        return this.checkStable(element);
       case Check.ENABLED:
-        passed = await this.checkEnabled(element);
-        errorMessage = 'Element is not enabled';
-        break;
+        return this.checkEnabled(element);
       case Check.EDITABLE:
-        passed = await this.checkEditable(element);
-        errorMessage = 'Element is not editable';
-        break;
+        return this.checkEditable(element);
       default:
-        throw new Error(`Unknown actionability check: ${check}`);
-    }
-
-    if (!passed) {
-      throw new Error(errorMessage);
+        return false;
     }
   }
 
   /**
    * Wait for element to become actionable for the specified action type
+   * Tracks which checks fail and how many times to provide detailed diagnostics
    */
   async waitUntilReady(actionType: ActionType, element: WebElement, timeout?: number): Promise<void> {
     const effectiveTimeout = timeout ?? configLoader.getTimeoutConfig().element;
     const startTime = Date.now();
     
-    let lastError: Error | null = null;
-    
+    const failedChecks: Map<Check, number> = new Map();
+
     while (TimeUtils.getRemainingTimeout(startTime, effectiveTimeout) > 0) {
-      try {
-        await this.validateActionRequirements(actionType, element);
+      const result = await this.validateActionRequirements(actionType, element);
+      
+      if (result.passed) {
         return; // All checks passed
-      } catch (error: any) {
-        lastError = error;
-        await TimeUtils.sleep(TIMING.DEFAULT_RETRY_INTERVAL);
       }
+      
+      // Track this failure
+      if (result.failedCheck) {
+        failedChecks.set(
+          result.failedCheck,
+          (failedChecks.get(result.failedCheck) ?? 0) + 1
+        );
+      }
+      
+      // Wait before retry
+      await TimeUtils.sleep(TIMING.DEFAULT_RETRY_INTERVAL);
     }
+    
+    // Build detailed error message showing all failed checks
+    const failureDetails = Array.from(failedChecks.entries())
+      .map(([check, count]) => `${check} (failed ${count} times)`)
+      .join(', ');
     
     throw new Error(
       `Element not ready for ${actionType} within ${effectiveTimeout}ms. ` +
-      `${lastError?.message || 'Unknown error'}`
+      `Failed checks: ${failureDetails}`
     );
   }
 
