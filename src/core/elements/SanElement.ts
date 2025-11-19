@@ -4,6 +4,7 @@ import { defaultDriverManager } from '../../driver/DriverManager';
 import { actionabilityChecker } from './ActionabilityChecker';
 import { elementFinder } from './ElementFinder';
 import { ActionType } from '../../types/Enums';
+import { TimeUtils } from '../../utils/TimeUtils';
 
 export { ActionType } from '../../types/Enums';
 export type Locator = { using: 'css' | 'xpath' | 'id' | 'name' | 'class'; value: string };
@@ -48,11 +49,6 @@ export class SanElement {
     return defaultDriverManager.getDriver();
   }
 
-  private getRemainingTimeout(startTime: number, totalTimeout: number): number {
-    const elapsed = Date.now() - startTime;
-    return Math.max(0, totalTimeout - elapsed);
-  }
-
   /**
    * Find and prepare element for interaction or reading
    */
@@ -64,17 +60,16 @@ export class SanElement {
 
     // Use ElementFinder for the core finding logic
     const parentWebElement = this.parentElement ? await this.parentElement.findVisibleElement() : undefined;
-    const element = await elementFinder.locateAndPrepareElement(
-      elementFinder.toBy(this.locator),
+    const element = await elementFinder.find(
+      this.locator,
       this.driver,
-      timeout,
-      parentWebElement
+      { timeout, parentElement: parentWebElement }
     );
 
     // Wait for actionability if not force mode
     if (!options?.force) {
       const startTime = Date.now();
-      const remainingTimeout = this.getRemainingTimeout(startTime, timeout);
+      const remainingTimeout = TimeUtils.getRemainingTimeout(startTime, timeout);
       await actionabilityChecker.waitUntilReady(actionType, element, remainingTimeout);
     }
 

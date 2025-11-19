@@ -2,7 +2,7 @@ import { WebElement, ThenableWebDriver } from 'selenium-webdriver';
 import { ActionType, Check } from '../../types/Enums';
 import { getActionRequirements } from './ActionConfig';
 import { TIMING } from '../../config/Constants';
-import { sleep, getRemainingTimeout } from '../../utils/TimeUtils';
+import { TimeUtils } from '../../utils/TimeUtils';
 import { configLoader } from '../../config/ConfigLoader';
 
 export { Check } from '../../types/Enums';
@@ -70,13 +70,13 @@ export class ActionabilityChecker {
     
     let lastError: Error | null = null;
     
-    while (getRemainingTimeout(startTime, effectiveTimeout) > 0) {
+    while (TimeUtils.getRemainingTimeout(startTime, effectiveTimeout) > 0) {
       try {
         await this.validateActionRequirements(actionType, element);
         return; // All checks passed
       } catch (error: any) {
         lastError = error;
-        await sleep(TIMING.DEFAULT_RETRY_INTERVAL);
+        await TimeUtils.sleep(TIMING.DEFAULT_RETRY_INTERVAL);
       }
     }
     
@@ -127,7 +127,7 @@ export class ActionabilityChecker {
 
       const first = await getPosition();
       // Wait to ensure element is truly stable
-      await sleep(TIMING.STABILITY_CHECK_DELAY);
+      await TimeUtils.sleep(TIMING.STABILITY_CHECK_DELAY);
       const second = await getPosition();
 
       return (

@@ -17,7 +17,3 @@ export class TimeUtils {
     return Math.max(0, totalTimeout - elapsed);
   }
 }
-
-// Export convenience functions for common usage
-export const sleep = TimeUtils.sleep;
-export const getRemainingTimeout = TimeUtils.getRemainingTimeout;

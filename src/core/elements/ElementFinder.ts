@@ -1,7 +1,17 @@
 import { By, WebElement, WebDriver } from 'selenium-webdriver';
 import { TIMING } from '../../config/Constants';
-import { sleep, getRemainingTimeout } from '../../utils/TimeUtils';
+import { TimeUtils } from '../../utils/TimeUtils';
 import { Locator } from './SanElement';
+
+/**
+ * Options for finding elements
+ */
+export interface FindOptions {
+  /** Maximum time to wait for element in milliseconds */
+  timeout: number;
+  /** Parent element to search within (optional) */
+  parentElement?: WebElement;
+}
 
 /**
  * ElementFinder - Locates elements with retry logic and stale element recovery
@@ -10,9 +20,29 @@ import { Locator } from './SanElement';
 export class ElementFinder {
 
   /**
-   * Convert Locator to Selenium By object
+   * Find an element by locator with automatic retry and visibility wait
    */
-  toBy(locator: Locator): By {
+  async find(
+    locator: Locator,
+    driver: WebDriver,
+    options?: FindOptions
+  ): Promise<WebElement> {
+    if (!options) {
+      throw new Error('FindOptions must be provided with at least timeout');
+    }
+
+    const by = this.toBy(locator);
+    const startTime = Date.now();
+    const { timeout, parentElement } = options;
+
+    return this.waitUntilVisible(by, driver, startTime, timeout, parentElement);
+  }
+
+  /**
+   * Convert Locator to Selenium By object
+   * @private
+   */
+  private toBy(locator: Locator): By {
     switch (locator.using) {
       case 'css': return By.css(locator.value);
       case 'xpath': return By.xpath(locator.value);
@@ -25,6 +55,7 @@ export class ElementFinder {
 
   /**
    * Wait for element to be visible with stale element recovery
+   * @private
    */
   private async waitUntilVisible(
     by: By,
@@ -33,7 +64,7 @@ export class ElementFinder {
     timeout: number,
     parentElement?: WebElement
   ): Promise<WebElement> {
-    while (getRemainingTimeout(startTime, timeout) > 0) {
+    while (TimeUtils.getRemainingTimeout(startTime, timeout) > 0) {
       try {
         // Find or re-find element (handles StaleElementReferenceError by locating fresh)
         const element = parentElement 
@@ -52,36 +83,9 @@ export class ElementFinder {
           throw error;
         }
       }
-      await sleep(TIMING.DEFAULT_RETRY_INTERVAL);
+      await TimeUtils.sleep(TIMING.DEFAULT_RETRY_INTERVAL);
     }
     throw new Error(`Element not visible within ${timeout}ms`);
-  }
-
-  /**
-   * Locate and prepare element for interaction with readiness checks
-   */
-  async locateAndPrepareElement(
-    by: By,
-    driver: WebDriver,
-    timeout: number,
-    parentElement?: WebElement
-  ): Promise<WebElement> {
-    const startTime = Date.now();
-
-    // Locate element and wait for visibility (with stale element recovery)
-    return this.waitUntilVisible(by, driver, startTime, timeout, parentElement);
-  }
-
-  /**
-   * Locate and prepare element using Locator abstraction (convenience method)
-   */
-  async locateAndPrepareElementByLocator(
-    locator: Locator,
-    driver: WebDriver,
-    timeout: number,
-    parentElement?: WebElement
-  ): Promise<WebElement> {
-    return this.locateAndPrepareElement(this.toBy(locator), driver, timeout, parentElement);
   }
 }
 
