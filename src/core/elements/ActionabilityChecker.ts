@@ -39,14 +39,17 @@ export class ActionabilityChecker {
     element: WebElement,
     skipChecks?: Set<Check>
   ): Promise<CheckResult> {
+    // Defensive initialization: ensure skipChecks is always a Set
+    skipChecks ??= new Set();
+
     // Always check visibility first (implicit for all actions) unless already passed
-    if (!skipChecks?.has(Check.VISIBLE)) {
+    if (!skipChecks.has(Check.VISIBLE)) {
       const isVisible = await this.checkVisible(element);
       if (!isVisible) {
         return { passed: false, failedCheck: Check.VISIBLE, reason: 'Element is not visible' };
       }
       // Visibility passed, track it
-      skipChecks?.add(Check.VISIBLE);
+      skipChecks.add(Check.VISIBLE);
     }
     
     // Then check explicit requirements for the action type
@@ -55,7 +58,7 @@ export class ActionabilityChecker {
     
     for (const check of checks) {
       // Skip this check if it already passed in a previous loop
-      if (skipChecks?.has(check)) {
+      if (skipChecks.has(check)) {
         lastPassedCheck = check;
         continue;
       }
@@ -67,7 +70,7 @@ export class ActionabilityChecker {
       
       // This check passed, track it
       lastPassedCheck = check;
-      skipChecks?.add(check);
+      skipChecks.add(check);
     }
     
     return { passed: true, lastPassedCheck };
