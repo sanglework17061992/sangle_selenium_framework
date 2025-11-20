@@ -1,8 +1,8 @@
 import { WebElement } from 'selenium-webdriver';
 import { configLoader } from '@config/ConfigLoader';
 import { defaultDriverManager } from '@driver/DriverManager';
-import { actionabilityChecker } from './ActionabilityChecker';
-import { elementFinder } from './ElementFinder';
+import { actionabilityChecker } from '@core/elements/ActionabilityChecker';
+import { elementFinder } from '@core/elements/ElementFinder';
 import { ActionType } from '@enums';
 import { TimeUtils } from '@utils/TimeUtils';
 import { TIMING } from '@config/Constants';
