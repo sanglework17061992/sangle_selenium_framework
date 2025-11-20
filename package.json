@@ -7,7 +7,13 @@
     "build": "tsc",
     "test": "NODE_ENV=test mocha",
     "test:dev": "mocha",
-    "test:example": "mocha tests/example.spec.ts"
+    "test:example": "mocha tests/example.spec.ts",
+    "test:allure": "NODE_ENV=test mocha --reporter mocha-multi-reporters --reporter-options configFile=multi-reporter-config.json",
+    "test:mochawesome": "NODE_ENV=test mocha --reporter mochawesome",
+    "test:multi": "NODE_ENV=test mocha --require ./node_modules/mocha-multi-reporters/index.js --reporter mocha-multi-reporters --reporter-options configFile=multi-reporter-config.json",
+    "report:allure": "echo 'Allure report generated in allure-results/ directory. Install allure-commandline to generate HTML: npm install -g allure-commandline' && open allure-results/ || xdg-open allure-results/ || start allure-results/",
+    "report:mochawesome": "open mochawesome-report/mochawesome.html || xdg-open mochawesome-report/mochawesome.html || start mochawesome-report/mochawesome.html",
+    "report:all": "npm run report:mochawesome && npm run report:allure"
   },
   "keywords": [
     "selenium",
@@ -23,12 +29,17 @@
     "winston": "^3.18.3"
   },
   "devDependencies": {
+    "@types/chai": "^5.2.3",
     "@types/mocha": "^10.0.10",
     "@types/selenium-webdriver": "^4.1.0",
     "@types/winston": "^2.4.4",
+    "allure-mocha": "^3.4.2",
+    "chai": "^6.2.1",
     "chromedriver": "^141.0.6",
     "geckodriver": "^4.1.0",
     "mocha": "^10.8.2",
+    "mocha-multi-reporters": "^1.5.1",
+    "mochawesome": "^7.1.4",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.1.6"
