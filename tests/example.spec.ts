@@ -1,8 +1,8 @@
 import { describe, it, before, after } from 'mocha';
-import driverManager from '../src/driver/DriverManager';
-import { configLoader } from '../src/config/ConfigLoader';
-import { logger } from '../src/utils/Logger';
-import SanElement from '../src/core/elements/SanElement';
+import driverManager from '@driver/DriverManager';
+import { configLoader } from '@config/ConfigLoader';
+import { logger } from '@utils/Logger';
+import SanElement from '@core/elements/SanElement';
 
 describe('SaniumTS Framework - Foundation', () => {
   before(async () => {
