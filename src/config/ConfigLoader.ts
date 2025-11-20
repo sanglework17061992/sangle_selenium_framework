@@ -1,6 +1,6 @@
 import { config } from 'dotenv';
-import { BrowserType, LogLevel } from '../types/Enums';
-import { BrowserConfig } from '../types/ConfigTypes';
+import { BrowserType, LogLevel, ConfigType, ConfigKey } from '../types/Enums';
+import { BrowserConfig, TimeoutConfig } from '../types/ConfigTypes';
 import { DEFAULT_CONFIG } from './Constants';
 
 // Load environment variables from .env file
@@ -22,20 +22,39 @@ export class ConfigLoader {
   }
 
   /**
-   * Parse environment variable as boolean with fallback default
+   * Generic config parser - converts env values to specified type
+   * Supports: STRING, NUMBER, BOOLEAN
    */
-  private parseBooleanConfig(envValue: string | undefined, defaultValue: boolean): boolean {
+  private parseConfig(
+    envKey: ConfigKey,
+    defaultValue: any,
+    type: ConfigType = ConfigType.STRING
+  ): any {
+    const envValue = process.env[envKey];
+
     if (envValue === undefined) {
       return defaultValue;
     }
-    return envValue.toLowerCase() === 'true';
+
+    switch (type) {
+      case ConfigType.STRING:
+        return envValue;
+      case ConfigType.NUMBER: {
+        const parsed = Number(envValue);
+        return Number.isNaN(parsed) ? defaultValue : parsed;
+      }
+      case ConfigType.BOOLEAN:
+        return envValue.toLowerCase() === 'true';
+      default:
+        return defaultValue;
+    }
   }
 
   /**
    * Get browser configuration
    */
   getBrowserConfig(): BrowserConfig {
-    const browserName = (process.env.BROWSER || DEFAULT_CONFIG.BROWSER).toLowerCase();
+    const browserName = this.parseConfig(ConfigKey.BROWSER, DEFAULT_CONFIG.BROWSER).toLowerCase();
 
     // Validate browser name
     if (browserName.trim() === '') {
@@ -49,8 +68,8 @@ export class ConfigLoader {
 
     return {
       name: supportedBrowser || BrowserType.CHROME, // Default to Chrome if unsupported
-      headless: this.parseBooleanConfig(process.env.HEADLESS, DEFAULT_CONFIG.HEADLESS),
-      noSandbox: this.parseBooleanConfig(process.env.NO_SANDBOX, DEFAULT_CONFIG.NO_SANDBOX)
+      headless: this.parseConfig(ConfigKey.HEADLESS, DEFAULT_CONFIG.HEADLESS, ConfigType.BOOLEAN),
+      noSandbox: this.parseConfig(ConfigKey.NO_SANDBOX, DEFAULT_CONFIG.NO_SANDBOX, ConfigType.BOOLEAN)
     };
   }  
   
@@ -59,7 +78,7 @@ export class ConfigLoader {
    * @throws Error if BASE_URL is not set
    */
   getBaseUrl(): string {
-    const baseUrl = process.env.BASE_URL;
+    const baseUrl = this.parseConfig(ConfigKey.BASE_URL, '');
     
     if (!baseUrl || baseUrl.trim() === '') {
       throw new Error('BASE_URL is not configured in .env file');
@@ -72,13 +91,24 @@ export class ConfigLoader {
    * Get log level from configuration
    */
   getLogLevel(): LogLevel {
-    const level = (process.env.LOG_LEVEL || DEFAULT_CONFIG.LOG_LEVEL).toLowerCase();
+    const level = this.parseConfig(ConfigKey.LOG_LEVEL, DEFAULT_CONFIG.LOG_LEVEL).toLowerCase();
     
     if (Object.values(LogLevel).includes(level as LogLevel)) {
       return level as LogLevel;
     }
     
     return LogLevel.INFO;
+  }
+
+  /**
+   * Get timeout configuration for element operations
+   */
+  getTimeoutConfig(): TimeoutConfig {
+    const elementTimeout = this.parseConfig(ConfigKey.ELEMENT_TIMEOUT, DEFAULT_CONFIG.ELEMENT_TIMEOUT, ConfigType.NUMBER);
+
+    return {
+      element: elementTimeout
+    };
   }
 }
 

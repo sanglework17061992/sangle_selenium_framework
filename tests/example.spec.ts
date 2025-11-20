@@ -2,6 +2,7 @@ import { describe, it, before, after } from 'mocha';
 import driverManager from '../src/driver/DriverManager';
 import { configLoader } from '../src/config/ConfigLoader';
 import { logger } from '../src/utils/Logger';
+import SanElement from '../src/core/elements/SanElement';
 
 describe('SaniumTS Framework - Foundation', () => {
   before(async () => {
@@ -28,6 +29,24 @@ describe('SaniumTS Framework - Foundation', () => {
 
       const title = await driver.getTitle();
       logger.info(`Page title: ${title}`);
+    });
+  });
+
+  describe('SanElement TodoMVC Tests', () => {
+    it('should add a new todo item using SanElement auto-wait', async () => {
+      const driver = driverManager.getDriver();
+      const baseUrl = configLoader.getBaseUrl();
+
+      // Navigate to TodoMVC app
+      await driver.get(baseUrl);
+
+      // Create SanElement for the todo input field using clean API
+      const todoInput = SanElement.css('.new-todo');
+      
+      // Type a new todo item - SanElement will auto-wait for the input to be ready
+      const todoText = 'Test todo item with SanElement';
+      await todoInput.type(todoText);
+    
     });
   });
 });

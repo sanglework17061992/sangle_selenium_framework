@@ -21,4 +21,13 @@ export const DEFAULT_CONFIG = {
   LOG_LEVEL: 'info',
   HEADLESS: false,
   NO_SANDBOX: false,
+  ELEMENT_TIMEOUT: 30000,
 };
+
+// Framework timing constants
+export const TIMING = {
+  DEFAULT_RETRY_INTERVAL: 100,
+  STABILITY_CHECK_DELAY: 250,
+  STALE_RETRY_DELAY: 100,
+  MAX_STALE_RETRIES: 3,
+} as const;
