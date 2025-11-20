@@ -16,6 +16,7 @@ export interface ActionabilityOptions {
 interface CheckResult {
   passed: boolean;
   failedCheck?: Check;
+  lastPassedCheck?: Check;
   reason?: string;
 }
 
@@ -28,24 +29,48 @@ export class ActionabilityChecker {
    * Validate that element meets all requirements for the specified action type
    * Note: Check.VISIBLE is always checked first (implicit for all actions)
    * Returns early on first failed check to avoid unnecessary rechecks
+   * 
+   * @param actionType - The type of action being validated
+   * @param element - The element to validate
+   * @param skipChecks - Set of checks that already passed (skip rechecking them)
    */
-  async validateActionRequirements(actionType: ActionType, element: WebElement): Promise<CheckResult> {
-    // Always check visibility first (implicit for all actions)
-    const isVisible = await this.checkVisible(element);
-    if (!isVisible) {
-      return { passed: false, failedCheck: Check.VISIBLE, reason: 'Element is not visible' };
+  async validateActionRequirements(
+    actionType: ActionType, 
+    element: WebElement,
+    skipChecks?: Set<Check>
+  ): Promise<CheckResult> {
+    // Always check visibility first (implicit for all actions) unless already passed
+    if (!skipChecks?.has(Check.VISIBLE)) {
+      const isVisible = await this.checkVisible(element);
+      if (!isVisible) {
+        return { passed: false, failedCheck: Check.VISIBLE, reason: 'Element is not visible' };
+      }
+      // Visibility passed, track it
+      skipChecks?.add(Check.VISIBLE);
     }
     
     // Then check explicit requirements for the action type
     const { checks } = getActionRequirements(actionType);
+    let lastPassedCheck: Check | undefined;
+    
     for (const check of checks) {
+      // Skip this check if it already passed in a previous loop
+      if (skipChecks?.has(check)) {
+        lastPassedCheck = check;
+        continue;
+      }
+      
       const isPassed = await this.executeElementCheck(check, element);
       if (!isPassed) {
         return { passed: false, failedCheck: check, reason: `Check failed: ${check}` };
       }
+      
+      // This check passed, track it
+      lastPassedCheck = check;
+      skipChecks?.add(check);
     }
     
-    return { passed: true };
+    return { passed: true, lastPassedCheck };
   }
 
   /**
@@ -67,15 +92,18 @@ export class ActionabilityChecker {
   /**
    * Wait for element to become actionable for the specified action type
    * Tracks which checks fail and how many times to provide detailed diagnostics
+   * Optimizes by skipping checks that have already passed in previous loops
    */
   async waitUntilReady(actionType: ActionType, element: WebElement, timeout?: number): Promise<void> {
     const effectiveTimeout = timeout ?? configLoader.getTimeoutConfig().element;
     const startTime = Date.now();
     
     const failedChecks: Map<Check, number> = new Map();
+    const passedChecks: Set<Check> = new Set(); // Track checks that already passed
 
     while (TimeUtils.getRemainingTimeout(startTime, effectiveTimeout) > 0) {
-      const result = await this.validateActionRequirements(actionType, element);
+      // Pass the passedChecks set to skip rechecking them
+      const result = await this.validateActionRequirements(actionType, element, passedChecks);
       
       if (result.passed) {
         return; // All checks passed

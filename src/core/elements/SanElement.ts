@@ -5,6 +5,7 @@ import { actionabilityChecker } from './ActionabilityChecker';
 import { elementFinder } from './ElementFinder';
 import { ActionType } from '../../types/Enums';
 import { TimeUtils } from '../../utils/TimeUtils';
+import { TIMING } from '../../config/Constants';
 
 export { ActionType } from '../../types/Enums';
 export type Locator = { using: 'css' | 'xpath' | 'id' | 'name' | 'class'; value: string };
@@ -86,40 +87,39 @@ export class SanElement {
   // Public API methods - Core interactions
 
   /**
-   * Recover from stale element error by re-finding and retrying
-   */
-  private async recoverFromStaleElement<T>(
-    actionType: ActionType,
-    action: (element: WebElement) => Promise<T>,
-    options?: ActionOptions
-  ): Promise<T> {
-    const freshElement = await this.findElement(actionType, options);
-    return await action(freshElement);
-  }
-
-  /**
-   * Execute action with automatic stale element recovery
-   * Flow: Find element → Try action → Catch stale → Re-find and retry
+   * Execute action with automatic stale element recovery and multiple retries
+   * Flow: Find element → Try action → Catch stale → Re-find and retry (up to MAX_STALE_RETRIES times)
    */
   private async executeWithRecovery<T>(
     actionType: ActionType,
     action: (element: WebElement) => Promise<T>,
     options?: ActionOptions
   ): Promise<T> {
-    // Step 1: Find element with actionability checks
-    const element = await this.findElement(actionType, options);
+    const { MAX_STALE_RETRIES, STALE_RETRY_DELAY } = TIMING;
     
-    try {
-      // Step 2: Execute the action
-      return await action(element);
-    } catch (error: any) {
-      // Step 3: If element becomes stale, recover and retry
-      if (error.name === 'StaleElementReferenceError') {
-        return await this.recoverFromStaleElement(actionType, action, options);
+    for (let retryCount = 0; retryCount <= MAX_STALE_RETRIES; retryCount++) {
+      try {
+        // Step 1: Find element with actionability checks
+        const element = await this.findElement(actionType, options);
+        
+        // Step 2: Execute the action
+        return await action(element);
+        
+      } catch (error: any) {
+        // Step 3: If stale and haven't exceeded retries, retry
+        if (error.name === 'StaleElementReferenceError' && retryCount < MAX_STALE_RETRIES) {
+          // Wait before retry to let DOM settle
+          await TimeUtils.sleep(STALE_RETRY_DELAY);
+          continue; // Go to next loop iteration
+        }
+        
+        // Step 4: Re-throw if not stale or retries exhausted
+        throw error;
       }
-      // Step 4: Re-throw other errors
-      throw error;
     }
+    
+    // This should never be reached, but TypeScript requires it
+    throw new Error('executeWithRecovery: Unexpected end of retry loop');
   }
 
   /**
