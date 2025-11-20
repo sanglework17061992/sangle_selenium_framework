@@ -15,7 +15,6 @@
       "@types/*": ["types/*"],
       "@core/*": ["core/*"],
       "@driver/*": ["driver/*"],
-      "@utils/*": ["utils/*"],
       "@assertion/*": ["assertion/*"]
     }
   },
