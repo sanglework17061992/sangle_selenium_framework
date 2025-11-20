@@ -39,7 +39,8 @@ export class ActionabilityChecker {
     element: WebElement,
     skipChecks?: Set<Check>
   ): Promise<CheckResult> {
-    // Defensive initialization: ensure skipChecks is always a Set
+    // Defensive initialization: if skipChecks not provided, create empty Set
+    // This ensures skipChecks is always defined for all subsequent method calls
     skipChecks ??= new Set();
 
     // Always check visibility first (implicit for all actions) unless already passed
