@@ -1,4 +1,4 @@
-import { Check, ActionType } from '../../types/Enums';
+import { Check, ActionType } from '@enums';
 
 /**
  * Action requirements for each action type

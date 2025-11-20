@@ -1,6 +1,6 @@
 import { By, WebElement, WebDriver } from 'selenium-webdriver';
-import { TIMING } from '../../config/Constants';
-import { TimeUtils } from '../../utils/TimeUtils';
+import { TIMING } from '@config/Constants';
+import { TimeUtils } from '@utils/TimeUtils';
 import { Locator } from './SanElement';
 
 /**

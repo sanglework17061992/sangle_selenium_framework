@@ -1,12 +1,12 @@
 import { WebElement } from 'selenium-webdriver';
-import { ActionType, Check } from '../../types/Enums';
+import { ActionType, Check } from '@enums';
 import { getActionRequirements } from './ActionConfig';
-import { TIMING } from '../../config/Constants';
-import { TimeUtils } from '../../utils/TimeUtils';
-import { configLoader } from '../../config/ConfigLoader';
-import { defaultDriverManager } from '../../driver/DriverManager';
+import { TIMING } from '@config/Constants';
+import { TimeUtils } from '@utils/TimeUtils';
+import { configLoader } from '@config/ConfigLoader';
+import { defaultDriverManager } from '@driver/DriverManager';
 
-export { Check } from '../../types/Enums';
+export { Check } from '@enums';
 
 export interface ActionabilityOptions {
   checks?: readonly Check[];
