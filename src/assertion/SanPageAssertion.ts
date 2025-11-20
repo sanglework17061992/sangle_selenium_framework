@@ -14,8 +14,7 @@
 
 import { WebDriver } from 'selenium-webdriver';
 import { defaultDriverManager } from '@driver/DriverManager';
-import { safeAssert, waitUntil } from '@assertion/shared/AssertionUtils';
-import * as assert from '@assertion/shared/AssertionUtils';
+import { safeAssert, waitUntil, equal, createAssertionError } from '@assertion/shared/AssertionUtils';
 import { TIMING } from '@config/Constants';
 
 export class SanPageAssertion {
@@ -37,10 +36,10 @@ export class SanPageAssertion {
       async () => {
         lastActualTitle = await this.driver.getTitle();
         return safeAssert(async () => {
-          assert.equal(lastActualTitle, expectedTitle);
+          equal(lastActualTitle, expectedTitle);
         });
       },
-      `Expected title "${expectedTitle}" but got "${lastActualTitle}"`,
+      createAssertionError('title', expectedTitle, lastActualTitle),
       this.timeout
     );
   }
@@ -56,14 +55,14 @@ export class SanPageAssertion {
         try {
           lastActualUrl = await this.driver.getCurrentUrl();
           return safeAssert(async () => {
-            assert.equal(lastActualUrl, expectedUrl);
+            equal(lastActualUrl, expectedUrl);
           });
         } catch {
           // If getCurrentUrl fails, it means navigation didn't complete yet, return false to retry
           return false;
         }
       },
-      `Expected URL "${expectedUrl}" but got "${lastActualUrl}"`,
+      createAssertionError('URL', expectedUrl, lastActualUrl),
       this.timeout
     );
   }

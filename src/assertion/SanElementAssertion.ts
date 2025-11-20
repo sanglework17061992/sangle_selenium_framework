@@ -8,13 +8,12 @@
  * // Wait for element to have specific text
  * await expect(element).toHaveText('Welcome');
  * 
- * // Wait for element to have specific attribute
- * await expect(element).toHaveAttribute('class', 'active');
+ * // Wait for element to be visible
+ * await expect(element).toBeVisible();
  */
 
 import { SanElement } from '@core/elements/SanElement';
-import { safeAssert, waitUntil } from '@assertion/shared/AssertionUtils';
-import * as assert from '@assertion/shared/AssertionUtils';
+import { safeAssert, waitUntil, equal, createAssertionError } from '@assertion/shared/AssertionUtils';
 import { TIMING } from '@config/Constants';
 
 export class SanElementAssertion {
@@ -36,10 +35,10 @@ export class SanElementAssertion {
       async () => {
         lastActualText = await this.element.getText();
         return safeAssert(async () => {
-          assert.equal(lastActualText.trim(), expectedText);
+          equal(lastActualText.trim(), expectedText);
         });
       },
-      `Expected element text "${expectedText}" but got "${lastActualText.trim()}"`,
+      createAssertionError('element text', expectedText, lastActualText.trim()),
       this.timeout
     );
   }
@@ -51,10 +50,10 @@ export class SanElementAssertion {
   async toBeVisible(): Promise<void> {
     await waitUntil(
       () => safeAssert(async () => {
-        // Try to get text to verify element is accessible and visible
+        // Verify element is accessible and visible by checking if it can be found
         await this.element.getText();
       }),
-      `element to be visible`,
+      'element to be visible',
       this.timeout
     );
   }

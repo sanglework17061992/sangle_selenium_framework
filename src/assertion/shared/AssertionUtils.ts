@@ -4,6 +4,7 @@
  */
 
 import { TimeUtils } from '@utils/TimeUtils';
+import { formatValue } from '@utils/ValueFormatter';
 import { TIMING } from '@config/Constants';
 
 /**
@@ -51,32 +52,18 @@ export async function waitUntil(
 }
 
 /**
- * Helper method to format values for error messages
- */
-function formatValue(value: any): string {
-  if (typeof value === 'string') {
-    return `"${value}"`;
-  }
-  if (value === null) {
-    return 'null';
-  }
-  if (value === undefined) {
-    return 'undefined';
-  }
-  if (typeof value === 'function') {
-    return '[Function]';
-  }
-  if (Array.isArray(value)) {
-    return `[${value.map(v => formatValue(v)).join(', ')}]`;
-  }
-  return String(value);
-}
-
-/**
  * Assert that two values are strictly equal (===)
  */
 export function equal<T>(actual: T, expected: T, message?: string): void {
   if (actual !== expected) {
     throw new Error(message || `Expected ${formatValue(actual)} to equal ${formatValue(expected)}`);
   }
+}
+
+/**
+ * Create standardized assertion error message
+ * @example createErrorMessage('title', 'Expected', 'Got') -> 'Expected title "Expected" but got "Got"'
+ */
+export function createAssertionError(assertionType: string, expected: string, actual: string): string {
+  return `Expected ${assertionType} "${expected}" but got "${actual}"`;
 }
