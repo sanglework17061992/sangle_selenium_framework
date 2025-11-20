@@ -1,10 +1,10 @@
 import { Builder, WebDriver } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 import firefox from 'selenium-webdriver/firefox.js';
-import { BrowserType } from '../types/Enums';
-import { BrowserConfig } from '../types/ConfigTypes';
-import { logger } from '../utils/Logger';
-import { FIREFOX_ARGS, CHROME_ARGS } from '../config/Constants';
+import { BrowserType } from '@enums';
+import type { BrowserConfig } from '@configTypes';
+import { logger } from '@utils/Logger';
+import { FIREFOX_ARGS, CHROME_ARGS } from '@config/Constants';
 
 export interface BrowserFactory {
   createWebDriver(config: BrowserConfig): Promise<WebDriver>;

@@ -3,10 +3,23 @@
     "target": "ES2021",
     "module": "CommonJS",
     "moduleResolution": "node",
+    "baseUrl": "src",
     "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@config/*": ["config/*"],
+      "@enums": ["types/Enums"],
+      "@configTypes": ["types/ConfigTypes"],
+      "@types/*": ["types/*"],
+      "@core/*": ["core/*"],
+      "@driver/*": ["driver/*"],
+      "@utils/*": ["utils/*"]
+    }
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts"]
+  "include": ["src/**/*.ts", "tests/**/*.ts"],
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  }
 }

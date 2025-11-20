@@ -1,4 +1,4 @@
-import { BrowserType } from './Enums';
+import { BrowserType } from '@enums';
 
 /**
  * Browser configuration with complete settings

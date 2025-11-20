@@ -1,13 +1,13 @@
 import { WebElement } from 'selenium-webdriver';
-import { configLoader } from '../../config/ConfigLoader';
-import { defaultDriverManager } from '../../driver/DriverManager';
-import { actionabilityChecker } from './ActionabilityChecker';
-import { elementFinder } from './ElementFinder';
-import { ActionType } from '../../types/Enums';
-import { TimeUtils } from '../../utils/TimeUtils';
-import { TIMING } from '../../config/Constants';
+import { configLoader } from '@config/ConfigLoader';
+import { defaultDriverManager } from '@driver/DriverManager';
+import { actionabilityChecker } from '@core/elements/ActionabilityChecker';
+import { elementFinder } from '@core/elements/ElementFinder';
+import { ActionType } from '@enums';
+import { TimeUtils } from '@utils/TimeUtils';
+import { TIMING } from '@config/Constants';
 
-export { ActionType } from '../../types/Enums';
+export { ActionType } from '@enums';
 export type Locator = { using: 'css' | 'xpath' | 'id' | 'name' | 'class'; value: string };
 
 export interface ActionOptions {

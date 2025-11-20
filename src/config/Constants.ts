@@ -1,4 +1,4 @@
-import { BrowserType } from '../types/Enums';
+import { BrowserType } from '@enums';
 
 /**
  * Framework constants for browser configurations and defaults

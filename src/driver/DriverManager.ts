@@ -1,10 +1,10 @@
 import { WebDriver } from 'selenium-webdriver';
-import { BrowserType } from '../types/Enums';
-import { configLoader, ConfigLoader } from '../config/ConfigLoader';
-import { logger, Logger } from '../utils/Logger';
-import { BrowserFactory, ChromeFactory, FirefoxFactory } from './BrowserFactory';
-import { BrowserConfig } from '../types/ConfigTypes';
-import { BrowserRegistry } from './BrowserRegistry';
+import { BrowserType } from '@enums';
+import { configLoader, ConfigLoader } from '@config/ConfigLoader';
+import { logger, Logger } from '@utils/Logger';
+import { BrowserFactory, ChromeFactory, FirefoxFactory } from '@driver/BrowserFactory';
+import type { BrowserConfig } from '@configTypes';
+import { BrowserRegistry } from '@driver/BrowserRegistry';
 
 /**
  * Instance-based driver manager with dependency injection
