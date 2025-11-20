@@ -11,6 +11,7 @@
     "paths": {
       "@config/*": ["config/*"],
       "@enums": ["types/Enums"],
+      "@configTypes": ["types/ConfigTypes"],
       "@types/*": ["types/*"],
       "@core/*": ["core/*"],
       "@driver/*": ["driver/*"],

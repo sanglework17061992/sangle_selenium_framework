@@ -1,6 +1,6 @@
 import { config } from 'dotenv';
 import { BrowserType, LogLevel, ConfigType, ConfigKey } from '@enums';
-import type { BrowserConfig, TimeoutConfig } from '../types/ConfigTypes';
+import type { BrowserConfig, TimeoutConfig } from '@configTypes';
 import { DEFAULT_CONFIG } from './Constants';
 
 // Load environment variables from .env file

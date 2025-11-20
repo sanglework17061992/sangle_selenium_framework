@@ -3,7 +3,7 @@ import { BrowserType } from '@enums';
 import { configLoader, ConfigLoader } from '@config/ConfigLoader';
 import { logger, Logger } from '@utils/Logger';
 import { BrowserFactory, ChromeFactory, FirefoxFactory } from './BrowserFactory';
-import type { BrowserConfig } from '../types/ConfigTypes';
+import type { BrowserConfig } from '@configTypes';
 import { BrowserRegistry } from './BrowserRegistry';
 
 /**
