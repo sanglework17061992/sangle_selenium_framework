@@ -1,9 +1,9 @@
 import { WebDriver } from 'selenium-webdriver';
-import { BrowserType } from '../types/Enums';
-import { configLoader, ConfigLoader } from '../config/ConfigLoader';
-import { logger, Logger } from '../utils/Logger';
+import { BrowserType } from '@enums';
+import { configLoader, ConfigLoader } from '@config/ConfigLoader';
+import { logger, Logger } from '@utils/Logger';
 import { BrowserFactory, ChromeFactory, FirefoxFactory } from './BrowserFactory';
-import { BrowserConfig } from '../types/ConfigTypes';
+import type { BrowserConfig } from '../types/ConfigTypes';
 import { BrowserRegistry } from './BrowserRegistry';
 
 /**

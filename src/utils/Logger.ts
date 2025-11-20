@@ -1,5 +1,5 @@
 import winston from 'winston';
-import { LogLevel } from '../types/Enums';
+import { LogLevel } from '@enums';
 import path from 'node:path';
 
 // Create logs directory
