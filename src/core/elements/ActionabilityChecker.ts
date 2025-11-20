@@ -1,6 +1,6 @@
 import { WebElement } from 'selenium-webdriver';
 import { ActionType, Check } from '@enums';
-import { getActionRequirements } from './ActionConfig';
+import { getActionRequirements } from '@core/elements/ActionConfig';
 import { TIMING } from '@config/Constants';
 import { TimeUtils } from '@utils/TimeUtils';
 import { configLoader } from '@config/ConfigLoader';
