@@ -28,7 +28,7 @@ export class AllureReporter extends BaseReporter {
     return this.allure;
   }
 
-  async onTestFailure(testName: string, error: Error): Promise<void> {
+  async onTestFailure(_testName: string, error: Error): Promise<void> {
     const allure = AllureReporter.getAllure();
     if (!allure) return;
 

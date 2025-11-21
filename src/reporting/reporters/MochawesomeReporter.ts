@@ -11,7 +11,7 @@ import * as path from 'node:path';
 export class MochawesomeReporter extends BaseReporter {
   private readonly screenshotsDir = path.join(process.cwd(), 'mochawesome-report', 'screenshots');
 
-  async onTestFailure(testName: string, error: Error): Promise<void> {
+  async onTestFailure(testName: string, _error: Error): Promise<void> {
     if (!this.driver) return;
 
     try {
