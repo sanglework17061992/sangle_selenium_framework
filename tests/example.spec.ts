@@ -3,13 +3,14 @@ import driverManager from '@driver/DriverManager';
 import { configLoader } from '@config/ConfigLoader';
 import { logger } from '@utils/Logger';
 import SanElement from '@core/elements/SanElement';
+import { expect as sanExpect } from '@assertion/index';
 
 describe('SaniumTS Framework - Foundation', () => {
   before(async () => {
     const logLevel = configLoader.getLogLevel();
     logger.setLevel(logLevel);
     logger.info(`Log level: ${logLevel}`);
-    
+
     // Initialize driver
     await driverManager.createDriver();
   });
@@ -42,11 +43,34 @@ describe('SaniumTS Framework - Foundation', () => {
 
       // Create SanElement for the todo input field using clean API
       const todoInput = SanElement.css('.new-todo');
-      
+
       // Type a new todo item - SanElement will auto-wait for the input to be ready
       const todoText = 'Test todo item with SanElement';
       await todoInput.type(todoText);
-    
+    });
+  });
+
+  describe('SanAssertion Framework', () => {
+    it('should test all 3 assertion types', async () => {
+      const driver = driverManager.getDriver();
+      const baseUrl = configLoader.getBaseUrl();
+
+      await driver.get(baseUrl);
+
+      // TypeAssertion - no auto-retry because it's not a locator/page
+      const sum = 2 + 3;
+      sanExpect(sum).toBe(5);
+
+      // SanPageAssertion toHaveTitle - auto-retries until the title matches the expected value
+      const expectedTitle = 'React • TodoMVC';
+      await sanExpect(driver).toHaveTitle(expectedTitle);
+
+      // SanElementAssertion toBeVisible - auto-retries until element is visible
+      const heading = SanElement.css('h1');
+      await sanExpect(heading).toBeVisible();
+
+      // Note: In future, when BasePage is implemented, page objects can be passed directly:
+      // await sanExpect(todoPage).toHaveTitle(expectedTitle);
     });
   });
 });

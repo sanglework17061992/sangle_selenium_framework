@@ -15,7 +15,8 @@
       "@types/*": ["types/*"],
       "@core/*": ["core/*"],
       "@driver/*": ["driver/*"],
-      "@utils/*": ["utils/*"]
+      "@utils/*": ["utils/*"],
+      "@assertion/*": ["assertion/*"]
     }
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"],
