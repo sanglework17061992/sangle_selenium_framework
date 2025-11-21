@@ -1,5 +1,6 @@
 import { BaseReporter } from '@reporting/BaseReporter';
 import { captureScreenshot } from '@reporting/shared/ReporterUtils';
+import { logger } from '@utils/Logger';
 
 /**
  * AllureReporter - Simple Allure reporter for test results
@@ -44,7 +45,7 @@ export class AllureReporter extends BaseReporter {
         }
       }
     } catch (err) {
-      console.warn(`Failed to attach to Allure: ${err}`);
+      logger.warn(`Failed to attach to Allure: ${err}`);
     }
   }
 }

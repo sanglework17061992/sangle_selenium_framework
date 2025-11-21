@@ -1,11 +1,13 @@
 import { BaseReporter } from '@reporting/BaseReporter';
 import { captureScreenshot, saveScreenshot } from '@reporting/shared/ReporterUtils';
+import { logger } from '@utils/Logger';
 import * as path from 'node:path';
 
 /**
  * MochawesomeReporter - Simple Mochawesome reporter for test results
  * 
  * Captures screenshots on failure and saves to mochawesome-report/screenshots
+ * Screenshots are viewable in the screenshots directory
  * Requires mochawesome to be installed
  */
 export class MochawesomeReporter extends BaseReporter {
@@ -20,10 +22,10 @@ export class MochawesomeReporter extends BaseReporter {
         const filename = `${testName.replaceAll(/\s+/g, '-')}-${Date.now()}.png`;
         const filepath = path.join(this.screenshotsDir, filename);
         saveScreenshot(buffer, filepath);
-        console.log(`Mochawesome screenshot: ${filepath}`);
+        logger.info(`Mochawesome screenshot: screenshots/${filename}`);
       }
     } catch (err) {
-      console.warn(`Failed to capture Mochawesome screenshot: ${err}`);
+      logger.warn(`Failed to capture Mochawesome screenshot: ${err}`);
     }
   }
 }
