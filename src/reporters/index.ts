@@ -1,25 +1,30 @@
-export { AllureReporter, createAllureReporter, shouldUseAllureReporter } from './AllureReporter';
-export { MochawesomeReporter, createMochawesomeReporter, shouldUseMochawesomeReporter } from './MochawesomeReporter';
-export type { TestReporter } from '../base/BaseTest';
+export { BaseReporter } from './BaseReporter';
+export type { TestReporter } from './BaseReporter';
+export { ScreenshotReporter } from './ScreenshotReporter';
+export { AllureReporter, shouldUseAllureReporter, createAllureReporter } from './AllureReporter';
+export { MochawesomeReporter, shouldUseMochawesomeReporter, createMochawesomeReporter } from './MochawesomeReporter';
 
-import { createAllureReporter, shouldUseAllureReporter } from './AllureReporter';
-import { createMochawesomeReporter, shouldUseMochawesomeReporter } from './MochawesomeReporter';
-import { TestReporter } from '../base/BaseTest';
+import { BaseReporter } from './BaseReporter';
+import { ScreenshotReporter } from './ScreenshotReporter';
+import { AllureReporter, shouldUseAllureReporter, createAllureReporter } from './AllureReporter';
+import { MochawesomeReporter, shouldUseMochawesomeReporter, createMochawesomeReporter } from './MochawesomeReporter';
 import { ThenableWebDriver } from 'selenium-webdriver';
 
 /**
- * CompositeReporter - Coordinates multiple reporters simultaneously
- * Ensures one reporter's failure doesn't affect others
+ * Simple CompositeReporter - Coordinates multiple reporters
+ * Each reporter runs independently, failures don't stop others
  */
-class CompositeReporter implements TestReporter {
-  constructor(private readonly reporters: TestReporter[]) {}
+class CompositeReporter extends BaseReporter {
+  constructor(private readonly reporters: BaseReporter[]) {
+    super();
+  }
 
   async beforeAll(): Promise<void> {
     for (const reporter of this.reporters) {
       try {
         await reporter.beforeAll?.();
-      } catch (error) {
-        console.warn(`Reporter beforeAll failed: ${error}`);
+      } catch (err) {
+        console.warn(`Reporter beforeAll failed: ${err}`);
       }
     }
   }
@@ -28,8 +33,8 @@ class CompositeReporter implements TestReporter {
     for (const reporter of this.reporters) {
       try {
         await reporter.afterAll?.();
-      } catch (error) {
-        console.warn(`Reporter afterAll failed: ${error}`);
+      } catch (err) {
+        console.warn(`Reporter afterAll failed: ${err}`);
       }
     }
   }
@@ -38,8 +43,8 @@ class CompositeReporter implements TestReporter {
     for (const reporter of this.reporters) {
       try {
         await reporter.beforeEach?.();
-      } catch (error) {
-        console.warn(`Reporter beforeEach failed: ${error}`);
+      } catch (err) {
+        console.warn(`Reporter beforeEach failed: ${err}`);
       }
     }
   }
@@ -48,8 +53,8 @@ class CompositeReporter implements TestReporter {
     for (const reporter of this.reporters) {
       try {
         await reporter.afterEach?.();
-      } catch (error) {
-        console.warn(`Reporter afterEach failed: ${error}`);
+      } catch (err) {
+        console.warn(`Reporter afterEach failed: ${err}`);
       }
     }
   }
@@ -68,29 +73,45 @@ class CompositeReporter implements TestReporter {
     for (const reporter of this.reporters) {
       try {
         reporter.setDriver?.(driver);
-      } catch (error) {
-        console.warn(`Reporter setDriver failed: ${error}`);
+      } catch (err) {
+        console.warn(`Reporter setDriver failed: ${err}`);
       }
     }
   }
 }
 
-export function createReporter(): TestReporter | undefined {
-  const allureReporter = shouldUseAllureReporter() ? createAllureReporter() : null;
-  const mochawesomeReporter = shouldUseMochawesomeReporter() ? createMochawesomeReporter() : null;
+/**
+ * Factory function to create active reporters
+ * Supports: ScreenshotReporter (default), AllureReporter, MochawesomeReporter
+ * Returns single reporter, composite, or undefined
+ */
+export function createReporter(): BaseReporter | undefined {
+  const reporters: BaseReporter[] = [];
 
-  const activeReporters = [allureReporter, mochawesomeReporter].filter(
-    (r): r is TestReporter => r !== null
-  );
+  // ScreenshotReporter - default, captures screenshots on failure
+  if (process.env.SCREENSHOT_REPORTER !== 'false') {
+    reporters.push(new ScreenshotReporter());
+  }
 
-  if (activeReporters.length === 0) {
+  // AllureReporter - if allure-mocha is available
+  if (shouldUseAllureReporter()) {
+    reporters.push(createAllureReporter());
+  }
+
+  // MochawesomeReporter - if mochawesome is available
+  if (shouldUseMochawesomeReporter()) {
+    reporters.push(createMochawesomeReporter());
+  }
+
+  if (reporters.length === 0) {
     return undefined;
   }
 
-  if (activeReporters.length === 1) {
-    return activeReporters[0];
+  if (reporters.length === 1) {
+    return reporters[0];
   }
 
   // Multiple reporters - use CompositeReporter for coordination
-  return new CompositeReporter(activeReporters);
+  return new CompositeReporter(reporters);
 }
+
