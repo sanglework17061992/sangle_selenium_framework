@@ -1,12 +1,10 @@
 export { BaseReporter } from './BaseReporter';
 export type { TestReporter } from './BaseReporter';
-export { ScreenshotReporter } from './shared/ScreenshotReporter';
 export { AllureReporter, shouldUseAllureReporter, createAllureReporter } from './reporters/AllureReporter';
 export { MochawesomeReporter, shouldUseMochawesomeReporter, createMochawesomeReporter } from './reporters/MochawesomeReporter';
 
 import { ThenableWebDriver } from 'selenium-webdriver';
 import { BaseReporter } from '@reporting/BaseReporter';
-import { ScreenshotReporter } from '@reporting/shared/ScreenshotReporter';
 import { shouldUseAllureReporter, createAllureReporter } from '@reporting/reporters/AllureReporter';
 import { shouldUseMochawesomeReporter, createMochawesomeReporter } from '@reporting/reporters/MochawesomeReporter';
 
@@ -82,16 +80,11 @@ class CompositeReporter extends BaseReporter {
 
 /**
  * Factory function to create active reporters
- * Supports: ScreenshotReporter (default), AllureReporter, MochawesomeReporter
+ * Supports: AllureReporter, MochawesomeReporter
  * Returns single reporter, composite, or undefined
  */
 export function createReporter(): BaseReporter | undefined {
   const reporters: BaseReporter[] = [];
-
-  // ScreenshotReporter - default, captures screenshots on failure
-  if (process.env.SCREENSHOT_REPORTER !== 'false') {
-    reporters.push(new ScreenshotReporter());
-  }
 
   // AllureReporter - if allure-mocha is available
   if (shouldUseAllureReporter()) {
