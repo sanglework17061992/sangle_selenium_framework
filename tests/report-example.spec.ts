@@ -44,6 +44,18 @@ describe('Reporter System Demo', () => {
     }
   });
 
+  afterEach(async function () {
+    // Call onTestFailure if test failed
+    if (this.currentTest?.state === 'failed' && reporter) {
+      const error = this.currentTest?.err as Error;
+      await reporter.onTestFailure?.(this.currentTest?.title || 'Unknown Test', error);
+    }
+    // Call afterEach hook
+    if (reporter) {
+      await reporter.afterEach?.();
+    }
+  });
+
   describe('Simple Reporter Test', () => {
     it('should demonstrate multi-reporter coordination', async () => {
       const baseUrl = configLoader.getBaseUrl();
@@ -65,7 +77,7 @@ describe('Reporter System Demo', () => {
       // Navigate to TodoMVC
       await driver.get(baseUrl);
 
-      // Create SanElement for the todo input and type it
+      // Create SanElement for the todo input
       const todoInput = SanElement.css('.new-todo');
       const todoText = 'Demo todo with reporter';
       await todoInput.type(todoText);
@@ -79,6 +91,21 @@ describe('Reporter System Demo', () => {
       await sanExpect(driver).toHaveTitle('React • TodoMVC');
 
       logger.info('Todo demo completed - reporters will capture this');
+    });
+
+    it('should capture screenshot on test failure', async () => {
+      const baseUrl = configLoader.getBaseUrl();
+
+      // Navigate to TodoMVC
+      await driver.get(baseUrl);
+
+      const heading = SanElement.css('h1');
+      logger.info('Verifying heading is visible');
+      await sanExpect(heading).toBeVisible();
+
+      // Intentional failure checkpoint - wrong title assertion
+      logger.info('Testing failure checkpoint - this should fail and capture screenshot');
+      await sanExpect(driver).toHaveTitle('Wrong Title For Screenshot Test');
     });
   });
 });
