@@ -13,7 +13,7 @@
  */
 
 import { SanElement } from '@core/elements/SanElement';
-import { retryAssertion, equal } from '@assertion/shared/AssertionUtils';
+import { waitUntil } from '@assertion/shared/AssertionUtils';
 import { TIMING } from '@config/Constants';
 
 export class SanElementAssertion {
@@ -33,12 +33,13 @@ export class SanElementAssertion {
    * @example await expect(element).toHaveText('Welcome')
    */
   async toHaveText(expectedText: string): Promise<void> {
-    await retryAssertion(
-      () => this.element.getText(),
-      (actualText: string) => {
-        equal(actualText.trim(), expectedText);
+    let lastActualText = '';
+    await waitUntil(
+      async () => {
+        lastActualText = await this.element.getText();
+        return lastActualText.trim() === expectedText;
       },
-      `element text "${expectedText}"`,
+      `Expected element text "${expectedText}" but got "${lastActualText.trim()}"`,
       this.timeout
     );
   }
@@ -48,12 +49,9 @@ export class SanElementAssertion {
    * @example await expect(element).toBeVisible()
    */
   async toBeVisible(): Promise<void> {
-    await retryAssertion(
+    await waitUntil(
       () => this.element.isDisplayed(),
-      (isVisible: boolean) => {
-        equal(isVisible, true);
-      },
-      'element to be visible',
+      'Expected element to be visible but it is not',
       this.timeout
     );
   }

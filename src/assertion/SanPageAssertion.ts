@@ -14,7 +14,7 @@
 
 import { WebDriver } from 'selenium-webdriver';
 import { defaultDriverManager } from '@driver/DriverManager';
-import { retryAssertion, equal } from '@assertion/shared/AssertionUtils';
+import { waitUntil } from '@assertion/shared/AssertionUtils';
 import { TIMING } from '@config/Constants';
 
 export class SanPageAssertion {
@@ -34,12 +34,13 @@ export class SanPageAssertion {
    * @example await expect(driver).toHaveTitle('Dashboard')
    */
   async toHaveTitle(expectedTitle: string): Promise<void> {
-    await retryAssertion(
-      () => this.driver.getTitle(),
-      (actualTitle: string) => {
-        equal(actualTitle, expectedTitle);
+    let lastActualTitle = '';
+    await waitUntil(
+      async () => {
+        lastActualTitle = await this.driver.getTitle();
+        return lastActualTitle === expectedTitle;
       },
-      `page title "${expectedTitle}"`,
+      `Expected title "${expectedTitle}" but got "${lastActualTitle}"`,
       this.timeout
     );
   }
@@ -51,22 +52,18 @@ export class SanPageAssertion {
    * @example await expect(driver).toHaveURL('https://example.com/dashboard')
    */
   async toHaveURL(expectedUrl: string): Promise<void> {
-    await retryAssertion(
+    let lastActualUrl = '';
+    await waitUntil(
       async () => {
         try {
-          return await this.driver.getCurrentUrl();
+          lastActualUrl = await this.driver.getCurrentUrl();
+          return lastActualUrl === expectedUrl;
         } catch {
-          // Navigation not complete yet, return empty to retry
-          return '';
+          // Navigation not complete yet, return false to retry
+          return false;
         }
       },
-      (actualUrl: string) => {
-        if (!actualUrl) {
-          throw new Error('Navigation in progress');
-        }
-        equal(actualUrl, expectedUrl);
-      },
-      `page URL "${expectedUrl}"`,
+      `Expected URL "${expectedUrl}" but got "${lastActualUrl}"`,
       this.timeout
     );
   }
