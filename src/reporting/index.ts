@@ -4,6 +4,7 @@ export { AllureReporter, shouldUseAllureReporter, createAllureReporter } from '.
 export { MochawesomeReporter, shouldUseMochawesomeReporter, createMochawesomeReporter } from './reporters/MochawesomeReporter';
 
 import { ThenableWebDriver } from 'selenium-webdriver';
+import { logger } from '@utils/Logger';
 import { BaseReporter } from '@reporting/BaseReporter';
 import { shouldUseAllureReporter, createAllureReporter } from '@reporting/reporters/AllureReporter';
 import { shouldUseMochawesomeReporter, createMochawesomeReporter } from '@reporting/reporters/MochawesomeReporter';
@@ -22,7 +23,7 @@ class CompositeReporter extends BaseReporter {
       try {
         await reporter.beforeAll?.();
       } catch (err) {
-        console.warn(`Reporter beforeAll failed: ${err}`);
+        logger.warn(`Reporter beforeAll failed: ${err}`);
       }
     }
   }
@@ -32,7 +33,7 @@ class CompositeReporter extends BaseReporter {
       try {
         await reporter.afterAll?.();
       } catch (err) {
-        console.warn(`Reporter afterAll failed: ${err}`);
+        logger.warn(`Reporter afterAll failed: ${err}`);
       }
     }
   }
@@ -42,7 +43,7 @@ class CompositeReporter extends BaseReporter {
       try {
         await reporter.beforeEach?.();
       } catch (err) {
-        console.warn(`Reporter beforeEach failed: ${err}`);
+        logger.warn(`Reporter beforeEach failed: ${err}`);
       }
     }
   }
@@ -52,7 +53,7 @@ class CompositeReporter extends BaseReporter {
       try {
         await reporter.afterEach?.();
       } catch (err) {
-        console.warn(`Reporter afterEach failed: ${err}`);
+        logger.warn(`Reporter afterEach failed: ${err}`);
       }
     }
   }
@@ -62,7 +63,7 @@ class CompositeReporter extends BaseReporter {
       try {
         await reporter.onTestFailure?.(testName, error);
       } catch (err) {
-        console.warn(`Reporter onTestFailure failed: ${err}`);
+        logger.warn(`Reporter onTestFailure failed: ${err}`);
       }
     }
   }
@@ -72,7 +73,7 @@ class CompositeReporter extends BaseReporter {
       try {
         reporter.setDriver?.(driver);
       } catch (err) {
-        console.warn(`Reporter setDriver failed: ${err}`);
+        logger.warn(`Reporter setDriver failed: ${err}`);
       }
     }
   }
