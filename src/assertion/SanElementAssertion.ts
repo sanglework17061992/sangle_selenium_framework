@@ -13,7 +13,7 @@
  */
 
 import { SanElement } from '@core/elements/SanElement';
-import { safeAssert, waitUntil, equal, createAssertionError } from '@assertion/shared/AssertionUtils';
+import { retryAssertion, equal } from '@assertion/shared/AssertionUtils';
 import { TIMING } from '@config/Constants';
 
 export class SanElementAssertion {
@@ -33,15 +33,12 @@ export class SanElementAssertion {
    * @example await expect(element).toHaveText('Welcome')
    */
   async toHaveText(expectedText: string): Promise<void> {
-    let lastActualText = '';
-    await waitUntil(
-      async () => {
-        lastActualText = await this.element.getText();
-        return safeAssert(async () => {
-          equal(lastActualText.trim(), expectedText);
-        });
+    await retryAssertion(
+      () => this.element.getText(),
+      (actualText: string) => {
+        equal(actualText.trim(), expectedText);
       },
-      createAssertionError('element text', expectedText, lastActualText.trim()),
+      `element text "${expectedText}"`,
       this.timeout
     );
   }
@@ -54,11 +51,13 @@ export class SanElementAssertion {
    * @example await expect(element).toBeVisible()
    */
   async toBeVisible(): Promise<void> {
-    await waitUntil(
-      () => safeAssert(async () => {
-        await this.element.getText();
-      }),
-      createAssertionError('element visibility', 'visible', 'not visible'),
+    await retryAssertion(
+      () => this.element.getText(),
+      () => {
+        // Assertion passes if getText() succeeds - we just need element to be accessible
+        equal(true, true);
+      },
+      'element to be visible',
       this.timeout
     );
   }

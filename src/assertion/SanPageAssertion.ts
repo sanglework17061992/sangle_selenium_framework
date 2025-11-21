@@ -14,7 +14,7 @@
 
 import { WebDriver } from 'selenium-webdriver';
 import { defaultDriverManager } from '@driver/DriverManager';
-import { safeAssert, waitUntil, equal, createAssertionError } from '@assertion/shared/AssertionUtils';
+import { retryAssertion, equal } from '@assertion/shared/AssertionUtils';
 import { TIMING } from '@config/Constants';
 
 export class SanPageAssertion {
@@ -34,15 +34,12 @@ export class SanPageAssertion {
    * @example await expect(driver).toHaveTitle('Dashboard')
    */
   async toHaveTitle(expectedTitle: string): Promise<void> {
-    let lastActualTitle = '';
-    await waitUntil(
-      async () => {
-        lastActualTitle = await this.driver.getTitle();
-        return safeAssert(async () => {
-          equal(lastActualTitle, expectedTitle);
-        });
+    await retryAssertion(
+      () => this.driver.getTitle(),
+      (actualTitle: string) => {
+        equal(actualTitle, expectedTitle);
       },
-      createAssertionError('title', expectedTitle, lastActualTitle),
+      `page title "${expectedTitle}"`,
       this.timeout
     );
   }
@@ -54,21 +51,22 @@ export class SanPageAssertion {
    * @example await expect(driver).toHaveURL('https://example.com/dashboard')
    */
   async toHaveURL(expectedUrl: string): Promise<void> {
-    let lastActualUrl = '';
-    await waitUntil(
+    await retryAssertion(
       async () => {
         try {
-          lastActualUrl = await this.driver.getCurrentUrl();
-          return safeAssert(async () => {
-            equal(lastActualUrl, expectedUrl);
-          });
+          return await this.driver.getCurrentUrl();
         } catch {
-          // Navigation not complete yet, or driver in transitional state - retry
-          // (Don't throw - just return false to trigger retry)
-          return false;
+          // Navigation not complete yet, return empty to retry
+          return '';
         }
       },
-      createAssertionError('URL', expectedUrl, lastActualUrl),
+      (actualUrl: string) => {
+        if (!actualUrl) {
+          throw new Error('Navigation in progress');
+        }
+        equal(actualUrl, expectedUrl);
+      },
+      `page URL "${expectedUrl}"`,
       this.timeout
     );
   }
