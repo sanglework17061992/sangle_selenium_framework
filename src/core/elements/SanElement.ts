@@ -96,15 +96,15 @@ export class SanElement {
     options?: ActionOptions
   ): Promise<T> {
     const { MAX_STALE_RETRIES, STALE_RETRY_DELAY } = TIMING;
-    
+
     for (let retryCount = 0; retryCount <= MAX_STALE_RETRIES; retryCount++) {
       try {
         // Step 1: Find element with actionability checks
         const element = await this.findElement(actionType, options);
-        
+
         // Step 2: Execute the action
         return await action(element);
-        
+
       } catch (error: any) {
         // Step 3: If stale and haven't exceeded retries, retry
         if (error.name === 'StaleElementReferenceError' && retryCount < MAX_STALE_RETRIES) {
@@ -112,12 +112,12 @@ export class SanElement {
           await TimeUtils.sleep(STALE_RETRY_DELAY);
           continue; // Go to next loop iteration
         }
-        
+
         // Step 4: Re-throw if not stale or retries exhausted
         throw error;
       }
     }
-    
+
     // This should never be reached, but TypeScript requires it
     throw new Error('executeWithRecovery: Unexpected end of retry loop');
   }
@@ -152,6 +152,14 @@ export class SanElement {
   async getText(options?: ReadOptions): Promise<string> {
     const element = await this.findVisibleElement({ timeout: options?.timeout });
     return element.getText();
+  }
+
+  /**
+   * Check if element is displayed/visible
+   */
+  async isDisplayed(options?: ReadOptions): Promise<boolean> {
+    const element = await this.findVisibleElement({ timeout: options?.timeout });
+    return await element.isDisplayed();
   }
 
   // TODO: Additional methods for future enhancement

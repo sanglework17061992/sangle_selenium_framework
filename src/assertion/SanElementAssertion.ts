@@ -45,17 +45,13 @@ export class SanElementAssertion {
 
   /**
    * Assert that the element is displayed/visible
-   * Verifies element is accessible by attempting to retrieve its text.
-   * If element is hidden (display: none, opacity: 0, etc), getText() will fail,
-   * causing the assertion to retry until element is visible.
    * @example await expect(element).toBeVisible()
    */
   async toBeVisible(): Promise<void> {
     await retryAssertion(
-      () => this.element.getText(),
-      () => {
-        // Assertion passes if getText() succeeds - we just need element to be accessible
-        equal(true, true);
+      () => this.element.isDisplayed(),
+      (isVisible: boolean) => {
+        equal(isVisible, true);
       },
       'element to be visible',
       this.timeout

@@ -76,13 +76,13 @@ export function createAssertionError(assertionType: string, expected: string, ac
  * @param assertionType - Description for error messages (e.g., 'title', 'element text')
  * @param timeout - Max time to retry (ms)
  */
-export async function retryAssertion(
-  fetchValue: () => Promise<string>,
-  compareValue: (actual: string) => void,
+export async function retryAssertion<T>(
+  fetchValue: () => Promise<T>,
+  compareValue: (actual: T) => void,
   assertionType: string,
   timeout: number
 ): Promise<void> {
-  let lastActualValue = '';
+  let lastActualValue: T;
   await waitUntil(
     async () => {
       lastActualValue = await fetchValue();
