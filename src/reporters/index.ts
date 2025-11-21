@@ -4,11 +4,11 @@ export { ScreenshotReporter } from './ScreenshotReporter';
 export { AllureReporter, shouldUseAllureReporter, createAllureReporter } from './AllureReporter';
 export { MochawesomeReporter, shouldUseMochawesomeReporter, createMochawesomeReporter } from './MochawesomeReporter';
 
-import { BaseReporter } from './BaseReporter';
-import { ScreenshotReporter } from './ScreenshotReporter';
-import { AllureReporter, shouldUseAllureReporter, createAllureReporter } from './AllureReporter';
-import { MochawesomeReporter, shouldUseMochawesomeReporter, createMochawesomeReporter } from './MochawesomeReporter';
 import { ThenableWebDriver } from 'selenium-webdriver';
+import { BaseReporter } from '@reporters/BaseReporter';
+import { ScreenshotReporter } from '@reporters/ScreenshotReporter';
+import { shouldUseAllureReporter, createAllureReporter } from '@reporters/AllureReporter';
+import { shouldUseMochawesomeReporter, createMochawesomeReporter } from '@reporters/MochawesomeReporter';
 
 /**
  * Simple CompositeReporter - Coordinates multiple reporters

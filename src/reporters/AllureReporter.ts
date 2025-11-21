@@ -1,5 +1,5 @@
-import { BaseReporter } from './BaseReporter';
-import { captureScreenshot } from './ReporterUtils';
+import { BaseReporter } from '@reporters/BaseReporter';
+import { captureScreenshot } from '@reporters/ReporterUtils';
 
 /**
  * AllureReporter - Simple Allure reporter for test results
