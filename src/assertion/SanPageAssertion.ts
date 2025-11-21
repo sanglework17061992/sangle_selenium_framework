@@ -22,12 +22,15 @@ export class SanPageAssertion {
   private readonly timeout: number;
 
   constructor(driver?: WebDriver, timeout?: number) {
-    this.driver = driver || defaultDriverManager.getDriver();
+    this.driver = driver ?? defaultDriverManager.getDriver();
     this.timeout = timeout ?? TIMING.DEFAULT_ASSERTION_TIMEOUT;
   }
 
   /**
    * Assert that the page has the expected title (exact match)
+   * Does NOT trim whitespace - page titles should match exactly as defined.
+   * Unlike element text assertions, page titles are typically controlled and don't
+   * have formatting whitespace issues.
    * @example await expect(driver).toHaveTitle('Dashboard')
    */
   async toHaveTitle(expectedTitle: string): Promise<void> {
@@ -46,6 +49,8 @@ export class SanPageAssertion {
 
   /**
    * Assert that the page has the expected URL (exact match)
+   * Does NOT trim whitespace - URLs are exact values that should match precisely.
+   * Handles navigation timing issues gracefully by catching exceptions during URL retrieval.
    * @example await expect(driver).toHaveURL('https://example.com/dashboard')
    */
   async toHaveURL(expectedUrl: string): Promise<void> {
@@ -58,7 +63,8 @@ export class SanPageAssertion {
             equal(lastActualUrl, expectedUrl);
           });
         } catch {
-          // If getCurrentUrl fails, it means navigation didn't complete yet, return false to retry
+          // Navigation not complete yet, or driver in transitional state - retry
+          // (Don't throw - just return false to trigger retry)
           return false;
         }
       },

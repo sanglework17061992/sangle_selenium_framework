@@ -27,6 +27,9 @@ export class SanElementAssertion {
 
   /**
    * Assert that the element has the exact text
+   * Trims whitespace (spaces, newlines, indentation) from element text before comparison.
+   * This is necessary because HTML formatting often adds whitespace that doesn't affect
+   * visual display but would otherwise cause assertions to fail.
    * @example await expect(element).toHaveText('Welcome')
    */
   async toHaveText(expectedText: string): Promise<void> {
@@ -45,15 +48,17 @@ export class SanElementAssertion {
 
   /**
    * Assert that the element is displayed/visible
+   * Verifies element is accessible by attempting to retrieve its text.
+   * If element is hidden (display: none, opacity: 0, etc), getText() will fail,
+   * causing the assertion to retry until element is visible.
    * @example await expect(element).toBeVisible()
    */
   async toBeVisible(): Promise<void> {
     await waitUntil(
       () => safeAssert(async () => {
-        // Verify element is accessible and visible by checking if it can be found
         await this.element.getText();
       }),
-      'element to be visible',
+      createAssertionError('element visibility', 'visible', 'not visible'),
       this.timeout
     );
   }

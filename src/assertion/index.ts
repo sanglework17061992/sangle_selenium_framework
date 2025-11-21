@@ -24,10 +24,12 @@ export function expect<T>(
   if (target instanceof SanElement) {
     return new SanElementAssertion(target, timeout);
   }
-  
+
   if (target instanceof WebDriver) {
     return new SanPageAssertion(target, timeout);
   }
-  
+
+  // For all other values (including null/undefined), use TypeAssertion
+  // This allows explicit testing of null/undefined values if needed
   return new TypeAssertion(target);
 }

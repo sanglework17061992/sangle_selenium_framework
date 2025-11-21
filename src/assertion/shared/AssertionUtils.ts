@@ -67,3 +67,30 @@ export function equal<T>(actual: T, expected: T, message?: string): void {
 export function createAssertionError(assertionType: string, expected: string, actual: string): string {
   return `Expected ${assertionType} "${expected}" but got "${actual}"`;
 }
+
+/**
+ * Generic retry assertion helper for common pattern: fetch value, compare, retry on failure
+ * Used by Element and Page assertions to reduce duplication
+ * @param fetchValue - Async function that retrieves the actual value
+ * @param compareValue - Function that performs the assertion (throws on failure)
+ * @param assertionType - Description for error messages (e.g., 'title', 'element text')
+ * @param timeout - Max time to retry (ms)
+ */
+export async function retryAssertion(
+  fetchValue: () => Promise<string>,
+  compareValue: (actual: string) => void,
+  assertionType: string,
+  timeout: number
+): Promise<void> {
+  let lastActualValue = '';
+  await waitUntil(
+    async () => {
+      lastActualValue = await fetchValue();
+      return safeAssert(async () => {
+        compareValue(lastActualValue);
+      });
+    },
+    `Expected ${assertionType} but assertion failed`,
+    timeout
+  );
+}
