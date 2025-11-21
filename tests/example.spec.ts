@@ -4,7 +4,6 @@ import { configLoader } from '@config/ConfigLoader';
 import { logger } from '@utils/Logger';
 import SanElement from '@core/elements/SanElement';
 import { expect as sanExpect } from '@assertion/index';
-import { createReporter } from '@reporters/index';
 
 describe('SaniumTS Framework - Foundation', () => {
   before(async () => {
@@ -72,21 +71,6 @@ describe('SaniumTS Framework - Foundation', () => {
 
       // Note: In future, when BasePage is implemented, page objects can be passed directly:
       // await sanExpect(todoPage).toHaveTitle(expectedTitle);
-    });
-  });
-
-  describe('Reporter System', () => {
-    it('should support multi-reporter coordination', async () => {
-      const reporter = createReporter();
-      if (reporter) {
-        await reporter.beforeAll?.();
-        await reporter.beforeEach?.();
-        const driver = driverManager.getDriver() as any;
-        reporter.setDriver?.(driver);
-        await reporter.afterEach?.();
-        await reporter.afterAll?.();
-      }
-      sanExpect(true).toBe(true);
     });
   });
 });

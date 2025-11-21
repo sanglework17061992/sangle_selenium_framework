@@ -1,5 +1,5 @@
-import { BaseReporter } from '@reporters/BaseReporter';
-import { captureScreenshot, saveScreenshot } from '@reporters/ReporterUtils';
+import { BaseReporter } from '@reporting/BaseReporter';
+import { captureScreenshot, saveScreenshot } from '@reporting/shared/ReporterUtils';
 import * as path from 'node:path';
 
 /**
