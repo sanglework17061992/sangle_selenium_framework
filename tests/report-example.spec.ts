@@ -56,7 +56,7 @@ describe('Reporter System Demo', () => {
 
       // Simple assertion - verify page loaded
       sanExpect(true).toBe(true);
-      logger.info('✅ Page loaded successfully - reporters will capture this');
+      logger.info('Page loaded successfully - reporters will capture this');
     });
 
     it('should add a todo item and capture in reports', async () => {
@@ -78,7 +78,7 @@ describe('Reporter System Demo', () => {
       // Verify page title for demo
       await sanExpect(driver).toHaveTitle('React • TodoMVC');
 
-      logger.info('✅ Todo demo completed - reporters will capture this');
+      logger.info('Todo demo completed - reporters will capture this');
     });
   });
 });

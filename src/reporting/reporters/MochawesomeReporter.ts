@@ -20,7 +20,7 @@ export class MochawesomeReporter extends BaseReporter {
         const filename = `${testName.replaceAll(/\s+/g, '-')}-${Date.now()}.png`;
         const filepath = path.join(this.screenshotsDir, filename);
         saveScreenshot(buffer, filepath);
-        console.log(`📸 Mochawesome screenshot: ${filepath}`);
+        console.log(`Mochawesome screenshot: ${filepath}`);
       }
     } catch (err) {
       console.warn(`Failed to capture Mochawesome screenshot: ${err}`);
