@@ -27,7 +27,7 @@ export class SanElementAssertion {
 
   /**
    * Assert that the element has the exact text
-   * Trims whitespace (spaces, newlines, indentation) from element text before comparison.
+   * Trims whitespace (spaces, newlines, indentation) from both actual and expected text before comparison.
    * This is necessary because HTML formatting often adds whitespace that doesn't affect
    * visual display but would otherwise cause assertions to fail.
    * @example await expect(element).toHaveText('Welcome')
@@ -37,9 +37,9 @@ export class SanElementAssertion {
     await waitUntil(
       async () => {
         lastActualText = await this.element.getText();
-        return lastActualText.trim() === expectedText;
+        return lastActualText.trim() === expectedText.trim();
       },
-      `Expected element text "${expectedText}" but got "${lastActualText.trim()}"`,
+      `Expected element text "${expectedText.trim()}" but got "${lastActualText.trim()}"`,
       this.timeout
     );
   }

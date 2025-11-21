@@ -28,9 +28,7 @@ export class SanPageAssertion {
 
   /**
    * Assert that the page has the expected title (exact match)
-   * Does NOT trim whitespace - page titles should match exactly as defined.
-   * Unlike element text assertions, page titles are typically controlled and don't
-   * have formatting whitespace issues.
+   * Trims whitespace from both actual and expected title before comparison.
    * @example await expect(driver).toHaveTitle('Dashboard')
    */
   async toHaveTitle(expectedTitle: string): Promise<void> {
@@ -38,16 +36,16 @@ export class SanPageAssertion {
     await waitUntil(
       async () => {
         lastActualTitle = await this.driver.getTitle();
-        return lastActualTitle === expectedTitle;
+        return lastActualTitle.trim() === expectedTitle.trim();
       },
-      `Expected title "${expectedTitle}" but got "${lastActualTitle}"`,
+      `Expected title "${expectedTitle.trim()}" but got "${lastActualTitle.trim()}"`,
       this.timeout
     );
   }
 
   /**
    * Assert that the page has the expected URL (exact match)
-   * Does NOT trim whitespace - URLs are exact values that should match precisely.
+   * Trims whitespace from both actual and expected URL before comparison.
    * Handles navigation timing issues gracefully by catching exceptions during URL retrieval.
    * @example await expect(driver).toHaveURL('https://example.com/dashboard')
    */
@@ -57,13 +55,13 @@ export class SanPageAssertion {
       async () => {
         try {
           lastActualUrl = await this.driver.getCurrentUrl();
-          return lastActualUrl === expectedUrl;
+          return lastActualUrl.trim() === expectedUrl.trim();
         } catch {
           // Navigation not complete yet, return false to retry
           return false;
         }
       },
-      `Expected URL "${expectedUrl}" but got "${lastActualUrl}"`,
+      `Expected URL "${expectedUrl.trim()}" but got "${lastActualUrl.trim()}"`,
       this.timeout
     );
   }
