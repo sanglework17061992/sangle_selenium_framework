@@ -85,27 +85,15 @@ class CompositeReporter extends BaseReporter {
  * Returns single reporter, composite, or undefined
  */
 export function createReporter(): BaseReporter | undefined {
-  const reporters: BaseReporter[] = [];
+  const reporters = [
+    { check: shouldUseAllureReporter, create: createAllureReporter },
+    { check: shouldUseMochawesomeReporter, create: createMochawesomeReporter },
+  ]
+    .filter(r => r.check())
+    .map(r => r.create());
 
-  // AllureReporter - if allure-mocha is available
-  if (shouldUseAllureReporter()) {
-    reporters.push(createAllureReporter());
-  }
-
-  // MochawesomeReporter - if mochawesome is available
-  if (shouldUseMochawesomeReporter()) {
-    reporters.push(createMochawesomeReporter());
-  }
-
-  if (reporters.length === 0) {
-    return undefined;
-  }
-
-  if (reporters.length === 1) {
-    return reporters[0];
-  }
-
-  // Multiple reporters - use CompositeReporter for coordination
+  if (reporters.length === 0) return undefined;
+  if (reporters.length === 1) return reporters[0];
   return new CompositeReporter(reporters);
 }
 
