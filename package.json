@@ -14,7 +14,7 @@
     "clean:reports": "rimraf mochawesome-report allure-results allure-report",
     "clean:test": "npm run clean:reports && npm run test:multi",
     "report:allure:generate": "allure generate allure-results -o allure-report --clean",
-    "report:allure": "npm run report:allure:generate && npx allure serve allure-report",
+    "report:allure": "npm run report:allure:generate && npx allure open allure-report",
     "report:mochawesome": "open mochawesome-report/mochawesome.html || xdg-open mochawesome-report/mochawesome.html || start mochawesome-report/mochawesome.html",
     "report:all": "npm run report:mochawesome && npm run report:allure"
   },
