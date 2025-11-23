@@ -14,7 +14,7 @@
     "clean:reports": "rimraf mochawesome-report allure-results allure-report",
     "clean:test": "npm run clean:reports && npm run test:multi",
     "report:allure:generate": "allure generate allure-results -o allure-report --clean",
-    "report:allure": "npm run report:allure:generate && echo 'Opening Allure report at http://localhost:8080' && http-server allure-report -p 8080 -o -c-1",
+    "report:allure": "npm run report:allure:generate && allure serve allure-report",
     "report:mochawesome": "open mochawesome-report/mochawesome.html || xdg-open mochawesome-report/mochawesome.html || start mochawesome-report/mochawesome.html",
     "report:all": "npm run report:mochawesome && npm run report:allure"
   },
@@ -41,7 +41,6 @@
     "chai": "^6.2.1",
     "chromedriver": "^141.0.6",
     "geckodriver": "^4.1.0",
-    "http-server": "^14.1.1",
     "mocha": "^10.8.2",
     "mocha-multi-reporters": "^1.5.1",
     "mochawesome": "^7.1.4",
