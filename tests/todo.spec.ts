@@ -48,9 +48,8 @@ describe('TodoMVC App - Page Object Pattern & Assertions', () => {
       logger.info('Verifying todo input is visible');
       await sanExpect(todoPage.newTodoInput).toBeVisible();
 
-      logger.info('Verifying todo count');
-      const todoCount = 3;
-      sanExpect(todoCount).toBe(3);
+      logger.info('Verifying page title with auto-retry');
+      await sanExpect(todoPage).toHaveTitle('React • TodoMVC');
     });
   });
 
@@ -62,9 +61,8 @@ describe('TodoMVC App - Page Object Pattern & Assertions', () => {
       logger.info('Verifying todo input is visible');
       await sanExpect(todoPage.newTodoInput).toBeVisible();
 
-      logger.info('Verifying app name');
-      const appName = 'TodoMVC';
-      sanExpect(appName).toBe('TodoMVC');
+      logger.info('Verifying page title is correct');
+      await sanExpect(todoPage).toHaveTitle('React • TodoMVC');
     });
   });
 });

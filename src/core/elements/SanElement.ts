@@ -162,6 +162,14 @@ export class SanElement {
     return await element.isDisplayed();
   }
 
+  /**
+   * Find child element within this element
+   * Creates a new SanElement with this element as parent for scoped searching
+   */
+  findChild(locator: Locator): SanElement {
+    return new SanElement(locator, this);
+  }
+
   // TODO: Additional methods for future enhancement
   // - sendKeys(keys): Send special keys
   // - getAttribute(name): Get attribute value

@@ -21,9 +21,9 @@ export class TodoPage extends BasePage {
     this.clearCompletedBtn = this.css('.clear-completed');
   }
 
-  // Todo item getter by index
+  // Todo item getter by index - chainable from todoList
   getTodoItem(index: number): SanElement {
-    return this.css(`.todo-list li:nth-child(${index + 1})`);
+    return this.todoList.findChild({ using: 'css', value: `li:nth-child(${index + 1})` });
   }
 
   // Page actions
@@ -32,12 +32,12 @@ export class TodoPage extends BasePage {
   }
 
   async toggleTodo(index: number): Promise<void> {
-    const checkbox = this.css(`.todo-list li:nth-child(${index + 1}) .toggle`);
+    const checkbox = this.getTodoItem(index).findChild({ using: 'css', value: '.toggle' });
     await checkbox.click();
   }
 
   async deleteTodo(index: number): Promise<void> {
-    const deleteBtn = this.css(`.todo-list li:nth-child(${index + 1}) .destroy`);
+    const deleteBtn = this.getTodoItem(index).findChild({ using: 'css', value: '.destroy' });
     await deleteBtn.click();
   }
 }
