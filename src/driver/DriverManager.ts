@@ -29,8 +29,7 @@ export class DriverManager {
     this.isParallel = !!process.env.MOCHA_WORKER_ID;
     this.workerId = process.env.MOCHA_WORKER_ID || 'main';
     
-    const mode = this.isParallel ? ExecutionMode.PARALLEL : ExecutionMode.SEQUENTIAL;
-    this.log.info(`DriverManager initialized - Mode: ${mode.toUpperCase()}, Worker: ${this.workerId}`);
+    this.log.info(`DriverManager initialized - Mode: ${this.getMode().toUpperCase()}, Worker: ${this.workerId}`);
   }
 
   /**
