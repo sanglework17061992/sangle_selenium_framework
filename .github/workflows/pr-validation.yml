@@ -1,0 +1,68 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [ 18.x, 20.x ]
+    
+    steps:
+      # Step 1: Checkout latest code
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better analysis
+      
+      # Step 2: Setup Node.js
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'  # Cache node_modules for faster builds
+      
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm ci  # Use npm ci instead of npm install for CI environments
+      
+      # Step 4: Check code style with ESLint (if available)
+      - name: Check code style
+        run: npm run lint --if-present || echo "Linting not configured"
+        continue-on-error: true  # Don't fail if linting not configured
+      
+      # Step 5: TypeScript compilation check
+      - name: Type check with TypeScript
+        run: npm run build
+        
+      # Step 6: Run tests with default configuration
+      - name: Run tests
+        run: npm test
+        continue-on-error: true  # Allow expected test failures (intentional failure checkpoint)
+      
+      # Step 6b: Run tests with multi-reporter (Allure + Mochawesome)
+      - name: Run tests with multi-reporter
+        run: npm run test:multi --if-present || npm test
+        continue-on-error: true  # Allow expected test failures
+      
+      # Step 6c: Run tests with parallel execution
+      - name: Run tests with parallel execution
+        run: npm run test:parallel --if-present || npm test
+        continue-on-error: true  # Allow expected test failures
+        
+      # Step 7: Generate test report (optional)
+      - name: Upload test results
+        if: always()  # Run even if tests fail
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-node-${{ matrix.node-version }}
+          path: |
+            mochawesome-report/
+            allure-results/
+          retention-days: 30
