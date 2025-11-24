@@ -39,9 +39,9 @@ jobs:
       - name: Type check with TypeScript
         run: npm run build
         
-      # Step 5: Run tests with ${{ matrix.browser }}
+      # Step 5: Run tests with ${{ matrix.browser }} and generate reports
       - name: Run tests with ${{ matrix.browser }}
-        run: npm test -- --grep "should capture screenshot on test failure" --invert
+        run: npm run test:multi -- --grep "should capture screenshot on test failure" --invert
         env:
           BROWSER: ${{ matrix.browser }}
           CI: 'true'
