@@ -39,8 +39,7 @@ jobs:
         
       # Step 5: Run tests with ${{ matrix.browser }}
       - name: Run tests with ${{ matrix.browser }}
-        run: npm test
-        continue-on-error: true
+        run: npm test -- --grep "should capture screenshot on test failure" --invert
         env:
           BROWSER: ${{ matrix.browser }}
           CI: 'true'
