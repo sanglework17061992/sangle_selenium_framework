@@ -13,56 +13,46 @@ jobs:
     strategy:
       matrix:
         node-version: [ 18.x, 20.x ]
+        browser: [ chrome, firefox ]
     
     steps:
       # Step 1: Checkout latest code
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for better analysis
+          fetch-depth: 0
       
       # Step 2: Setup Node.js
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'  # Cache node_modules for faster builds
+          cache: 'npm'
       
       # Step 3: Install dependencies
       - name: Install dependencies
-        run: npm ci  # Use npm ci instead of npm install for CI environments
+        run: npm ci
       
-      # Step 4: Check code style with ESLint (if available)
-      - name: Check code style
-        run: npm run lint --if-present || echo "Linting not configured"
-        continue-on-error: true  # Don't fail if linting not configured
-      
-      # Step 5: TypeScript compilation check
+      # Step 4: Type check with TypeScript
       - name: Type check with TypeScript
         run: npm run build
         
-      # Step 6: Run tests with default configuration
-      - name: Run tests
+      # Step 5: Run tests with ${{ matrix.browser }}
+      - name: Run tests with ${{ matrix.browser }}
         run: npm test
-        continue-on-error: true  # Allow expected test failures (intentional failure checkpoint)
-      
-      # Step 6b: Run tests with multi-reporter (Allure + Mochawesome)
-      - name: Run tests with multi-reporter
-        run: npm run test:multi --if-present || npm test
-        continue-on-error: true  # Allow expected test failures
-      
-      # Step 6c: Run tests with parallel execution
-      - name: Run tests with parallel execution
-        run: npm run test:parallel --if-present || npm test
-        continue-on-error: true  # Allow expected test failures
+        continue-on-error: true
+        env:
+          BROWSER: ${{ matrix.browser }}
+          CI: 'true'
         
-      # Step 7: Generate test report (optional)
+      # Step 6: Upload test results
       - name: Upload test results
-        if: always()  # Run even if tests fail
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-node-${{ matrix.node-version }}
+          name: test-results-${{ matrix.node-version }}-${{ matrix.browser }}
           path: |
             mochawesome-report/
             allure-results/
           retention-days: 30
+
