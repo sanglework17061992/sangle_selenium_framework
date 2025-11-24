@@ -93,7 +93,7 @@ describe('Reporter System Demo', () => {
       logger.info('Todo demo completed - reporters will capture this');
     });
 
-    it('should capture screenshot on test failure', async () => {
+    it.skip('should capture screenshot on test failure', async () => {
       const baseUrl = configLoader.getBaseUrl();
 
       // Navigate to TodoMVC

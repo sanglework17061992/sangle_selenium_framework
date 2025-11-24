@@ -1,10 +1,13 @@
 import { Builder, WebDriver } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 import firefox from 'selenium-webdriver/firefox.js';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { BrowserType } from '@enums';
 import type { BrowserConfig } from '@configTypes';
 import { logger } from '@utils/Logger';
-import { FIREFOX_ARGS, CHROME_ARGS } from '@config/Constants';
+import { FIREFOX_ARGS, CHROME_ARGS, CHROME_CI } from '@config/Constants';
 
 export interface BrowserFactory {
   createWebDriver(config: BrowserConfig): Promise<WebDriver>;
@@ -68,12 +71,31 @@ export class ChromeFactory extends BaseBrowserFactory {
       chromeOptions.addArguments(CHROME_ARGS.NO_SANDBOX, CHROME_ARGS.DISABLE_DEV_SHM);
     }
 
+    const isCI = process.env.CI === 'true';
+
+    // Add CI-specific stability flags
+    if (isCI) {
+      chromeOptions.addArguments(
+        CHROME_ARGS.DISABLE_GPU,
+        CHROME_ARGS.DISABLE_CRASH_REPORTER,
+        CHROME_ARGS.NO_FIRST_RUN,
+        CHROME_ARGS.NO_DEFAULT_BROWSER_CHECK
+      );
+
+      // Create unique Chrome user profile directory for CI to prevent conflicts
+      const tmp = fs.mkdtempSync(path.join(os.tmpdir(), CHROME_CI.PROFILE_PREFIX));
+      chromeOptions.addArguments(`--user-data-dir=${tmp}`);
+      chromeOptions.addArguments(`--profile-directory=${CHROME_CI.PROFILE_DIRECTORY}`);
+    }
+
     // Add additional arguments
     if (config.args && config.args.length > 0) {
       chromeOptions.addArguments(...config.args);
     }
 
-    return new Builder().forBrowser(this.getBrowserName()).setChromeOptions(chromeOptions);
+    return new Builder()
+      .forBrowser(this.getBrowserName())
+      .setChromeOptions(chromeOptions);
   }
 }
 

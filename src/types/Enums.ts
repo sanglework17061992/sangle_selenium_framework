@@ -62,3 +62,12 @@ export enum ConfigKey {
   LOG_LEVEL = 'LOG_LEVEL',
   ELEMENT_TIMEOUT = 'ELEMENT_TIMEOUT'
 }
+
+/**
+ * Driver execution modes
+ * Determines whether tests run in parallel or sequential mode
+ */
+export enum ExecutionMode {
+  PARALLEL = 'parallel',
+  SEQUENTIAL = 'sequential'
+}
