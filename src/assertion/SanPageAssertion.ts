@@ -65,4 +65,26 @@ export class SanPageAssertion {
       this.timeout
     );
   }
+
+  /**
+   * Assert that the page URL contains the expected substring
+   * Useful for partial URL matching without needing exact URLs
+   * @example await expect(driver).toHaveURLContaining('example.com')
+   */
+  async toHaveURLContaining(expectedUrlPart: string): Promise<void> {
+    let lastActualUrl = '';
+    await waitUntil(
+      async () => {
+        try {
+          lastActualUrl = await this.driver.getCurrentUrl();
+          return lastActualUrl.includes(expectedUrlPart);
+        } catch {
+          // Navigation not complete yet, return false to retry
+          return false;
+        }
+      },
+      `Expected URL to contain "${expectedUrlPart}" but got "${lastActualUrl}"`,
+      this.timeout
+    );
+  }
 }

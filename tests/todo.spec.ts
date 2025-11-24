@@ -64,5 +64,10 @@ describe('TodoMVC App - Page Object Pattern & Assertions', () => {
       logger.info('Verifying page title is correct');
       await sanExpect(todoPage).toHaveTitle('React • TodoMVC');
     });
+
+    it('should verify page URL with toHaveURLContaining assertion', async () => {
+      logger.info('Verifying page URL contains todomvc');
+      await sanExpect(todoPage).toHaveURLContaining('todomvc');
+    });
   });
 });
