@@ -53,7 +53,7 @@ describe('TodoMVC App - Page Object Pattern & Assertions', () => {
     });
   });
 
-  describe('Page Object Methods', () => {
+  describe('Page Assertions', () => {
     it('should demonstrate page object methods and assertions', async () => {
       logger.info('Adding todo via TodoPage');
       await todoPage.addTodo('Test item');
