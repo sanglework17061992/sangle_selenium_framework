@@ -61,18 +61,17 @@ export class ChromeFactory extends BaseBrowserFactory {
   protected createBuilder(config: BrowserConfig): Builder {
     const chromeOptions = new chrome.Options();
 
-    // Apply headless mode - default to true in CI
-    const isCI = process.env.CI === 'true';
-    const headless = isCI ? true : config.headless;
-    if (headless) {
+    // Apply headless mode
+    if (config.headless) {
       chromeOptions.addArguments(CHROME_ARGS.HEADLESS);
     }
 
-    // Apply Chrome-specific no-sandbox - default to true in CI
-    const noSandbox = isCI ? true : config.noSandbox;
-    if (noSandbox) {
+    // Apply Chrome-specific no-sandbox
+    if (config.noSandbox) {
       chromeOptions.addArguments(CHROME_ARGS.NO_SANDBOX, CHROME_ARGS.DISABLE_DEV_SHM);
     }
+
+    const isCI = process.env.CI === 'true';
 
     // Add CI-specific stability flags
     if (isCI) {
@@ -80,8 +79,7 @@ export class ChromeFactory extends BaseBrowserFactory {
         CHROME_ARGS.DISABLE_GPU,
         CHROME_ARGS.DISABLE_CRASH_REPORTER,
         CHROME_ARGS.NO_FIRST_RUN,
-        CHROME_ARGS.NO_DEFAULT_BROWSER_CHECK,
-        '--disable-setuid-sandbox'
+        CHROME_ARGS.NO_DEFAULT_BROWSER_CHECK
       );
 
       // 🔥 FIX FOR GITHUB ACTIONS: unique Chrome user profile

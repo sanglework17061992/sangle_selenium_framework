@@ -45,6 +45,8 @@ jobs:
         env:
           BROWSER: ${{ matrix.browser }}
           CI: 'true'
+          HEADLESS: 'true'
+          NO_SANDBOX: 'true'
         
       # Step 6: Upload test results
       - name: Upload test results
