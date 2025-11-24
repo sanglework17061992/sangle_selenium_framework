@@ -6,7 +6,6 @@ import { logger } from '@utils/Logger';
  * AllureReporter - Simple Allure reporter for test results
  * 
  * Captures screenshots on failure and attaches to Allure report
- * Requires allure-mocha to be installed
  */
 export class AllureReporter extends BaseReporter {
   private static allure: any = null;

@@ -8,7 +8,6 @@ import * as path from 'node:path';
  * 
  * Captures screenshots on failure and saves to mochawesome-report/screenshots
  * Screenshots are viewable in the screenshots directory
- * Requires mochawesome to be installed
  */
 export class MochawesomeReporter extends BaseReporter {
   private readonly screenshotsDir = path.join(process.cwd(), 'mochawesome-report', 'screenshots');
