@@ -47,6 +47,11 @@ jobs:
           CI: 'true'
           HEADLESS: 'true'
           NO_SANDBOX: 'true'
+      
+      # Step 5b: List generated artifacts (debug)
+      - name: List test artifacts
+        if: always()
+        run: ls -la mochawesome-report/ allure-results/ 2>&1 || echo "Directories not found"
         
       # Step 6: Upload test results
       - name: Upload test results
@@ -58,4 +63,5 @@ jobs:
             mochawesome-report/
             allure-results/
           retention-days: 30
+          if-no-files-found: warn
 
