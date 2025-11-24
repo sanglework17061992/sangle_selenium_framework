@@ -7,7 +7,16 @@
     "build": "tsc",
     "test": "NODE_ENV=test mocha",
     "test:dev": "mocha",
-    "test:example": "mocha tests/example.spec.ts"
+    "test:example": "mocha tests/example.spec.ts",
+    "test:allure": "NODE_ENV=test npx mocha --reporter allure-mocha",
+    "test:mochawesome": "NODE_ENV=test npx mocha --reporter mochawesome",
+    "test:multi": "NODE_ENV=test npx mocha --reporter mocha-multi-reporters --reporter-options configFile=multi-reporter-config.json",
+    "clean:reports": "rimraf mochawesome-report allure-results allure-report",
+    "clean:test": "npm run clean:reports && npm run test:multi",
+    "report:allure:generate": "allure generate allure-results -o allure-report --clean",
+    "report:allure": "npm run report:allure:generate && npx allure open allure-report",
+    "report:mochawesome": "open mochawesome-report/mochawesome.html || xdg-open mochawesome-report/mochawesome.html || start mochawesome-report/mochawesome.html",
+    "report:all": "npm run report:mochawesome && npm run report:allure"
   },
   "keywords": [
     "selenium",
@@ -23,12 +32,19 @@
     "winston": "^3.18.3"
   },
   "devDependencies": {
+    "@types/chai": "^5.2.3",
     "@types/mocha": "^10.0.10",
     "@types/selenium-webdriver": "^4.1.0",
     "@types/winston": "^2.4.4",
+    "allure-commandline": "^2.34.1",
+    "allure-mocha": "^3.4.2",
+    "chai": "^6.2.1",
     "chromedriver": "^141.0.6",
     "geckodriver": "^4.1.0",
     "mocha": "^10.8.2",
+    "mocha-multi-reporters": "^1.5.1",
+    "mochawesome": "^7.1.4",
+    "rimraf": "^6.1.2",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.1.6"

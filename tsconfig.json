@@ -16,11 +16,19 @@
       "@core/*": ["core/*"],
       "@driver/*": ["driver/*"],
       "@utils/*": ["utils/*"],
-      "@assertion/*": ["assertion/*"]
+      "@assertion/*": ["assertion/*"],
+      "@base/*": ["base/*"],
+      "@reporting/*": ["reporting/*"]
     }
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"],
   "ts-node": {
-    "require": ["tsconfig-paths/register"]
+    "require": ["tsconfig-paths/register"],
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "CommonJS",
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true
+    }
   }
 }
