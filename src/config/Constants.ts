@@ -19,6 +19,13 @@ export const FIREFOX_ARGS = {
   HEADLESS: '-headless',
 } as const;
 
+// Chrome CI configuration
+export const CHROME_CI = {
+  PROFILE_PREFIX: 'chrome-profile-',
+  PROFILE_DIRECTORY: 'Default',
+  CI_ENV_VAR: 'CI',
+} as const;
+
 // Default configuration values
 export const DEFAULT_CONFIG = {
   BROWSER: BrowserType.CHROME,

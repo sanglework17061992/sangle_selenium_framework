@@ -7,7 +7,7 @@ import path from 'node:path';
 import { BrowserType } from '@enums';
 import type { BrowserConfig } from '@configTypes';
 import { logger } from '@utils/Logger';
-import { FIREFOX_ARGS, CHROME_ARGS } from '@config/Constants';
+import { FIREFOX_ARGS, CHROME_ARGS, CHROME_CI } from '@config/Constants';
 
 export interface BrowserFactory {
   createWebDriver(config: BrowserConfig): Promise<WebDriver>;
@@ -82,10 +82,10 @@ export class ChromeFactory extends BaseBrowserFactory {
         CHROME_ARGS.NO_DEFAULT_BROWSER_CHECK
       );
 
-      // 🔥 FIX FOR GITHUB ACTIONS: unique Chrome user profile
-      const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "chrome-profile-"));
+      // Create unique Chrome user profile directory for CI to prevent conflicts
+      const tmp = fs.mkdtempSync(path.join(os.tmpdir(), CHROME_CI.PROFILE_PREFIX));
       chromeOptions.addArguments(`--user-data-dir=${tmp}`);
-      chromeOptions.addArguments("--profile-directory=Default");
+      chromeOptions.addArguments(`--profile-directory=${CHROME_CI.PROFILE_DIRECTORY}`);
     }
 
     // Add additional arguments
