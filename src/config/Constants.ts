@@ -9,6 +9,10 @@ export const CHROME_ARGS = {
   HEADLESS: '--headless=new',
   NO_SANDBOX: '--no-sandbox',
   DISABLE_DEV_SHM: '--disable-dev-shm-usage',
+  DISABLE_GPU: '--disable-gpu',
+  DISABLE_CRASH_REPORTER: '--disable-crash-reporter',
+  NO_FIRST_RUN: '--no-first-run',
+  NO_DEFAULT_BROWSER_CHECK: '--no-default-browser-check',
 } as const;
 
 export const FIREFOX_ARGS = {

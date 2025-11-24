@@ -5,8 +5,6 @@ import { BrowserType } from '@enums';
 import type { BrowserConfig } from '@configTypes';
 import { logger } from '@utils/Logger';
 import { FIREFOX_ARGS, CHROME_ARGS } from '@config/Constants';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 
 export interface BrowserFactory {
   createWebDriver(config: BrowserConfig): Promise<WebDriver>;
@@ -70,14 +68,15 @@ export class ChromeFactory extends BaseBrowserFactory {
       chromeOptions.addArguments(CHROME_ARGS.NO_SANDBOX, CHROME_ARGS.DISABLE_DEV_SHM);
     }
 
-    // For CI environments, use unique user-data-dir to prevent conflicts
+    // Add CI-specific stability flags
     const isCI = process.env.CI === 'true';
     if (isCI) {
-      const uniqueDir = join(tmpdir(), `chrome-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`);
-      chromeOptions.addArguments(`--user-data-dir=${uniqueDir}`);
-      // Add CI-optimized flags
-      chromeOptions.addArguments('--disable-gpu');
-      chromeOptions.addArguments('--disable-dev-shm-usage');
+      chromeOptions.addArguments(
+        CHROME_ARGS.DISABLE_GPU,
+        CHROME_ARGS.DISABLE_CRASH_REPORTER,
+        CHROME_ARGS.NO_FIRST_RUN,
+        CHROME_ARGS.NO_DEFAULT_BROWSER_CHECK
+      );
     }
 
     // Add additional arguments
