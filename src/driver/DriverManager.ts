@@ -1,5 +1,5 @@
 import { WebDriver } from 'selenium-webdriver';
-import { BrowserType } from '@enums';
+import { BrowserType, ExecutionMode } from '@enums';
 import { configLoader, ConfigLoader } from '@config/ConfigLoader';
 import { logger, Logger } from '@utils/Logger';
 import { BrowserFactory, ChromeFactory, FirefoxFactory } from '@driver/BrowserFactory';
@@ -29,8 +29,16 @@ export class DriverManager {
     this.isParallel = !!process.env.MOCHA_WORKER_ID;
     this.workerId = process.env.MOCHA_WORKER_ID || 'main';
     
-    const mode = this.isParallel ? 'PARALLEL' : 'SEQUENTIAL';
-    this.log.info(`DriverManager initialized - Mode: ${mode}, Worker: ${this.workerId}`);
+    const mode = this.isParallel ? ExecutionMode.PARALLEL : ExecutionMode.SEQUENTIAL;
+    this.log.info(`DriverManager initialized - Mode: ${mode.toUpperCase()}, Worker: ${this.workerId}`);
+  }
+
+  /**
+   * Get driver key for parallel/sequential mode
+   * Ensures consistent key format across all operations
+   */
+  private getDriverKey(): string {
+    return `driver-${this.workerId}`;
   }
 
   /**
@@ -59,7 +67,7 @@ export class DriverManager {
     try {
       const browserConfig = this.config.getBrowserConfig();
       const browserName = name || browserConfig.name;
-      const driverKey = `driver-${this.workerId}`;
+      const driverKey = this.getDriverKey();
 
       // In parallel mode, check if driver already exists for this worker
       if (this.isParallel && this.drivers.has(driverKey)) {
@@ -117,7 +125,7 @@ export class DriverManager {
     if (this.currentDriver) {
       try {
         await this.currentDriver.quit();
-        const driverKey = `driver-${this.workerId}`;
+        const driverKey = this.getDriverKey();
         
         if (this.isParallel) {
           this.drivers.delete(driverKey);
@@ -136,8 +144,8 @@ export class DriverManager {
   /**
    * Get execution mode
    */
-  getMode(): 'sequential' | 'parallel' {
-    return this.isParallel ? 'parallel' : 'sequential';
+  getMode(): ExecutionMode {
+    return this.isParallel ? ExecutionMode.PARALLEL : ExecutionMode.SEQUENTIAL;
   }
 
   /**
