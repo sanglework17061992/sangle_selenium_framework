@@ -1,6 +1,9 @@
 import { Builder, WebDriver } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 import firefox from 'selenium-webdriver/firefox.js';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { BrowserType } from '@enums';
 import type { BrowserConfig } from '@configTypes';
 import { logger } from '@utils/Logger';
@@ -68,8 +71,9 @@ export class ChromeFactory extends BaseBrowserFactory {
       chromeOptions.addArguments(CHROME_ARGS.NO_SANDBOX, CHROME_ARGS.DISABLE_DEV_SHM);
     }
 
-    // Add CI-specific stability flags
     const isCI = process.env.CI === 'true';
+
+    // Add CI-specific stability flags
     if (isCI) {
       chromeOptions.addArguments(
         CHROME_ARGS.DISABLE_GPU,
@@ -77,6 +81,11 @@ export class ChromeFactory extends BaseBrowserFactory {
         CHROME_ARGS.NO_FIRST_RUN,
         CHROME_ARGS.NO_DEFAULT_BROWSER_CHECK
       );
+
+      // 🔥 FIX FOR GITHUB ACTIONS: unique Chrome user profile
+      const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "chrome-profile-"));
+      chromeOptions.addArguments(`--user-data-dir=${tmp}`);
+      chromeOptions.addArguments("--profile-directory=Default");
     }
 
     // Add additional arguments
@@ -84,7 +93,9 @@ export class ChromeFactory extends BaseBrowserFactory {
       chromeOptions.addArguments(...config.args);
     }
 
-    return new Builder().forBrowser(this.getBrowserName()).setChromeOptions(chromeOptions);
+    return new Builder()
+      .forBrowser(this.getBrowserName())
+      .setChromeOptions(chromeOptions);
   }
 }
 
