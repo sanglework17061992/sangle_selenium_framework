@@ -5,21 +5,11 @@ import SanElement from '@core/elements/SanElement';
  * TodoPage - Page object for TodoMVC application
  */
 export class TodoPage extends BasePage {
-  // Locators
-  readonly newTodoInput: SanElement;
-  readonly todoList: SanElement;
-  readonly todoItems: SanElement;
-  readonly clearCompletedBtn: SanElement;
-
-  constructor() {
-    super();
-
-    // Initialize locators
-    this.newTodoInput = this.css('.new-todo');
-    this.todoList = this.css('.todo-list');
-    this.todoItems = this.css('.todo-list li');
-    this.clearCompletedBtn = this.css('.clear-completed');
-  }
+  // Locators - Field initialization
+  readonly newTodoInput: SanElement = this.css('.new-todo');
+  readonly todoList: SanElement = this.css('.todo-list');
+  readonly todoItems: SanElement = this.css('.todo-list li');
+  readonly clearCompletedBtn: SanElement = this.css('.clear-completed');
 
   // Todo item getter by index - chainable from todoList
   getTodoItem(index: number): SanElement {
