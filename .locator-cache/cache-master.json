@@ -1,0 +1,74 @@
+{
+  "username_field": [
+    {
+      "locator": {
+        "using": "id",
+        "value": "username"
+      },
+      "score": 33,
+      "successCount": 1,
+      "failureCount": 2,
+      "lastUsed": "2025-11-25T15:45:53.173Z",
+      "discoveredAt": "2025-11-25T15:45:53.173Z"
+    },
+    {
+      "locator": {
+        "using": "id",
+        "value": "user-input-broken"
+      },
+      "score": 100,
+      "successCount": 5,
+      "failureCount": 0,
+      "lastUsed": "2025-11-25T15:52:21.197Z",
+      "discoveredAt": "2025-11-25T15:45:59.125Z"
+    }
+  ],
+  "password_field": [
+    {
+      "locator": {
+        "using": "id",
+        "value": "password"
+      },
+      "score": 33,
+      "successCount": 1,
+      "failureCount": 2,
+      "lastUsed": "2025-11-25T15:45:53.239Z",
+      "discoveredAt": "2025-11-25T15:45:53.239Z"
+    },
+    {
+      "locator": {
+        "using": "id",
+        "value": "pass-input-broken"
+      },
+      "score": 100,
+      "successCount": 5,
+      "failureCount": 0,
+      "lastUsed": "2025-11-25T15:52:21.243Z",
+      "discoveredAt": "2025-11-25T15:46:01.350Z"
+    }
+  ],
+  "login_button": [
+    {
+      "locator": {
+        "using": "id",
+        "value": "login-button"
+      },
+      "score": 33,
+      "successCount": 1,
+      "failureCount": 2,
+      "lastUsed": "2025-11-25T15:45:53.292Z",
+      "discoveredAt": "2025-11-25T15:45:53.292Z"
+    },
+    {
+      "locator": {
+        "using": "id",
+        "value": "login-btn-broken"
+      },
+      "score": 100,
+      "successCount": 5,
+      "failureCount": 0,
+      "lastUsed": "2025-11-25T15:52:21.295Z",
+      "discoveredAt": "2025-11-25T15:46:03.571Z"
+    }
+  ]
+}
