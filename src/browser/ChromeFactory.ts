@@ -20,11 +20,11 @@ import { BaseBrowserFactory } from './BaseBrowserFactory';
  * - Custom arguments support for advanced configurations
  */
 export class ChromeFactory extends BaseBrowserFactory {
-  protected getBrowserName(): string {
+  protected override getBrowserName(): string {
     return BrowserType.CHROME;
   }
 
-  protected createBuilder(config: BrowserConfig): Builder {
+  protected override configureDriverBuilder(config: BrowserConfig): Builder {
     const chromeOptions = new chrome.Options();
 
     // Apply headless mode
