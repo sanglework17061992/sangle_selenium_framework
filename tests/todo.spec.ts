@@ -67,5 +67,28 @@ describe('TodoMVC App - Page Object Pattern & Assertions', () => {
             logger.info('Verifying todo input is visible');
             await sanExpect(todoPage.newTodoInput).toBeVisible();
         });
+
+        it('should support RegExp pattern matching in URL assertions', async () => {
+            logger.info('Verifying URL with RegExp pattern (flexible domain matching)');
+            // First, let's verify the URL contains todomvc with a string pattern
+            await sanExpect(todoPage).toHaveURLContaining('todomvc');
+            logger.info('String-based URL assertion passed');
+            
+            // RegExp allows flexible pattern matching for dynamic or environment-specific URLs
+            // This pattern matches demo.playwright.dev and similar domains with /todomvc path
+            await sanExpect(todoPage).toHaveURLContaining(/https?:\/\/.*todomvc/);
+            logger.info('Domain-agnostic RegExp assertion passed');
+
+            logger.info('Verifying URL contains expected hash fragment with RegExp');
+            // Match hash fragments like #/ (all items), #/active, #/completed
+            await sanExpect(todoPage).toHaveURLContaining(/#\//);
+
+            logger.info('Adding todo to navigate with hash');
+            await todoPage.addTodo('RegExp test item');
+
+            logger.info('Verifying hash-based navigation with RegExp');
+            // RegExp advantage: match any filter state in hash without knowing exact text
+            await sanExpect(todoPage).toHaveURLContaining(/#\/?(?:active|completed)?$/);
+        });
     });
 });
