@@ -170,6 +170,55 @@ export class SanElement {
     return new SanElement(locator, this);
   }
 
+  /**
+   * Find element with fallback locators - Self-healing capability
+   * Tries primary locator first, then fallback locators in order
+   * Useful when UI changes and primary locator breaks but element is still accessible via alternate locators
+   * 
+   * Example usage (common self-healing scenario):
+   * const element = sanElement.findWithFallback(
+   *   { using: 'css', value: '.submit-btn' },  // Primary (may break with CSS changes)
+   *   [
+   *     { using: 'xpath', value: "//button[@data-testid='submit']" },  // Fallback 1
+   *     { using: 'xpath', value: "//button[contains(text(), 'Submit')]" }  // Fallback 2
+   *   ]
+   * );
+   * 
+   * @param primaryLocator - Primary locator to try first
+   * @param fallbackLocators - Array of fallback locators to try if primary fails
+   * @param options - Action options (timeout, force, scroll)
+   * @returns SanElement wrapping the found element
+   * @throws Error if all locators fail
+   */
+  async findWithFallback(
+    primaryLocator: Locator,
+    fallbackLocators: Locator[],
+    options?: ActionOptions
+  ): Promise<SanElement> {
+    const locatorsToTry = [primaryLocator, ...fallbackLocators];
+    let lastError: Error | undefined;
+
+    for (const locator of locatorsToTry) {
+      try {
+        // Try to find with this locator
+        const tempElement = new SanElement(locator, this.parentElement);
+        await tempElement.findVisibleElement(options);
+
+        // If successful, return a new SanElement with this locator
+        return new SanElement(locator, this.parentElement);
+      } catch (error) {
+        lastError = error as Error;
+        // Continue to next locator
+        continue;
+      }
+    }
+
+    // All locators failed
+    throw new Error(
+      `Self-healing: All ${locatorsToTry.length} locators failed. Last error: ${lastError?.message}`
+    );
+  }
+
   // TODO: Additional methods for future enhancement
   // - sendKeys(keys): Send special keys
   // - getAttribute(name): Get attribute value
