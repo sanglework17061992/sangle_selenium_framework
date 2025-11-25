@@ -65,4 +65,38 @@ export class SanPageAssertion {
       this.timeout
     );
   }
+
+  /**
+   * Assert that the page URL contains the expected substring or matches a RegExp pattern
+   * Useful for partial URL matching without needing exact URLs
+   * Supports both string matching and regular expressions for powerful pattern validation
+   * @example 
+   * // String matching
+   * await expect(driver).toHaveURLContaining('example.com')
+   * // RegExp pattern matching
+   * await expect(driver).toHaveURLContaining(/\/dashboard\/\d+/)
+   */
+  async toHaveURLContaining(expectedUrlPart: string | RegExp): Promise<void> {
+    let lastActualUrl = '';
+    const isRegExp = expectedUrlPart instanceof RegExp;
+    const expectedPattern = isRegExp ? expectedUrlPart.toString() : expectedUrlPart;
+    
+    await waitUntil(
+      async () => {
+        try {
+          lastActualUrl = await this.driver.getCurrentUrl();
+          if (isRegExp) {
+            return expectedUrlPart.test(lastActualUrl);
+          } else {
+            return lastActualUrl.includes(expectedUrlPart);
+          }
+        } catch {
+          // Navigation not complete yet, return false to retry
+          return false;
+        }
+      },
+      `Expected URL to ${isRegExp ? 'match pattern' : 'contain'} "${expectedPattern}" but got "${lastActualUrl}"`,
+      this.timeout
+    );
+  }
 }

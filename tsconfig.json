@@ -18,7 +18,9 @@
       "@utils/*": ["utils/*"],
       "@assertion/*": ["assertion/*"],
       "@base/*": ["base/*"],
-      "@reporting/*": ["reporting/*"]
+      "@reporting/*": ["reporting/*"],
+      "@pages/*": ["pages/*"],
+      "@tests/*": ["tests/*"]
     }
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"],
