@@ -28,6 +28,19 @@ export abstract class BaseBrowserFactory implements BrowserFactory {
   protected abstract getBrowserName(): string;
   protected abstract configureDriverBuilder(config: BrowserConfig): Builder;
 
+  /**
+   * Check if running in CI environment
+   * Supports multiple CI flag formats for flexibility:
+   * - true, True, TRUE, yes, Yes, YES, 1, ok, OK (case-insensitive)
+   * 
+   * Used by browser factories to apply CI-specific stability flags
+   * @protected
+   */
+  protected isCIEnvironment(): boolean {
+    const ciValue = process.env.CI?.toLowerCase() ?? '';
+    return ['true', 'yes', '1', 'ok'].includes(ciValue);
+  }
+
   async createWebDriver(config: BrowserConfig): Promise<WebDriver> {
     const browserName = this.getBrowserName();
     
