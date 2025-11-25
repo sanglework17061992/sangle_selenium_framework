@@ -1,4 +1,4 @@
-import { BrowserFactory } from './BaseBrowserFactory';
+import { BrowserFactory } from '@browser/BaseBrowserFactory';
 
 /**
  * Registry for managing browser factories

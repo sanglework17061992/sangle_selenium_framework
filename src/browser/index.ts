@@ -7,7 +7,7 @@
  * in the future by simply creating a new factory class.
  */
 
-export { BaseBrowserFactory, type BrowserFactory } from './BaseBrowserFactory';
-export { ChromeFactory } from './ChromeFactory';
-export { FirefoxFactory } from './FirefoxFactory';
-export { BrowserRegistry } from './BrowserRegistry';
+export { BaseBrowserFactory, type BrowserFactory } from '@browser/BaseBrowserFactory';
+export { ChromeFactory } from '@browser/ChromeFactory';
+export { FirefoxFactory } from '@browser/FirefoxFactory';
+export { BrowserRegistry } from '@browser/BrowserRegistry';

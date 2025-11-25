@@ -3,7 +3,7 @@ import firefox from 'selenium-webdriver/firefox.js';
 import { BrowserType } from '@enums';
 import type { BrowserConfig } from '@configTypes';
 import { FIREFOX_ARGS } from '@config/Constants';
-import { BaseBrowserFactory } from './BaseBrowserFactory';
+import { BaseBrowserFactory } from '@browser/BaseBrowserFactory';
 
 /**
  * Firefox browser factory

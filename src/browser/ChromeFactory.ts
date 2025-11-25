@@ -6,7 +6,7 @@ import path from 'node:path';
 import { BrowserType } from '@enums';
 import type { BrowserConfig } from '@configTypes';
 import { CHROME_ARGS, CHROME_CI } from '@config/Constants';
-import { BaseBrowserFactory } from './BaseBrowserFactory';
+import { BaseBrowserFactory } from '@browser/BaseBrowserFactory';
 
 /**
  * Chrome browser factory
