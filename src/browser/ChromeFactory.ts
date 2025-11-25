@@ -33,10 +33,8 @@ import { BaseBrowserFactory } from '@browser/BaseBrowserFactory';
  * CI=yes npm test
  * CI=1 npm test
  */
-export class ChromeFactory extends BaseBrowserFactory {
-  protected override getBrowserName(): string {
-    return BrowserType.CHROME;
-  }
+export class ChromeFactory extends BaseBrowserFactory<BrowserType.CHROME> {
+  protected readonly browserName = BrowserType.CHROME;
 
   protected override configureDriverBuilder(config: BrowserConfig): Builder {
     const chromeOptions = new chrome.Options();

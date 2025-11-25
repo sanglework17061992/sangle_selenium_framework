@@ -13,10 +13,8 @@ import { BaseBrowserFactory } from '@browser/BaseBrowserFactory';
  * - Headless mode support
  * - Custom arguments support for advanced configurations
  */
-export class FirefoxFactory extends BaseBrowserFactory {
-  protected override getBrowserName(): string {
-    return BrowserType.FIREFOX;
-  }
+export class FirefoxFactory extends BaseBrowserFactory<BrowserType.FIREFOX> {
+  protected readonly browserName = BrowserType.FIREFOX;
 
   protected override configureDriverBuilder(config: BrowserConfig): Builder {
     const firefoxOptions = new firefox.Options();
