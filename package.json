@@ -19,7 +19,12 @@
     "report:allure:generate": "allure generate allure-results -o allure-report --clean",
     "report:allure": "npm run report:allure:generate && npx allure open allure-report",
     "report:mochawesome": "open mochawesome-report/mochawesome.html || xdg-open mochawesome-report/mochawesome.html || start mochawesome-report/mochawesome.html",
-    "report:all": "npm run report:mochawesome && npm run report:allure"
+    "report:all": "npm run report:mochawesome && npm run report:allure",
+    "docs:clean": "rimraf docs-html",
+    "docs:generate": "tsc scripts/generate-docs.ts --outDir . --module commonjs --skipLibCheck && node generate-docs.js",
+    "docs:rebuild": "npm run docs:clean && npm run docs:generate",
+    "docs:open": "open docs-html/index.html || xdg-open docs-html/index.html || start docs-html/index.html",
+    "docs": "npm run docs:rebuild && npm run docs:open"
   },
   "keywords": [
     "selenium",
@@ -44,6 +49,7 @@
     "chai": "^6.2.1",
     "chromedriver": "^141.0.6",
     "geckodriver": "^4.1.0",
+    "marked": "^17.0.1",
     "mocha": "^10.8.2",
     "mocha-multi-reporters": "^1.5.1",
     "mochawesome": "^7.1.4",

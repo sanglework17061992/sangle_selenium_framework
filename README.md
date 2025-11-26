@@ -131,7 +131,6 @@ src/
 tests/
 ├── example.spec.ts          # Example test
 ├── todo.spec.ts             # TodoMVC test
-└── self-healing.spec.ts     # Self-healing framework test
 ```
 
 ## Key Features
@@ -231,16 +230,6 @@ describe('Todo Tests', () => {
 });
 ```
 
-## Self-Healing Locators
-
-Framework includes automatic DOM snapshot discovery for self-healing:
-
-```bash
-npm run test:self-healing     # Run self-healing framework test
-```
-
-See `.locator-cache/` for discovered selectors and scoring data.
-
 ## Troubleshooting
 
 ### Tests fail with "Element not found"
@@ -263,7 +252,3 @@ See `.locator-cache/` for discovered selectors and scoring data.
 3. View reports: `npm run report:all`
 4. Commit changes: `git commit -am "description"`
 5. Push and create pull request
-
-## License
-
-MIT

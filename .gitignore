@@ -3,10 +3,17 @@ node_modules/
 
 # Build output
 dist/
+generate-docs.js
+docs-html/
 
 # Logs
 *.log
 logs/
+
+# Generated files
+allure-results/
+mochawesome-report/
+allure-report/
 
 # OS files
 .DS_Store
