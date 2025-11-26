@@ -199,115 +199,141 @@ Returns configured WebDriver instance
 
 ### Layer 2: Element Interaction with Auto-Wait
 
-**Responsibility**: All element interactions with automatic waiting
+**Responsibility**: All element interactions with automatic waiting for actionability
 
 #### Classes:
 
 ```
 SanElement
-├── constructor(locator, driver, timeout)
-├── find(locator): WebElement (internal)
-├── waitForElement(timeout): void
-├── click(timeout?: number): Promise<void>
-├── fill(text, timeout?: number): Promise<void>
-├── sendKeys(text, timeout?: number): Promise<void>
-├── clear(timeout?: number): Promise<void>
-├── getText(timeout?: number): Promise<string>
-├── getAttribute(attr, timeout?: number): Promise<string>
-├── isVisible(timeout?: number): Promise<boolean>
-├── isClickable(timeout?: number): Promise<boolean>
-├── waitForVisibility(timeout): void
-├── waitForClickability(timeout): void
-└── retry(fn, timeout): Result (internal)
+├── constructor(locator, parentElement?: SanElement)
+├── factory methods:
+│   ├── static css(selector): SanElement
+│   ├── static xpath(expression): SanElement
+│   ├── static id(elementId): SanElement
+│   └── static className(name): SanElement
+├── click(options?: ActionOptions): Promise<void>
+├── type(text, options?: ActionOptions): Promise<void>
+├── getText(options?: ReadOptions): Promise<string>
+├── isDisplayed(options?: ReadOptions): Promise<boolean>
+├── findChild(locator: Locator): SanElement
+└── internal:
+    ├── findElement(actionType, options): WebElement (internal)
+    ├── findVisibleElement(options): WebElement (internal)
+    └── executeWithRecovery<T>(actionType, action, options): T (internal)
 
-ElementFinder
-├── findElement(locator): WebElement
-├── findElements(locator): WebElement[]
-└── withTimeout(ms): ElementFinder
+ActionOptions
+├── timeout?: number
+├── force?: boolean
+└── scroll?: boolean
+
+ReadOptions
+└── timeout?: number
+
+Locator
+├── using: 'css' | 'xpath' | 'id' | 'name' | 'class'
+└── value: string
 ```
 
 **Auto-Wait Mechanism**:
 ```
 await element.click()
   ↓
-waitForClickability(timeout)
-  ↓
-Retry loop:
-  - Try to find element
-  - Check if visible
-  - Check if clickable
-  - If fails, retry until timeout
-  ↓
-Perform click action
-  ↓
-Handle StaleElementReferenceException (retry)
+executeWithRecovery (retry loop on stale element):
+  ├── Find element with actionability check
+  ├── Check element is STABLE, ENABLED, etc (per ActionType)
+  ├── Perform click action
+  └── If StaleElementReferenceError → retry up to MAX_STALE_RETRIES times
 ```
 
 **Usage Example**:
 ```typescript
-// Auto-waits before every interaction
-await page.loginButton.click();      // Auto-waits up to 10s
-await page.usernameInput.fill('demo'); // Auto-waits for visibility
-const text = await page.title.getText(); // Auto-waits then reads
+// Auto-waits for actionability before interaction
+const usernameInput = this.css('input[name="username"]');
+await usernameInput.type('demo');              // Auto-waits for editable
 
-// With custom timeout
-await page.submitButton.click(20000); // 20 second timeout
+const submitButton = this.id('submit-btn');
+await submitButton.click();                    // Auto-waits for clickable
+
+const message = this.css('.success-message');
+const text = await message.getText();          // Auto-waits for visible then reads
+const visible = await message.isDisplayed();   // Check visibility
+
+// Using factory methods for clean syntax
+const element = SanElement.css('.my-element');
+await element.type('text', { timeout: 15000 }); // Custom timeout
 ```
 
 ---
 
 ### Layer 3: Assertion with Auto-Retry
 
-**Responsibility**: All assertions with automatic retry mechanism
+**Responsibility**: All assertions with automatic retry mechanism for flaky tests
 
 #### Classes:
 
 ```
-SanAssertion
-├── constructor(subject, timeout, retryCount)
-├── toBeVisible(timeout?: number): Promise<void>
-├── toBeHidden(timeout?: number): Promise<void>
-├── toHaveTitle(expected, timeout?: number): Promise<void>
-├── toHaveURLContaining(url, timeout?: number): Promise<void>
-├── toHaveText(text, timeout?: number): Promise<void>
-├── toContainText(text, timeout?: number): Promise<void>
-├── toHaveAttribute(attr, value, timeout?: number): Promise<void>
-├── toHaveCount(count, timeout?: number): Promise<void>
-├── toHaveClass(className, timeout?: number): Promise<void>
-├── toBeEnabled(timeout?: number): Promise<void>
-├── toBeDisabled(timeout?: number): Promise<void>
-├── toBeChecked(timeout?: number): Promise<void>
-└── retry(assertion, timeout): Result (internal)
+SanElementAssertion (for SanElement assertions)
+├── constructor(element: SanElement, timeout?: number)
+├── toHaveText(expectedText: string): Promise<void>
+├── toBeVisible(): Promise<void>
+└── internal:
+    └── waitUntil(condition, message, timeout): Promise<void>
 
-AssertionError (Custom Exception)
-├── message: string
-├── expected: any
-├── actual: any
-└── retries: number
+SanPageAssertion (for page/driver assertions)
+├── constructor(driver: WebDriver, timeout?: number)
+├── toHaveTitle(expectedTitle: string): Promise<void>
+├── toHaveURL(expectedUrl: string): Promise<void>
+├── toHaveURLContaining(expectedUrlPart: string | RegExp): Promise<void>
+└── internal:
+    └── waitUntil(condition, message, timeout): Promise<void>
+
+TypeAssertion<T> (for any value type)
+├── constructor(value: T)
+├── toBe(expected): Promise<void>
+├── toEqual(expected): Promise<void>
+├── toBeNull(): Promise<void>
+├── toBeDefined(): Promise<void>
+└── ...other chai assertions
+
+expect() Function (Unified API)
+├── expect(element: SanElement, timeout?): SanElementAssertion
+├── expect(driver: WebDriver, timeout?): SanPageAssertion
+├── expect(page: BasePage, timeout?): SanPageAssertion (auto-extracts driver)
+└── expect(value: any): TypeAssertion
 ```
 
 **Auto-Retry Mechanism**:
 ```
-await expect(page).toHaveTitle('Dashboard')
+await expect(element).toHaveText('Welcome')
   ↓
-Retry loop (default: 5 retries):
-  - Get current title
-  - Compare with expected
-  - If mismatch and retries left, wait 500ms and retry
-  - If mismatch and no retries, throw AssertionError
+Retry loop (default: ~4s timeout):
+  - Get current text
+  - Compare with expected (trimmed)
+  - If mismatch and time left, wait and retry
+  - If mismatch and timeout reached, throw AssertionError
   ↓
 Assertion passes
 ```
 
 **Usage Example**:
 ```typescript
-// Auto-retries assertion up to 5 times
-await expect(page).toHaveTitle('Dashboard');
-await expect(page.loginButton).toBeVisible();
-await expect(page).toHaveURLContaining('/dashboard');
+import { expect } from '@assertion/index';
 
-// Custom timeout
-await expect(page.message).toHaveText('Success', 30000);
+// Auto-retries element assertions
+await expect(page.welcomeMessage).toBeVisible();
+await expect(page.greeting).toHaveText('Hello, User');
+
+// Auto-retries page assertions
+await expect(page).toHaveTitle('Dashboard');
+await expect(page).toHaveURLContaining('dashboard');
+await expect(page).toHaveURLContaining(/dashboard/i);  // RegExp support
+
+// Works with any object that has a driver property
+await expect(somePageObject).toHaveTitle('Home');
+
+// Type-safe value assertions
+const result = 42;
+await expect(result).toBe(42);
 ```
 
 ---
@@ -321,72 +347,98 @@ await expect(page.message).toHaveText('Success', 30000);
 ```
 BasePage<T extends WebDriver>
 ├── protected driver: WebDriver
-├── protected timeout: number
-├── constructor(driver, timeout)
-├── protected findElement(locator): SanElement
-├── protected findElements(locator): SanElement[]
-├── protected goto(url): Promise<void>
-├── protected waitFor(condition, timeout): void
-├── getTitle(): Promise<string>
-├── getCurrentUrl(): Promise<string>
-└── getPageSource(): Promise<string>
+├── locator helper methods (protected):
+│   ├── css(selector): SanElement
+│   ├── id(elementId): SanElement
+│   ├── xpath(expression): SanElement
+│   └── className(name): SanElement
+├── page actions:
+│   └── open(url): Promise<void>
+└── page assertions (delegate to SanPageAssertion):
+    ├── toHaveTitle(expectedTitle): Promise<void>
+    ├── toHaveURL(expectedUrl): Promise<void>
+    └── toHaveURLContaining(urlPart): Promise<void>
 
 BaseTest<PageType extends BasePage>
 ├── protected driver: WebDriver
 ├── protected page: PageType
-├── protected before(): Promise<void>
-├── protected after(): Promise<void>
-├── beforeEach(): Promise<void>
-├── afterEach(): Promise<void>
-├── expect(subject): SanAssertion
-├── delay(ms): Promise<void>
-└── logger: Logger
+├── setupDriver(): Promise<void>
+├── teardownDriver(): Promise<void>
+├── abstract createPage(): PageType
+└── (subclass implements createPage())
 ```
 
-**Example Page Object**:
+**Example Page Object** (Field Initialization Pattern):
 ```typescript
 // Extends BasePage (Framework Layer)
+// Important: Use field initialization, NOT getters - matches actual framework pattern
+import { BasePage } from './BasePage';
+import SanElement from '@core/elements/SanElement';
+
 class LoginPage extends BasePage {
-  // Locators
-  get usernameInput() {
-    return this.findElement({ id: 'username' }); // Returns SanElement
-  }
-  
-  get passwordInput() {
-    return this.findElement({ id: 'password' });
-  }
-  
-  get loginButton() {
-    return this.findElement({ css: 'button[type="submit"]' });
-  }
-  
+  // Locators - Field initialization using BasePage helpers
+  // This is the actual pattern used in framework (see TodoPage.ts)
+  readonly usernameInput: SanElement = this.id('username');
+  readonly passwordInput: SanElement = this.id('password');
+  readonly loginButton: SanElement = this.css('button[type="submit"]');
+
   // Business logic methods
-  async login(username: string, password: string) {
-    await this.usernameInput.fill(username);     // Auto-wait
-    await this.passwordInput.fill(password);     // Auto-wait
-    await this.loginButton.click();              // Auto-wait
-    await this.waitFor(() => this.getCurrentUrl().includes('/dashboard'), 10000);
+  async login(username: string, password: string): Promise<void> {
+    // Use SanElement API: type(), click(), getText(), isDisplayed(), etc.
+    await this.usernameInput.type(username);      // Auto-waits for editable
+    await this.passwordInput.type(password);
+    await this.loginButton.click();               // Auto-waits for clickable
+  }
+  
+  // Child element pattern - using findChild()
+  getTodoItem(index: number): SanElement {
+    return this.css('.todo-list').findChild({ 
+      using: 'css', 
+      value: `li:nth-child(${index + 1})` 
+    });
   }
 }
 ```
 
 **Example Test Case**:
 ```typescript
-// Extends BaseTest (Framework Layer)
-describe('Login Tests', () => {
-  class LoginTest extends BaseTest<LoginPage> {
-    before() {
-      this.page = new LoginPage(this.driver);
-    }
+// Example using BaseTest - matches actual todo.spec.ts pattern
+import { describe, it, before, after } from 'mocha';
+import { expect } from '@assertion/index';
+import { BaseTest } from '@tests/BaseTest';
+import { LoginPage } from '@pages/LoginPage';
+
+class LoginTest extends BaseTest<LoginPage> {
+  protected createPage(): LoginPage {
+    return new LoginPage();
   }
+}
+
+describe('Login Tests', () => {
+  const test = new LoginTest();
+
+  before(async () => {
+    // BaseTest handles driver initialization and page creation
+    await test.setupDriver();
+  });
+
+  after(async () => {
+    // BaseTest handles driver cleanup
+    await test.teardownDriver();
+  });
 
   it('should login successfully', async () => {
-    // Uses BasePage & SanElement with auto-wait
-    await loginPage.login('demo', 'password');
+    // Navigate using page object
+    await test.page.open('http://localhost:5000/login');
+
+    // Business flow using Page Object methods
+    await test.page.login('demo', 'password');
+
+    // Use unified expect() for page-level assertions (auto-retry)
+    await expect(test.page).toHaveURLContaining('dashboard');
     
-    // Uses SanAssertion with auto-retry
-    await expect(loginPage).toHaveURLContaining('/dashboard');
-    await expect(loginPage.welcomeMessage).toBeVisible();
+    // Element-level assertions
+    await expect(test.page.usernameInput).toBeVisible();
   });
 });
 ```
@@ -397,28 +449,28 @@ describe('Login Tests', () => {
 
 ```
 User writes test code:
-  await page.usernameInput.fill('demo')
+  await page.usernameInput.type('demo')
     ↓
-SanElement.fill() is invoked:
-  - waitForElement(timeout)           [Layer 2: Element]
-  - find element with locator
-  - wait for visibility
-  - perform fill action
-  - handle stale element retry
+SanElement.type() is invoked:
+  - executeWithRecovery() for stale element handling [Layer 2: Element]
+  - findElement() with actionability check
+    - Uses ActionabilityChecker for ActionType.TYPE
+    - Waits for element to be editable
+  - Performs sendKeys() action
+  - On StaleElementReferenceError → retry up to MAX_STALE_RETRIES times
     ↓
 User writes assertion:
   await expect(page).toHaveTitle('Dashboard')
     ↓
-SanAssertion.toHaveTitle() is invoked:
-  - getTitle()
-  - compare with expected
-  - if mismatch, retry up to 5 times   [Layer 3: Assertion]
-  - throw error if still fails
+SanPageAssertion.toHaveTitle() is invoked:
+  - waitUntil() helper with retry loop [Layer 3: Assertion]
+  - Polls getTitle() until matches expected or timeout
+  - Throws AssertionError if condition never met
     ↓
 All underlying config managed by:
-  - DriverManager                      [Layer 1: Driver]
-  - ConfigLoader for timeouts
-  - BrowserRegistry for browser type
+  - DriverManager (singleton)           [Layer 1: Driver]
+  - ConfigLoader for timeouts and browser config
+  - BrowserRegistry for factory lookup
 ```
 
 ---

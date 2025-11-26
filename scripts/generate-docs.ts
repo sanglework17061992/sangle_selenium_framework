@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { marked } from 'marked';
 
 interface DocItem {
   id: string;
@@ -108,8 +107,59 @@ function addHeadingIds(html: string): string {
   });
 }
 
-function convertMarkdownLinks(html: string): string {
-  // Create a mapping of markdown filenames to HTML IDs
+function markdownToHtml(markdown: string): string {
+  let html = markdown;
+
+  // Headers
+  html = html.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+
+  // Bold and italic
+  html = html.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+  html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+
+  // Links
+  html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
+
+  // Code blocks
+  html = html.replace(/```(.*?)\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>');
+  html = html.replace(/```\n([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+
+  // Inline code
+  html = html.replace(/`(.*?)`/g, '<code>$1</code>');
+
+  // Unordered lists
+  html = html.replace(/^\* (.*?)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>.*?<\/li>)/s, '<ul>$1</ul>');
+
+  // Ordered lists
+  html = html.replace(/^\d+\. (.*?)$/gm, '<li>$1</li>');
+
+  // Blockquotes
+  html = html.replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>');
+
+  // Paragraphs
+  html = html.replace(/\n\n/g, '</p><p>');
+  html = '<p>' + html + '</p>';
+
+  // Clean up
+  html = html.replace(/<p><\/p>/g, '');
+  html = html.replace(/<ul><li>/g, '<ul>\n<li>');
+  html = html.replace(/<\/li><li>/g, '</li>\n<li>');
+  html = html.replace(/<\/li><\/ul>/g, '</li>\n</ul>');
+
+  return html;
+}
+
+async function generateHTML(item: DocItem, markdown: string): Promise<string> {
+  // Use simple markdown parser instead of marked
+  let content = markdownToHtml(markdown);
+  
+  // Convert markdown links to html links
   const linkMap: { [key: string]: string } = {
     '01-introduction.md': 'intro.html',
     '02-installation.md': 'installation.html',
@@ -123,17 +173,10 @@ function convertMarkdownLinks(html: string): string {
     '10-troubleshooting.md': 'troubleshooting.html',
   };
 
-  let result = html;
   for (const [mdFile, htmlFile] of Object.entries(linkMap)) {
-    result = result.replace(new RegExp(`href="${mdFile}"`, 'g'), `href="${htmlFile}"`);
+    content = content.replace(new RegExp(`href="${mdFile}"`, 'g'), `href="${htmlFile}"`);
   }
-
-  return result;
-}
-
-async function generateHTML(item: DocItem, markdown: string): Promise<string> {
-  const rawContent = await marked(markdown);
-  let content = convertMarkdownLinks(String(rawContent));
+  
   content = addHeadingIds(content);
   const sidebar = generateSidebar(item.id);
   const toc = generateTableOfContents(markdown);
@@ -220,18 +263,18 @@ async function generateDocs(): Promise<void> {
     const outPath = path.join(outDir, `${item.id}.html`);
 
     fs.writeFileSync(outPath, html);
-    console.log(`✓ Generated: ${outPath}`);
+    console.log(`Generated: ${outPath}`);
   }
 
   // Copy styles
   const cssPath = path.join(outDir, 'styles.css');
   fs.writeFileSync(cssPath, getStylesCSS());
-  console.log(`✓ Generated: ${cssPath}`);
+  console.log(`Generated: ${cssPath}`);
 
   // Generate JavaScript helper
   const jsPath = path.join(outDir, 'docs.js');
   fs.writeFileSync(jsPath, getDocsJS());
-  console.log(`✓ Generated: ${jsPath}`);
+  console.log(`Generated: ${jsPath}`);
 
   // Generate index.html redirect
   const indexPath = path.join(outDir, 'index.html');
@@ -246,10 +289,10 @@ async function generateDocs(): Promise<void> {
   Redirecting to <a href="intro.html">documentation</a>...
 </body>
 </html>`);
-  console.log(`✓ Generated: ${indexPath}`);
+  console.log(`Generated: ${indexPath}`);
 
-  console.log('\n✅ Documentation generated successfully!');
-  console.log(`📖 Open: file://${path.resolve(outDir, 'index.html')}\n`);
+  console.log('\nDocumentation generated successfully!');
+  console.log(`Open: file://${path.resolve(outDir, 'index.html')}\n`);
 }
 
 function getDocsJS(): string {
@@ -319,7 +362,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Mobile menu toggle
   const sidebarToggle = document.createElement('button');
   sidebarToggle.className = 'sidebar-toggle';
-  sidebarToggle.innerHTML = '☰ Menu';
+  sidebarToggle.innerHTML = 'Menu';
   sidebarToggle.addEventListener('click', function() {
     const sidebar = document.querySelector('.sidebar-nav');
     sidebar.classList.toggle('open');
