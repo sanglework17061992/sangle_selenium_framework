@@ -196,6 +196,34 @@ Logs are written to `logs/` directory with timestamps:
 - `logs/test-{timestamp}.log` - Main test log
 - Console output for development mode
 
+## Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+| Document | Purpose |
+|----------|---------|
+| [01-introduction.md](./docs/01-introduction.md) | Framework overview and key concepts |
+| [02-installation.md](./docs/02-installation.md) | Setup and installation guide |
+| [03-writing-tests.md](./docs/03-writing-tests.md) | How to write test cases |
+| [04-page-objects.md](./docs/04-page-objects.md) | Page Object Pattern guide |
+| [05-assertions.md](./docs/05-assertions.md) | Custom assertion framework |
+| [06-advanced.md](./docs/06-advanced.md) | Advanced features and patterns |
+| [07-auto-wait.md](./docs/07-auto-wait.md) | Auto-wait mechanism details |
+| [08-auto-retry.md](./docs/08-auto-retry.md) | Auto-retry assertions |
+| [**09-architecture.md**](./docs/09-architecture.md) | **4-Layer Architecture & Class Diagram** |
+| [10-troubleshooting.md](./docs/10-troubleshooting.md) | Common issues and solutions |
+
+### Architecture Overview
+
+The framework uses a **4-layer architecture** for clean separation of concerns:
+
+1. **Driver & Browser Factory Layer** - WebDriver management and browser configuration
+2. **Element Layer** - Auto-wait element interactions with `SanElement`
+3. **Assertion Layer** - Auto-retry assertions with `SanAssertion`
+4. **User Layer** - Page Objects and Test Cases
+
+See [09-architecture.md](./docs/09-architecture.md) for detailed class diagrams and component relationships.
+
 ## Test Examples
 
 ### Example Test

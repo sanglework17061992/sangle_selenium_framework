@@ -51,6 +51,11 @@ const docsStructure: DocItem[] = [
     file: 'docs/08-auto-retry.md'
   },
   {
+    id: 'architecture',
+    title: 'Architecture & Class Diagram',
+    file: 'docs/09-architecture.md'
+  },
+  {
     id: 'troubleshooting',
     title: 'Troubleshooting',
     file: 'docs/10-troubleshooting.md'
@@ -114,13 +119,13 @@ function convertMarkdownLinks(html: string): string {
     '06-advanced.md': 'advanced.html',
     '07-auto-wait.md': 'auto-wait.html',
     '08-auto-retry.md': 'auto-retry.html',
+    '09-architecture.md': 'architecture.html',
     '10-troubleshooting.md': 'troubleshooting.html',
   };
 
   let result = html;
   for (const [mdFile, htmlFile] of Object.entries(linkMap)) {
-    const regex = new RegExp(`href="${mdFile}"`, 'g');
-    result = result.replace(regex, `href="${htmlFile}"`);
+    result = result.replace(new RegExp(`href="${mdFile}"`, 'g'), `href="${htmlFile}"`);
   }
 
   return result;
@@ -138,8 +143,12 @@ async function generateHTML(item: DocItem, markdown: string): Promise<string> {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SaniumTS Selenium Framework - ${item.title}">
+  <meta name="og:title" content="${item.title} - SaniumTS Framework Documentation">
+  <meta name="og:description" content="Comprehensive guide for ${item.title}">
   <title>${item.title} - SaniumTS Framework Documentation</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%230078d4'>S</text></svg>">
 </head>
 <body>
   <div class="container">
@@ -165,10 +174,11 @@ async function generateHTML(item: DocItem, markdown: string): Promise<string> {
         <div class="footer-nav">
           ${getPrevNext(item.id)}
         </div>
-        <p class="footer-text">SaniumTS Selenium Framework Documentation</p>
+        <p class="footer-text">SaniumTS Selenium Framework Documentation | Last updated: ${new Date().toISOString().split('T')[0]}</p>
       </footer>
     </main>
   </div>
+  <script src="docs.js"></script>
 </body>
 </html>`;
 }
@@ -210,13 +220,18 @@ async function generateDocs(): Promise<void> {
     const outPath = path.join(outDir, `${item.id}.html`);
 
     fs.writeFileSync(outPath, html);
-    console.log(`Generated: ${outPath}`);
+    console.log(`✓ Generated: ${outPath}`);
   }
 
   // Copy styles
   const cssPath = path.join(outDir, 'styles.css');
   fs.writeFileSync(cssPath, getStylesCSS());
-  console.log(`Generated: ${cssPath}`);
+  console.log(`✓ Generated: ${cssPath}`);
+
+  // Generate JavaScript helper
+  const jsPath = path.join(outDir, 'docs.js');
+  fs.writeFileSync(jsPath, getDocsJS());
+  console.log(`✓ Generated: ${jsPath}`);
 
   // Generate index.html redirect
   const indexPath = path.join(outDir, 'index.html');
@@ -231,10 +246,98 @@ async function generateDocs(): Promise<void> {
   Redirecting to <a href="intro.html">documentation</a>...
 </body>
 </html>`);
-  console.log(`Generated: ${indexPath}`);
+  console.log(`✓ Generated: ${indexPath}`);
 
-  console.log('Documentation generated successfully!');
-  console.log(`Open: file://${path.resolve(outDir, 'index.html')}`);
+  console.log('\n✅ Documentation generated successfully!');
+  console.log(`📖 Open: file://${path.resolve(outDir, 'index.html')}\n`);
+}
+
+function getDocsJS(): string {
+  return `// Documentation interactivity
+document.addEventListener('DOMContentLoaded', function() {
+  // Syntax highlighting for code blocks
+  const codeBlocks = document.querySelectorAll('pre code');
+  codeBlocks.forEach(block => {
+    if (!block.classList.contains('hljs')) {
+      block.classList.add('plain-code');
+    }
+  });
+
+  // Add copy button to code blocks
+  const preBlocks = document.querySelectorAll('pre');
+  preBlocks.forEach((pre, index) => {
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'copy-btn';
+    copyBtn.textContent = 'Copy';
+    copyBtn.type = 'button';
+    copyBtn.setAttribute('data-block', index);
+    
+    copyBtn.addEventListener('click', function() {
+      const code = pre.querySelector('code').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => {
+          copyBtn.textContent = 'Copy';
+        }, 2000);
+      });
+    });
+    
+    pre.style.position = 'relative';
+    pre.appendChild(copyBtn);
+  });
+
+  // Smooth scrolling for TOC links
+  document.querySelectorAll('.toc a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      const id = this.getAttribute('href').substring(1);
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+
+  // Active TOC highlighting
+  const headings = document.querySelectorAll('.markdown-content h2, .markdown-content h3');
+  const tocLinks = document.querySelectorAll('.toc a');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(link => link.classList.remove('active'));
+        const activeLink = document.querySelector(\`.toc a[href="#\${entry.target.id}"]\`);
+        if (activeLink) {
+          activeLink.classList.add('active');
+        }
+      }
+    });
+  }, { rootMargin: '-50px 0px -66%' });
+
+  headings.forEach(heading => observer.observe(heading));
+
+  // Mobile menu toggle
+  const sidebarToggle = document.createElement('button');
+  sidebarToggle.className = 'sidebar-toggle';
+  sidebarToggle.innerHTML = '☰ Menu';
+  sidebarToggle.addEventListener('click', function() {
+    const sidebar = document.querySelector('.sidebar-nav');
+    sidebar.classList.toggle('open');
+  });
+
+  // Add toggle button to header on mobile
+  if (window.innerWidth < 768) {
+    document.querySelector('.page-header').appendChild(sidebarToggle);
+  }
+
+  // Close sidebar when clicking a link
+  document.querySelectorAll('.sidebar-nav a').forEach(link => {
+    link.addEventListener('click', function() {
+      document.querySelector('.sidebar-nav').classList.remove('open');
+    });
+  });
+});
+`;
 }
 
 function getStylesCSS(): string {
@@ -397,6 +500,14 @@ html, body {
   color: var(--primary-color);
 }
 
+.toc a.active {
+  color: var(--primary-color);
+  font-weight: 600;
+  border-left: 3px solid var(--primary-color);
+  padding-left: 8px;
+  margin-left: -11px;
+}
+
 .markdown-content {
   flex: 1;
   max-width: 800px;
@@ -452,12 +563,43 @@ html, body {
   padding: 16px;
   overflow-x: auto;
   margin: 16px 0;
+  position: relative;
+  font-size: 13px;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 6px 12px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+pre:hover .copy-btn {
+  opacity: 1;
+}
+
+.copy-btn:hover {
+  background-color: #005a9c;
 }
 
 .markdown-content pre code {
   background-color: transparent;
   color: var(--text-color);
   padding: 0;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.markdown-content pre code.plain-code {
+  display: block;
+  overflow-x: auto;
 }
 
 .markdown-content blockquote {
@@ -536,11 +678,32 @@ html, body {
 
 @media (max-width: 768px) {
   .sidebar-nav {
-    position: absolute;
-    width: 100%;
-    height: auto;
+    position: fixed;
+    width: 280px;
+    height: 100vh;
     left: -280px;
     z-index: 1000;
+    transition: left 0.3s ease;
+  }
+
+  .sidebar-nav.open {
+    left: 0;
+  }
+
+  .sidebar-toggle {
+    display: block;
+    padding: 8px 16px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-left: 12px;
+  }
+
+  .sidebar-toggle:hover {
+    background-color: #005a9c;
   }
 
   .container {
@@ -557,10 +720,18 @@ html, body {
 
   .page-header {
     padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .page-header h1 {
     font-size: 24px;
+    margin: 0;
+  }
+
+  .breadcrumb {
+    font-size: 12px;
   }
 }
 `;
