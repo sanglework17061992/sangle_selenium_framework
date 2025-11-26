@@ -16,19 +16,19 @@ import { BaseBrowserFactory } from '@browser/BaseBrowserFactory';
 export class FirefoxFactory extends BaseBrowserFactory<BrowserType.FIREFOX> {
   protected readonly browserName = BrowserType.FIREFOX;
 
-  protected override configureDriverBuilder(config: BrowserConfig): Builder {
-    const firefoxOptions = new firefox.Options();
+  protected getHeadlessArg(): string {
+    return FIREFOX_ARGS.HEADLESS;
+  }
 
-    // Apply headless mode
-    if (config.headless) {
-      firefoxOptions.addArguments(FIREFOX_ARGS.HEADLESS);
-    }
+  protected getOptionsObject(config: BrowserConfig): firefox.Options {
+    return new firefox.Options();
+  }
 
-    // Add additional arguments
-    if (config.args && config.args.length > 0) {
-      firefoxOptions.addArguments(...config.args);
-    }
+  protected configureOptions(options: firefox.Options, config: BrowserConfig): void {
+    // No Firefox-specific configuration needed beyond headless and custom args
+  }
 
-    return new Builder().forBrowser(this.getBrowserName()).setFirefoxOptions(firefoxOptions);
+  protected createBuilderWithOptions(options: firefox.Options): Builder {
+    return new Builder().forBrowser(this.browserName).setFirefoxOptions(options);
   }
 }

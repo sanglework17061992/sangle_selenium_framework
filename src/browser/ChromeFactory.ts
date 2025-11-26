@@ -36,24 +36,25 @@ import { BaseBrowserFactory } from '@browser/BaseBrowserFactory';
 export class ChromeFactory extends BaseBrowserFactory<BrowserType.CHROME> {
   protected readonly browserName = BrowserType.CHROME;
 
-  protected override configureDriverBuilder(config: BrowserConfig): Builder {
-    const chromeOptions = new chrome.Options();
+  protected getHeadlessArg(): string {
+    return CHROME_ARGS.HEADLESS;
+  }
 
-    // Apply headless mode
-    if (config.headless) {
-      chromeOptions.addArguments(CHROME_ARGS.HEADLESS);
-    }
+  protected getOptionsObject(config: BrowserConfig): chrome.Options {
+    return new chrome.Options();
+  }
 
+  protected configureOptions(options: chrome.Options, config: BrowserConfig): void {
     // Apply Chrome-specific no-sandbox
     if (config.noSandbox) {
-      chromeOptions.addArguments(CHROME_ARGS.NO_SANDBOX, CHROME_ARGS.DISABLE_DEV_SHM);
+      options.addArguments(CHROME_ARGS.NO_SANDBOX, CHROME_ARGS.DISABLE_DEV_SHM);
     }
 
     const isCI = this.isCIEnvironment();
 
     // Add CI-specific stability flags to handle environment constraints
     if (isCI) {
-      chromeOptions.addArguments(
+      options.addArguments(
         CHROME_ARGS.DISABLE_GPU,
         CHROME_ARGS.DISABLE_CRASH_REPORTER,
         CHROME_ARGS.NO_FIRST_RUN,
@@ -63,17 +64,14 @@ export class ChromeFactory extends BaseBrowserFactory<BrowserType.CHROME> {
       // Create unique Chrome user profile directory for CI to prevent conflicts
       // Multiple parallel test runs might otherwise fail with "profile already in use" error
       const tmp = fs.mkdtempSync(path.join(os.tmpdir(), CHROME_CI.PROFILE_PREFIX));
-      chromeOptions.addArguments(`--user-data-dir=${tmp}`);
-      chromeOptions.addArguments(`--profile-directory=${CHROME_CI.PROFILE_DIRECTORY}`);
+      options.addArguments(`--user-data-dir=${tmp}`);
+      options.addArguments(`--profile-directory=${CHROME_CI.PROFILE_DIRECTORY}`);
     }
+  }
 
-    // Add additional arguments
-    if (config.args && config.args.length > 0) {
-      chromeOptions.addArguments(...config.args);
-    }
-
+  protected createBuilderWithOptions(options: chrome.Options): Builder {
     return new Builder()
-      .forBrowser(this.getBrowserName())
-      .setChromeOptions(chromeOptions);
+      .forBrowser(this.browserName)
+      .setChromeOptions(options);
   }
 }

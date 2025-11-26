@@ -18,26 +18,36 @@ export interface BrowserFactory {
  * 1. Add browser type to BrowserType enum (e.g., EDGE = 'edge')
  * 2. Add browser-specific arguments to Constants.ts (e.g., EDGE_ARGS)
  * 3. Create new factory class extending BaseBrowserFactory<BrowserType.EDGE>
- * 4. Implement only configureDriverBuilder() method (getBrowserName() is automatic)
+ * 4. Implement only getOptionsObject() and configureOptions() methods
  * 5. Register factory in DriverManager.createDefaultRegistry()
  * 
  * Example:
  * export class EdgeFactory extends BaseBrowserFactory<BrowserType.EDGE> {
- *   protected override configureDriverBuilder(config: BrowserConfig): Builder { 
- *     // Configure Edge options and return Builder
+ *   protected getOptionsObject(config): EdgeOptions { return new edge.Options(); }
+ *   protected configureOptions(options, config): void { 
+ *     // Configure Edge-specific options
  *   }
  * }
  */
 export abstract class BaseBrowserFactory<T extends BrowserType = BrowserType> implements BrowserFactory {
   protected abstract readonly browserName: T;
-  protected abstract configureDriverBuilder(config: BrowserConfig): Builder;
-
+  
   /**
-   * Get the browser name for this factory
-   * Type-safe and automatically provided by the generic type
+   * Get browser options object (Chrome, Firefox, etc.)
+   * Subclasses must return the appropriate browser options instance
    */
-  protected getBrowserName(): T {
-    return this.browserName;
+  protected abstract getOptionsObject(config: BrowserConfig): any;
+  
+  /**
+   * Configure browser-specific options
+   * Subclasses implement browser-specific configuration here
+   * 
+   * Default implementation does nothing - override only if needed
+   * @protected
+   */
+  protected configureOptions(options: any, config: BrowserConfig): void {
+    // Default: no browser-specific configuration
+    // Subclasses can override if needed (e.g., Chrome adds no-sandbox)
   }
 
   /**
@@ -53,16 +63,65 @@ export abstract class BaseBrowserFactory<T extends BrowserType = BrowserType> im
     return ['true', 'yes', '1', 'ok'].includes(ciValue);
   }
 
-  async createWebDriver(config: BrowserConfig): Promise<WebDriver> {
-    const browserName = this.getBrowserName();
+  /**
+   * Apply common configuration options to browser options object
+   * Handles headless mode and custom arguments
+   * @protected
+   */
+  protected applyCommonOptions(options: any, config: BrowserConfig): void {
+    // Apply headless mode
+    if (config.headless) {
+      options.addArguments(this.getHeadlessArg());
+    }
+
+    // Add additional arguments
+    if (config.args && config.args.length > 0) {
+      options.addArguments(...config.args);
+    }
+  }
+
+  /**
+   * Get headless argument for this browser
+   * Subclasses can override if needed
+   * @protected
+   */
+  protected getHeadlessArg(): string {
+    // Default headless arg - subclasses may override
+    return '--headless';
+  }
+
+  /**
+   * Configure and return builder with browser options
+   * This template method handles the boilerplate, reducing duplication
+   * @protected
+   */
+  protected configureDriverBuilder(config: BrowserConfig): Builder {
+    const options = this.getOptionsObject(config);
     
+    // Apply browser-specific configuration
+    this.configureOptions(options, config);
+    
+    // Apply common configuration (headless, custom args)
+    this.applyCommonOptions(options, config);
+    
+    return this.createBuilderWithOptions(options);
+  }
+
+  /**
+   * Create builder with configured options
+   * Subclasses can override for browser-specific builder setup
+   * @protected
+   */
+  protected abstract createBuilderWithOptions(options: any): Builder;
+
+  async createWebDriver(config: BrowserConfig): Promise<WebDriver> {
     try {
-      logger.debug(`Creating ${browserName} driver with headless=${config.headless}`);
+      logger.debug(`Creating ${this.browserName} driver with headless=${config.headless}`);
 
       const builder = this.configureDriverBuilder(config);
       return await builder.build();
     } catch (error) {
-      logger.error(`Failed to create ${browserName} driver: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      logger.error(`Failed to create ${this.browserName} driver: ${error instanceof Error ? error.message : 'Unknown error'}`);
       throw error;
     }
   }
