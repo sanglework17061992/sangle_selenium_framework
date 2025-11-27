@@ -22,7 +22,6 @@ npm install
 This installs:
 - `selenium-webdriver` - WebDriver client
 - `mocha` - Test runner
-- `chai` - Assertion library
 - `typescript` - TypeScript compiler
 - `winston` - Logging library
 - `allure-mocha` - Allure reporting

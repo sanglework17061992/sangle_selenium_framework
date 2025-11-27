@@ -31,7 +31,6 @@ Full TypeScript support with strict type checking ensures errors are caught at c
 - **TypeScript** - Type-safe JavaScript
 - **Selenium WebDriver** - Browser automation
 - **Mocha** - Test runner
-- **Chai** - Assertion library
 - **Winston** - Logging
 - **Allure** - Test reporting
 - **Mochawesome** - HTML test reports

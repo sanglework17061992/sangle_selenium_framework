@@ -112,16 +112,16 @@ function markdownToHtml(markdown: string): string {
   const codeBlockPlaceholders: Map<string, string> = new Map();
   let blockIndex = 0;
 
-  // Extract code blocks and replace with placeholders
+  // Extract code blocks and replace with placeholders using alphanumeric only (no underscores)
   html = html.replace(/```(.*?)\n([\s\S]*?)```/g, (match, lang, code) => {
-    const placeholder = `___CODE_BLOCK_${blockIndex}___`;
+    const placeholder = `CODEBLOCK${blockIndex}`;
     codeBlockPlaceholders.set(placeholder, `<pre><code class="language-${lang}">${code}</code></pre>`);
     blockIndex++;
     return placeholder;
   });
 
   html = html.replace(/```\n([\s\S]*?)```/g, (match, code) => {
-    const placeholder = `___CODE_BLOCK_${blockIndex}___`;
+    const placeholder = `CODEBLOCK${blockIndex}`;
     codeBlockPlaceholders.set(placeholder, `<pre><code>${code}</code></pre>`);
     blockIndex++;
     return placeholder;
@@ -163,7 +163,7 @@ function markdownToHtml(markdown: string): string {
   // Paragraphs (after lists to avoid breaking them)
   // But protect code block placeholders
   html = html.replace(/\n\n/g, '</p><p>');
-  html = html.replace(/<p>(___CODE_BLOCK_\d+___)<\/p>/g, '$1');
+  html = html.replace(/<p>(CODEBLOCK\d+)<\/p>/g, '$1');
   html = '<p>' + html + '</p>';
 
   // Clean up
@@ -178,7 +178,7 @@ function markdownToHtml(markdown: string): string {
   html = html.replace(/<\/ul><\/p>/g, '</ul>');
   html = html.replace(/<p><ol>/g, '<ol>');
   html = html.replace(/<\/ol><\/p>/g, '</ol>');
-  html = html.replace(/<p>(___CODE_BLOCK_\d+___)<\/p>/g, '$1');
+  html = html.replace(/<p>(CODEBLOCK\d+)<\/p>/g, '$1');
 
   // Restore code blocks from placeholders
   codeBlockPlaceholders.forEach((codeBlockHtml, placeholder) => {
