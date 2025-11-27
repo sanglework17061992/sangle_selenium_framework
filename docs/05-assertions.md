@@ -8,25 +8,20 @@ Assertions verify that the application behaves as expected. SaniumTS provides au
 
 SaniumTS provides three types of assertions:
 
-### 1. Element Assertions (`SanElementAssertion`) - Auto-Retry
-For verifying element state and content with automatic retry:
-- `toBeVisible()` - Element is displayed and visible
-- `toHaveText(text)` - Element contains exact text
+1. **Element Assertions** (`SanElementAssertion`) - Auto-Retry
+   - `toBeVisible()` - Element is displayed and visible
+   - `toHaveText(text)` - Element contains exact text
 
-### 2. Page Assertions (`SanPageAssertion`) - Auto-Retry
-For verifying page-level properties with automatic retry:
-- `toHaveTitle(title)` - Page has specific title
-- `toHaveURL(url)` - Page URL matches (string or RegExp)
+2. **Page Assertions** (`SanPageAssertion`) - Auto-Retry
+   - `toHaveTitle(title)` - Page has specific title
+   - `toHaveURL(url)` - Page URL matches (string or RegExp)
 
-### 3. Type Assertions (`TypeAssertion`) - No Retry
-For asserting simple values without retry (uses Chai assertions):
-- `toBe(expected)` - Strict equality check
-- `toEqual(expected)` - Deep equality check
-- `toBeNull()` - Value is null
-- `toBeDefined()` - Value is defined
-- And other standard Chai assertions
-
----
+3. **Type Assertions** (`TypeAssertion`) - No Retry
+   - `toBe(expected)` - Strict equality check
+   - `toEqual(expected)` - Deep equality check
+   - `toBeNull()` - Value is null
+   - `toBeDefined()` - Value is defined
+   - And other standard Chai assertions
 
 ## Element Assertions
 
@@ -74,8 +69,6 @@ it('should display updated status', async () => {
   await expect(page.statusMessage).toHaveText('Processing complete');
 });
 ```
-
----
 
 ## Page Assertions
 
@@ -135,8 +128,6 @@ it('should handle dynamic URLs with RegExp', async () => {
 });
 ```
 
----
-
 ## Type Assertions
 
 ### Value Assertions (No Auto-Retry)
@@ -176,8 +167,6 @@ it('should validate data structure', async () => {
   });
 });
 ```
-
----
 
 ## Assertion Best Practices
 
