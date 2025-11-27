@@ -161,7 +161,9 @@ function markdownToHtml(markdown: string): string {
   html = html.replace(/<OL_ITEM>(.*?)<\/OL_ITEM>/g, '<li>$1</li>');
 
   // Paragraphs (after lists to avoid breaking them)
+  // But protect code block placeholders
   html = html.replace(/\n\n/g, '</p><p>');
+  html = html.replace(/<p>(___CODE_BLOCK_\d+___)<\/p>/g, '$1');
   html = '<p>' + html + '</p>';
 
   // Clean up
@@ -176,6 +178,7 @@ function markdownToHtml(markdown: string): string {
   html = html.replace(/<\/ul><\/p>/g, '</ul>');
   html = html.replace(/<p><ol>/g, '<ol>');
   html = html.replace(/<\/ol><\/p>/g, '</ol>');
+  html = html.replace(/<p>(___CODE_BLOCK_\d+___)<\/p>/g, '$1');
 
   // Restore code blocks from placeholders
   codeBlockPlaceholders.forEach((codeBlockHtml, placeholder) => {
