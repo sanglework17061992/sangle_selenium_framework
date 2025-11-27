@@ -352,9 +352,9 @@ logs.forEach(log => console.log(log.message));
 ### Slow Down Test Execution
 ```typescript
 // Add waits between actions
-async function slowFill(element: SanElement, text: string) {
+async function slowType(element: SanElement, text: string) {
   for (const char of text) {
-    await element.sendKeys(char);
+    await element.type(char);
     await driver.sleep(50);
   }
 }

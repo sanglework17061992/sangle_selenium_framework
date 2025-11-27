@@ -50,7 +50,7 @@ SaniumTS follows a **4-layer architecture** with clean separation of concerns:
 │  │  │           SanAssertion (with Auto-Retry)            │   │   │
 │  │  │  - toBeVisible(timeout, retryCount)                 │   │   │
 │  │  │  - toHaveTitle(expected, timeout)                   │   │   │
-│  │  │  - toHaveURLContaining(url, timeout)                │   │   │
+│  │  │  - toHaveURL(expectedUrl: string | RegExp)         │   │   │
 │  │  │  - toHaveText(text, timeout)                        │   │   │
 │  │  │  - expectation logic with retry                     │   │   │
 │  │  │  - automatic retry on failure                       │   │   │
@@ -64,14 +64,13 @@ SaniumTS follows a **4-layer architecture** with clean separation of concerns:
 │  │                    ELEMENT LAYER                              │  │
 │  │  ┌──────────────────────────────────────────────────────┐    │  │
 │  │  │        SanElement (with Auto-Wait)                  │    │  │
-│  │  │  - click(timeout) → auto-wait + click              │    │  │
-│  │  │  - fill(text, timeout) → auto-wait + fill          │    │  │
-│  │  │  - sendKeys(text, timeout) → auto-wait + type      │    │  │
-│  │  │  - clear(timeout) → auto-wait + clear              │    │  │
-│  │  │  - getText(timeout) → auto-wait + get text         │    │  │
-│  │  │  - getAttribute(attr, timeout)                      │    │  │
-│  │  │  - internal waitForElement() logic                  │    │  │
-│  │  │  - retry mechanism on stale elements               │    │  │
+│  │  │  - click(options?) → auto-wait + click              │    │  │
+│  │  │  - type(text, options?) → auto-wait + type          │    │  │
+│  │  │  - getText(options?) → auto-wait + get text         │    │  │
+│  │  │  - isDisplayed(options?) → check visibility         │    │  │
+│  │  │  - findChild(locator) → get child element           │    │  │
+│  │  │  - internal recovery from stale elements            │    │  │
+│  │  │  - retry mechanism on stale elements                │    │  │
 │  │  └──────────────────────────────────────────────────────┘    │  │
 │  └────────┬──────────────────────────────────────────────────────┘  │
 │           │                                                          │
@@ -344,8 +343,7 @@ BasePage<T extends WebDriver>
 │   └── open(url): Promise<void>
 └── page assertions (delegate to SanPageAssertion):
     ├── toHaveTitle(expectedTitle): Promise<void>
-    ├── toHaveURL(expectedUrl): Promise<void>
-    └── toHaveURLContaining(urlPart): Promise<void>
+    └── toHaveURL(expectedUrl): Promise<void>
 
 BaseTest<PageType extends BasePage>
 ├── protected driver: WebDriver
@@ -423,7 +421,7 @@ describe('Login Tests', () => {
     await test.page.login('demo', 'password');
 
     // Use unified expect() for page-level assertions (auto-retry)
-    await expect(test.page).toHaveURLContaining('dashboard');
+    await expect(test.page).toHaveURL(/dashboard/);
     
     // Element-level assertions
     await expect(test.page.usernameInput).toBeVisible();
@@ -444,7 +442,7 @@ SanElement.type() is invoked:
   - findElement() with actionability check
     - Uses ActionabilityChecker for ActionType.TYPE
     - Waits for element to be editable
-  - Performs sendKeys() action
+  - Performs underlying type action via WebElement.sendKeys()
   - On StaleElementReferenceError → retry up to MAX_STALE_RETRIES times
     ↓
 User writes assertion:
@@ -488,7 +486,7 @@ All underlying config managed by:
              │
              ↓ Method call
 ┌─────────────────────────────────────────┐
-│ await page.usernameInput.fill('demo')   │
+│ await page.usernameInput.type('demo')   │
 │ - SanElement has driver reference       │
 │ - Uses DriverManager for config         │
 │ - Applies auto-wait logic               │
