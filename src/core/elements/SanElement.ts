@@ -3,6 +3,7 @@ import { configLoader } from '@config/ConfigLoader';
 import { defaultDriverManager } from '@driver/DriverManager';
 import { actionabilityChecker } from '@core/elements/ActionabilityChecker';
 import { elementFinder } from '@core/elements/ElementFinder';
+import { healingEngine } from '@core/elements/HealingEngine';
 import { ActionType } from '@enums';
 import { TimeUtils } from '@utils/TimeUtils';
 import { TIMING } from '@config/Constants';
@@ -59,22 +60,50 @@ export class SanElement {
   ): Promise<WebElement> {
     const timeout = options?.timeout ?? configLoader.getTimeoutConfig().element;
 
-    // Use ElementFinder for the core finding logic
-    const parentWebElement = this.parentElement ? await this.parentElement.findVisibleElement() : undefined;
-    const element = await elementFinder.find(
-      this.locator,
-      this.driver,
-      { timeout, parentElement: parentWebElement }
-    );
+    try {
+      // Use ElementFinder for the core finding logic
+      const parentWebElement = this.parentElement ? await this.parentElement.findVisibleElement() : undefined;
+      const element = await elementFinder.find(
+        this.locator,
+        this.driver,
+        { timeout, parentElement: parentWebElement }
+      );
 
-    // Wait for actionability if not force mode
-    if (!options?.force) {
-      const startTime = Date.now();
-      const remainingTimeout = TimeUtils.getRemainingTimeout(startTime, timeout);
-      await actionabilityChecker.waitUntilReady(actionType, element, remainingTimeout);
+      // Wait for actionability if not force mode
+      if (!options?.force) {
+        const startTime = Date.now();
+        const remainingTimeout = TimeUtils.getRemainingTimeout(startTime, timeout);
+        await actionabilityChecker.waitUntilReady(actionType, element, remainingTimeout);
+      }
+
+      return element;
+    // eslint-disable-next-line no-empty
+    } catch (error: unknown) {
+      // Element not found - try self-healing if enabled
+      const isHealingEnabled = process.env.SELF_HEALING_ENABLED !== 'false';
+      
+      if (isHealingEnabled) {
+        try {
+          const healResult = await healingEngine.heal(
+            this.driver,
+            this.locator,
+            [], // no fallbacks - let healing find it
+            timeout
+          );
+          
+          if (healResult?.element) {
+            return healResult.element;
+          }
+        } catch (healingError: unknown) {
+          // Healing failed - log and continue to throw original error
+          const errorMsg = healingError instanceof Error ? healingError.message : String(healingError);
+          console.debug(`Healing failed: ${errorMsg}`);
+        }
+      }
+      
+      // Re-throw original error if healing didn't help
+      throw error;
     }
-
-    return element;
   }
 
   /**
@@ -160,6 +189,14 @@ export class SanElement {
   async isDisplayed(options?: ReadOptions): Promise<boolean> {
     const element = await this.findVisibleElement({ timeout: options?.timeout });
     return await element.isDisplayed();
+  }
+
+  /**
+   * Get element attribute value
+   */
+  async getAttribute(name: string, options?: ReadOptions): Promise<string | null> {
+    const element = await this.findVisibleElement({ timeout: options?.timeout });
+    return element.getAttribute(name);
   }
 
   /**

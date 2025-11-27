@@ -1,0 +1,201 @@
+{
+  "version": "1.0.0",
+  "framework": "SaniumTS Selenium - Self-Healing Framework",
+  "generatedAt": "2025-11-27T12:00:00Z",
+  "selfHealingEnabled": true,
+  "updateOnHeal": true,
+  "locators": {
+    "loginButton": {
+      "locatorId": "loginButton",
+      "description": "Primary login button on login page",
+      "primary": {
+        "using": "css",
+        "value": "[data-testid='login-button']"
+      },
+      "fallbacks": [
+        {
+          "using": "xpath",
+          "value": "//button[contains(text(), 'Login')]"
+        },
+        {
+          "using": "id",
+          "value": "login-btn"
+        },
+        {
+          "using": "css",
+          "value": "button.btn-primary"
+        }
+      ],
+      "priority": "high",
+      "updatedAt": "2025-11-27T12:00:00Z"
+    },
+    "usernameInput": {
+      "locatorId": "usernameInput",
+      "description": "Username/email input field",
+      "primary": {
+        "using": "id",
+        "value": "username"
+      },
+      "fallbacks": [
+        {
+          "using": "name",
+          "value": "username"
+        },
+        {
+          "using": "css",
+          "value": "input[type='email']"
+        },
+        {
+          "using": "xpath",
+          "value": "//input[@placeholder='Enter username']"
+        }
+      ],
+      "priority": "high",
+      "updatedAt": "2025-11-27T12:00:00Z"
+    },
+    "passwordInput": {
+      "locatorId": "passwordInput",
+      "description": "Password input field",
+      "primary": {
+        "using": "id",
+        "value": "password"
+      },
+      "fallbacks": [
+        {
+          "using": "name",
+          "value": "password"
+        },
+        {
+          "using": "css",
+          "value": "input[type='password']"
+        },
+        {
+          "using": "xpath",
+          "value": "//input[@placeholder='Enter password']"
+        }
+      ],
+      "priority": "high",
+      "updatedAt": "2025-11-27T12:00:00Z"
+    },
+    "submitButton": {
+      "locatorId": "submitButton",
+      "description": "Form submit button",
+      "primary": {
+        "using": "xpath",
+        "value": "//button[@type='submit']"
+      },
+      "fallbacks": [
+        {
+          "using": "css",
+          "value": "button[type='submit']"
+        },
+        {
+          "using": "xpath",
+          "value": "//button[contains(text(), 'Submit')]"
+        },
+        {
+          "using": "id",
+          "value": "submit-btn"
+        }
+      ],
+      "priority": "high",
+      "updatedAt": "2025-11-27T12:00:00Z"
+    },
+    "todoInput": {
+      "locatorId": "todoInput",
+      "description": "Todo item input field",
+      "primary": {
+        "using": "css",
+        "value": ".new-todo"
+      },
+      "fallbacks": [
+        {
+          "using": "xpath",
+          "value": "//input[contains(@class, 'new-todo')]"
+        },
+        {
+          "using": "xpath",
+          "value": "//input[@placeholder='What needs to be done?']"
+        },
+        {
+          "using": "css",
+          "value": "input.new-todo"
+        }
+      ],
+      "priority": "high",
+      "updatedAt": "2025-11-27T12:00:00Z"
+    },
+    "todoList": {
+      "locatorId": "todoList",
+      "description": "Container for todo items",
+      "primary": {
+        "using": "css",
+        "value": ".todo-list"
+      },
+      "fallbacks": [
+        {
+          "using": "xpath",
+          "value": "//ul[contains(@class, 'todo-list')]"
+        },
+        {
+          "using": "xpath",
+          "value": "//ul[@id='todo-list']"
+        },
+        {
+          "using": "css",
+          "value": "ul.todo-list"
+        }
+      ],
+      "priority": "medium",
+      "updatedAt": "2025-11-27T12:00:00Z"
+    },
+    "clearCompletedButton": {
+      "locatorId": "clearCompletedButton",
+      "description": "Clear completed todos button",
+      "primary": {
+        "using": "css",
+        "value": ".clear-completed"
+      },
+      "fallbacks": [
+        {
+          "using": "xpath",
+          "value": "//button[contains(text(), 'Clear completed')]"
+        },
+        {
+          "using": "xpath",
+          "value": "//button[contains(@class, 'clear-completed')]"
+        },
+        {
+          "using": "id",
+          "value": "clear-completed"
+        }
+      ],
+      "priority": "medium",
+      "updatedAt": "2025-11-27T12:00:00Z"
+    },
+    "deleteButton": {
+      "locatorId": "deleteButton",
+      "description": "Delete todo item button (dynamic - use with index)",
+      "primary": {
+        "using": "css",
+        "value": ".destroy"
+      },
+      "fallbacks": [
+        {
+          "using": "xpath",
+          "value": "//button[contains(@class, 'destroy')]"
+        },
+        {
+          "using": "xpath",
+          "value": "//button[contains(@aria-label, 'delete')]"
+        },
+        {
+          "using": "css",
+          "value": "button.destroy"
+        }
+      ],
+      "priority": "medium",
+      "updatedAt": "2025-11-27T12:00:00Z"
+    }
+  }
+}
