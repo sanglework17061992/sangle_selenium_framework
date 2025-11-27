@@ -23,7 +23,7 @@
     "docs:clean": "rimraf docs-html",
     "docs:generate": "tsc scripts/generate-docs.ts --target ES2021 --module CommonJS --moduleResolution node --outDir . --skipLibCheck && node generate-docs.js",
     "docs:rebuild": "npm run docs:clean && npm run docs:generate",
-    "docs:open": "open docs-html/index.html",
+    "docs:open": "open docs-html/index.html || opener docs-html/index.html",
     "docs": "npm run docs:rebuild && npm run docs:open"
   },
   "keywords": [
