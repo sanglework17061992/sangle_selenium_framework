@@ -274,32 +274,22 @@ await element.type('text', { timeout: 15000 }); // Custom timeout
 ```
 SanElementAssertion (for SanElement assertions)
 ├── constructor(element: SanElement, timeout?: number)
-├── toHaveText(expectedText: string): Promise<void>
 ├── toBeVisible(): Promise<void>
+├── toHaveText(expectedText: string): Promise<void>
 └── internal:
     └── waitUntil(condition, message, timeout): Promise<void>
 
 SanPageAssertion (for page/driver assertions)
 ├── constructor(driver: WebDriver, timeout?: number)
 ├── toHaveTitle(expectedTitle: string): Promise<void>
-├── toHaveURL(expectedUrl: string): Promise<void>
-├── toHaveURLContaining(expectedUrlPart: string | RegExp): Promise<void>
+├── toHaveURL(expectedUrl: string | RegExp): Promise<void>
 └── internal:
     └── waitUntil(condition, message, timeout): Promise<void>
-
-TypeAssertion<T> (for any value type)
-├── constructor(value: T)
-├── toBe(expected): Promise<void>
-├── toEqual(expected): Promise<void>
-├── toBeNull(): Promise<void>
-├── toBeDefined(): Promise<void>
-└── ...other chai assertions
 
 expect() Function (Unified API)
 ├── expect(element: SanElement, timeout?): SanElementAssertion
 ├── expect(driver: WebDriver, timeout?): SanPageAssertion
-├── expect(page: BasePage, timeout?): SanPageAssertion (auto-extracts driver)
-└── expect(value: any): TypeAssertion
+└── expect(page: BasePage, timeout?): SanPageAssertion (auto-extracts driver)
 ```
 
 **Auto-Retry Mechanism**:
@@ -325,15 +315,13 @@ await expect(page.greeting).toHaveText('Hello, User');
 
 // Auto-retries page assertions
 await expect(page).toHaveTitle('Dashboard');
-await expect(page).toHaveURLContaining('dashboard');
-await expect(page).toHaveURLContaining(/dashboard/i);  // RegExp support
+// String match (exact)
+await expect(page).toHaveURL('https://example.com/dashboard');
+// RegExp match (pattern matching)
+await expect(page).toHaveURL(/dashboard/i);  // RegExp support
 
 // Works with any object that has a driver property
 await expect(somePageObject).toHaveTitle('Home');
-
-// Type-safe value assertions
-const result = 42;
-await expect(result).toBe(42);
 ```
 
 ---
