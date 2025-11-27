@@ -18,8 +18,13 @@
     "clean:test": "npm run clean:reports && npm run test:multi",
     "report:allure:generate": "allure generate allure-results -o allure-report --clean",
     "report:allure": "npm run report:allure:generate && npx allure open allure-report",
-    "report:mochawesome": "open mochawesome-report/mochawesome.html || xdg-open mochawesome-report/mochawesome.html || start mochawesome-report/mochawesome.html",
-    "report:all": "npm run report:mochawesome && npm run report:allure"
+    "report:mochawesome": "opener mochawesome-report/mochawesome.html || open mochawesome-report/mochawesome.html",
+    "report:all": "npm run report:mochawesome && npm run report:allure",
+    "docs:clean": "rimraf docs-html",
+    "docs:generate": "npx ts-node scripts/generate-docs.ts",
+    "docs:rebuild": "npm run docs:clean && npm run docs:generate",
+    "docs:open": "opener docs-html/index.html || open docs-html/index.html",
+    "docs": "npm run docs:rebuild && npm run docs:open"
   },
   "keywords": [
     "selenium",
@@ -47,6 +52,7 @@
     "mocha": "^10.8.2",
     "mocha-multi-reporters": "^1.5.1",
     "mochawesome": "^7.1.4",
+    "open": "^11.0.0",
     "rimraf": "^6.1.2",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",

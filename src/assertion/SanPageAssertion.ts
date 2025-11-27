@@ -44,58 +44,38 @@ export class SanPageAssertion {
   }
 
   /**
-   * Assert that the page has the expected URL (exact match)
-   * Trims whitespace from both actual and expected URL before comparison.
-   * Handles navigation timing issues gracefully by catching exceptions during URL retrieval.
-   * @example await expect(driver).toHaveURL('https://example.com/dashboard')
-   */
-  async toHaveURL(expectedUrl: string): Promise<void> {
-    let lastActualUrl = '';
-    await waitUntil(
-      async () => {
-        try {
-          lastActualUrl = await this.driver.getCurrentUrl();
-          return lastActualUrl.trim() === expectedUrl.trim();
-        } catch {
-          // Navigation not complete yet, return false to retry
-          return false;
-        }
-      },
-      `Expected URL "${expectedUrl.trim()}" but got "${lastActualUrl.trim()}"`,
-      this.timeout
-    );
-  }
-
-  /**
-   * Assert that the page URL contains the expected substring or matches a RegExp pattern
-   * Useful for partial URL matching without needing exact URLs
-   * Supports both string matching and regular expressions for powerful pattern validation
+   * Assert that the page URL matches the expected value
+   * Supports exact string matching and RegExp pattern matching
+   * @param expectedUrl - String for exact match or RegExp for pattern matching
    * @example 
-   * // String matching
-   * await expect(driver).toHaveURLContaining('example.com')
-   * // RegExp pattern matching
-   * await expect(driver).toHaveURLContaining(/\/dashboard\/\d+/)
+   * // Exact match
+   * await expect(driver).toHaveURL('https://example.com/dashboard')
+   * // Partial match with regex
+   * await expect(driver).toHaveURL(/example\.com/)
+   * // Pattern match
+   * await expect(driver).toHaveURL(/\/dashboard\/\d+/)
    */
-  async toHaveURLContaining(expectedUrlPart: string | RegExp): Promise<void> {
+  async toHaveURL(expectedUrl: string | RegExp): Promise<void> {
     let lastActualUrl = '';
-    const isRegExp = expectedUrlPart instanceof RegExp;
-    const expectedPattern = isRegExp ? expectedUrlPart.toString() : expectedUrlPart;
+    const isRegExp = expectedUrl instanceof RegExp;
+    const expectedPattern = isRegExp ? expectedUrl.toString() : expectedUrl;
     
     await waitUntil(
       async () => {
         try {
           lastActualUrl = await this.driver.getCurrentUrl();
           if (isRegExp) {
-            return expectedUrlPart.test(lastActualUrl);
+            return expectedUrl.test(lastActualUrl);
           } else {
-            return lastActualUrl.includes(expectedUrlPart);
+            // Exact string match (not partial)
+            return lastActualUrl.trim() === expectedUrl.trim();
           }
         } catch {
           // Navigation not complete yet, return false to retry
           return false;
         }
       },
-      `Expected URL to ${isRegExp ? 'match pattern' : 'contain'} "${expectedPattern}" but got "${lastActualUrl}"`,
+      `Expected URL to ${isRegExp ? 'match pattern' : 'equal'} "${expectedPattern}" but got "${lastActualUrl.trim()}"`,
       this.timeout
     );
   }

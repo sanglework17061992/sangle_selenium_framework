@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2021",
+    "lib": ["ES2021"],
     "module": "CommonJS",
     "moduleResolution": "node",
     "baseUrl": "src",
@@ -8,6 +9,7 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "paths": {
       "@config/*": ["config/*"],
       "@enums": ["types/Enums"],

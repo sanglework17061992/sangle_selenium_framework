@@ -47,11 +47,7 @@ export abstract class BasePage {
     await this.getPageAssertion().toHaveTitle(expectedTitle);
   }
 
-  protected async toHaveURL(expectedUrl: string): Promise<void> {
+  protected async toHaveURL(expectedUrl: string | RegExp): Promise<void> {
     await this.getPageAssertion().toHaveURL(expectedUrl);
-  }
-
-  protected async toHaveURLContaining(expectedUrlPart: string): Promise<void> {
-    await this.getPageAssertion().toHaveURLContaining(expectedUrlPart);
   }
 }
