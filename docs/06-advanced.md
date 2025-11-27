@@ -179,24 +179,19 @@ it('should show error', async () => {
 });
 ```
 
-## Custom Reporters
+## Reporting
 
-Extend reporting capabilities:
+The framework includes built-in reporting with Allure and Mochawesome:
 
-```typescript
-// src/reporting/CustomReporter.ts
-import { BaseReporter } from './BaseReporter';
+```bash
+# Generate Allure report
+npm run report:allure
 
-export class CustomReporter extends BaseReporter {
-  onTestStart(test: Test): void {
-    console.log(`Starting: ${test.title}`);
-  }
+# Generate Mochawesome HTML report  
+npm run report:mochawesome
 
-  onTestEnd(test: Test, result: TestResult): void {
-    const status = result.passed ? 'PASSED' : 'FAILED';
-    console.log(`${test.title}: ${status}`);
-  }
-}
+# Both reports are configured in package.json
+# and automatically generated during test runs
 ```
 
 ## Performance Optimization

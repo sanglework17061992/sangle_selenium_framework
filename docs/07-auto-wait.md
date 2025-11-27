@@ -214,7 +214,8 @@ Error: Element not ready for action
   Solution:
   1. Check if button has disabled attribute
   2. Verify aria-disabled is not 'true'
-  3. Wait longer for async operations that enable button
+  3. Increase timeout for async operations that enable button:
+     await page.button.click({ timeout: 20000 })
 ```
 
 ## Next Steps

@@ -35,7 +35,7 @@ SaniumTS follows a **4-layer architecture** with clean separation of concerns:
 │  │  - driver         │          │  - driver: WebDriver          │   │
 │  │  - page: T        │          │  - timeout settings           │   │
 │  │  - setup()        │          │  - findElement(locator)       │   │
-│  │  - teardown()     │          │  - waitForElement()           │   │
+│  │  - teardown()     │          │  - open(url)                  │   │
 │  │  - expect()       │          │  - isVisible(), isClickable() │   │
 │  └───────────────────┘          └──────────────────────────────┘   │
 │           △                                 △                        │

@@ -82,9 +82,9 @@ await driver.executeScript('arguments[0].scrollIntoView(true);', element);
 await page.element.click();
 ```
 
-Wait longer:
+Use assertions with longer timeout:
 ```typescript
-await page.message.waitForVisibility(20000);
+await expect(page.message).toBeVisible({ timeout: 20000 });
 ```
 
 ## Tests Fail with "Element not clickable"
@@ -106,8 +106,13 @@ Error: Element not clickable
 
 Wait for loader to disappear:
 ```typescript
-await page.loadingSpinner.waitForInvisibility(10000);
+// Framework's auto-wait handles this - just interact with the action element
+// It will automatically wait until it's visible and clickable
+await expect(page.submitButton).toBeVisible();
 await page.submitButton.click();
+
+// Alternatively, use custom timeout if loader takes long
+await page.submitButton.click({ timeout: 15000 });
 ```
 
 Close overlays:
@@ -189,22 +194,15 @@ StaleElementReferenceError: Element is no longer attached to the DOM
 
 ### Solutions
 
-Re-find element:
+Re-find element (recommended pattern):
 ```typescript
-// Instead of storing element
-const element = await page.element;
-await element.click();
-await element.getText();
-
-// Re-find each time
+// Framework automatically re-finds elements, so always use the page property
+// Good: uses SanElement which handles re-finding
 await page.element.click();
 await page.element.getText();
-```
 
-Wait for element to stabilize:
-```typescript
-await page.element.waitForElement(10000);
-await page.element.click();
+// The framework's auto-wait handles stale elements automatically
+// by retrying with a fresh element lookup
 ```
 
 Handle React/Angular re-renders:
