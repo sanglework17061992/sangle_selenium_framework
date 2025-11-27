@@ -4,6 +4,25 @@
 
 Assertions verify that the application behaves as expected. SaniumTS provides auto-retry assertions that automatically wait and retry until the condition is met or timeout occurs.
 
+## Types of Assertions
+
+SaniumTS provides three types of assertions:
+
+### 1. Element Assertions (`SanElementAssertion`)
+For verifying element state and content:
+- `toBeVisible()` - Element is displayed and visible
+- `toHaveText(text)` - Element contains exact text
+
+### 2. Page Assertions (`SanPageAssertion`)
+For verifying page-level properties:
+- `toHaveTitle(title)` - Page has specific title
+- `toHaveURL(url)` - Page URL matches (string or RegExp)
+
+### 3. Test Setup Support
+Used in tests via `BaseTest` and `expect()` for clean, readable assertions
+
+---
+
 ## Element Assertions
 
 ### toBeVisible()
@@ -50,6 +69,68 @@ it('should display updated status', async () => {
   await expect(page.statusMessage).toHaveText('Processing complete');
 });
 ```
+
+---
+
+## Page Assertions
+
+### toHaveTitle()
+
+Verifies the page has the expected title:
+
+```typescript
+await expect(page).toHaveTitle('Dashboard');
+```
+
+**Auto-retries** until the page title matches exactly. Whitespace is trimmed from both actual and expected title before comparison.
+
+**Example:**
+```typescript
+it('should have correct page title', async () => {
+  await page.open('https://example.com');
+  await expect(page).toHaveTitle('Welcome - Example App');
+});
+```
+
+### toHaveURL()
+
+Verifies the page URL matches the expected value using either exact string match or RegExp pattern:
+
+```typescript
+// Exact string match
+await expect(page).toHaveURL('https://example.com/dashboard');
+
+// RegExp pattern match for flexible URL matching
+await expect(page).toHaveURL(/dashboard/);
+await expect(page).toHaveURL(/https?:\/\/.*example\.com/);
+```
+
+**Auto-retries** until the URL matches. Whitespace is trimmed for string comparisons.
+
+**Example:**
+```typescript
+it('should navigate to dashboard', async () => {
+  await page.login('user@example.com', 'password');
+  
+  // Exact URL match
+  await expect(page).toHaveURL('https://example.com/dashboard');
+});
+
+it('should handle dynamic URLs with RegExp', async () => {
+  await page.openProfile(userId);
+  
+  // Pattern matching - works with any domain
+  await expect(page).toHaveURL(/\/profile\/\d+/);
+  
+  // Protocol-agnostic matching
+  await expect(page).toHaveURL(/https?:\/\/.*example\.com/);
+  
+  // Hash fragment matching for single-page apps
+  await expect(page).toHaveURL(/#\/?(?:active|completed)?$/);
+});
+```
+
+---
 
 ## Assertion Best Practices
 
@@ -146,9 +227,13 @@ it('should handle form submission', async () => {
   await page.passwordField.type('password123');
   await page.loginButton.click();
   
-  // Verify result
+  // Verify result with element assertions
   await expect(page.userProfile).toBeVisible();
   await expect(page.welcomeMessage).toHaveText('Welcome');
+  
+  // Verify result with page assertions
+  await expect(page).toHaveTitle('Dashboard - Example App');
+  await expect(page).toHaveURL(/dashboard/);
 });
 ```
 
@@ -189,6 +274,27 @@ it('should update status', async () => {
   
   // Automatically retries until status updates
   await expect(page.statusText).toHaveText('Process complete');
+});
+```
+
+### Verify Navigation
+
+```typescript
+// Verify page navigation using page assertions
+it('should navigate to dashboard after login', async () => {
+  await page.login('user@example.com', 'password');
+  
+  // Wait for navigation to complete
+  await expect(page).toHaveTitle('Dashboard');
+  await expect(page).toHaveURL('https://example.com/dashboard');
+});
+
+// Handle multiple possible URLs with RegExp
+it('should navigate to user profile', async () => {
+  await page.clickUserProfile();
+  
+  // Matches /profile/123, /profile/456, etc.
+  await expect(page).toHaveURL(/\/profile\/\d+/);
 });
 ```
 
