@@ -110,7 +110,11 @@ function addHeadingIds(html: string): string {
 function markdownToHtml(markdown: string): string {
   let html = markdown;
 
-  // Headers
+  // Code blocks FIRST (before headers) to protect content
+  html = html.replace(/```(.*?)\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>');
+  html = html.replace(/```\n([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+
+  // Headers (after code blocks so # in code is protected)
   html = html.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
   html = html.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
   html = html.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
@@ -124,10 +128,6 @@ function markdownToHtml(markdown: string): string {
 
   // Links
   html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
-
-  // Code blocks
-  html = html.replace(/```(.*?)\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>');
-  html = html.replace(/```\n([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
 
   // Inline code
   html = html.replace(/`(.*?)`/g, '<code>$1</code>');
