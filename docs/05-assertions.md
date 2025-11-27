@@ -8,18 +8,23 @@ Assertions verify that the application behaves as expected. SaniumTS provides au
 
 SaniumTS provides three types of assertions:
 
-### 1. Element Assertions (`SanElementAssertion`)
-For verifying element state and content:
+### 1. Element Assertions (`SanElementAssertion`) - Auto-Retry
+For verifying element state and content with automatic retry:
 - `toBeVisible()` - Element is displayed and visible
 - `toHaveText(text)` - Element contains exact text
 
-### 2. Page Assertions (`SanPageAssertion`)
-For verifying page-level properties:
+### 2. Page Assertions (`SanPageAssertion`) - Auto-Retry
+For verifying page-level properties with automatic retry:
 - `toHaveTitle(title)` - Page has specific title
 - `toHaveURL(url)` - Page URL matches (string or RegExp)
 
-### 3. Test Setup Support
-Used in tests via `BaseTest` and `expect()` for clean, readable assertions
+### 3. Type Assertions (`TypeAssertion`) - No Retry
+For asserting simple values without retry (uses Chai assertions):
+- `toBe(expected)` - Strict equality check
+- `toEqual(expected)` - Deep equality check
+- `toBeNull()` - Value is null
+- `toBeDefined()` - Value is defined
+- And other standard Chai assertions
 
 ---
 
@@ -127,6 +132,48 @@ it('should handle dynamic URLs with RegExp', async () => {
   
   // Hash fragment matching for single-page apps
   await expect(page).toHaveURL(/#\/?(?:active|completed)?$/);
+});
+```
+
+---
+
+## Type Assertions
+
+### Value Assertions (No Auto-Retry)
+
+Type assertions are for simple value comparisons without retry logic. Use these for non-UI assertions:
+
+```typescript
+// Strict equality
+await expect(result).toBe(42);
+
+// Deep equality
+await expect(array).toEqual([1, 2, 3]);
+
+// Null/undefined checks
+await expect(value).toBeNull();
+await expect(value).toBeDefined();
+```
+
+**Example:**
+```typescript
+it('should validate computation results', async () => {
+  // Perform calculation
+  const result = await page.calculateTotal([10, 20, 30]);
+  
+  // No retry - simple value assertion
+  await expect(result).toBe(60);
+});
+
+it('should validate data structure', async () => {
+  const userData = await page.fetchUserData();
+  
+  // Check structure matches expected
+  await expect(userData).toEqual({
+    id: 123,
+    name: 'John',
+    email: 'john@example.com'
+  });
 });
 ```
 
