@@ -56,7 +56,7 @@ describe('TodoMVC App - Page Object Pattern & Assertions', () => {
     describe('Page Assertions', () => {
         it('should verify page title and URL assertions', async () => {
             logger.info('Verifying page URL contains todomvc');
-            await sanExpect(todoPage).toHaveURLContaining('todomvc');
+            await sanExpect(todoPage).toHaveURL(/todomvc/);
 
             logger.info('Verifying page title is correct');
             await sanExpect(todoPage).toHaveTitle('React • TodoMVC');
@@ -70,25 +70,21 @@ describe('TodoMVC App - Page Object Pattern & Assertions', () => {
 
         it('should support RegExp pattern matching in URL assertions', async () => {
             logger.info('Verifying URL with RegExp pattern (flexible domain matching)');
-            // First, let's verify the URL contains todomvc with a string pattern
-            await sanExpect(todoPage).toHaveURLContaining('todomvc');
-            logger.info('String-based URL assertion passed');
-            
             // RegExp allows flexible pattern matching for dynamic or environment-specific URLs
             // This pattern matches demo.playwright.dev and similar domains with /todomvc path
-            await sanExpect(todoPage).toHaveURLContaining(/https?:\/\/.*todomvc/);
+            await sanExpect(todoPage).toHaveURL(/https?:\/\/.*todomvc/);
             logger.info('Domain-agnostic RegExp assertion passed');
 
             logger.info('Verifying URL contains expected hash fragment with RegExp');
             // Match hash fragments like #/ (all items), #/active, #/completed
-            await sanExpect(todoPage).toHaveURLContaining(/#\//);
+            await sanExpect(todoPage).toHaveURL(/#\//);
 
             logger.info('Adding todo to navigate with hash');
             await todoPage.addTodo('RegExp test item');
 
             logger.info('Verifying hash-based navigation with RegExp');
             // RegExp advantage: match any filter state in hash without knowing exact text
-            await sanExpect(todoPage).toHaveURLContaining(/#\/?(?:active|completed)?$/);
+            await sanExpect(todoPage).toHaveURL(/#\/?(?:active|completed)?$/);
         });
     });
 });
