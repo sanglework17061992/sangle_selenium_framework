@@ -18,12 +18,12 @@
     "clean:test": "npm run clean:reports && npm run test:multi",
     "report:allure:generate": "allure generate allure-results -o allure-report --clean",
     "report:allure": "npm run report:allure:generate && npx allure open allure-report",
-    "report:mochawesome": "open mochawesome-report/mochawesome.html || opener mochawesome-report/mochawesome.html",
+    "report:mochawesome": "opener mochawesome-report/mochawesome.html || open mochawesome-report/mochawesome.html",
     "report:all": "npm run report:mochawesome && npm run report:allure",
     "docs:clean": "rimraf docs-html",
     "docs:generate": "tsc scripts/generate-docs.ts --target ES2021 --module CommonJS --moduleResolution node --outDir . --skipLibCheck && node generate-docs.js",
     "docs:rebuild": "npm run docs:clean && npm run docs:generate",
-    "docs:open": "open docs-html/index.html || opener docs-html/index.html",
+    "docs:open": "opener docs-html/index.html || open docs-html/index.html",
     "docs": "npm run docs:rebuild && npm run docs:open"
   },
   "keywords": [
