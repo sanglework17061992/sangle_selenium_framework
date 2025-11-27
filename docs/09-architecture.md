@@ -541,23 +541,23 @@ All underlying config managed by:
 
 ## Testing a Feature Across All Layers
 
-```
-Example: Add "Safari" Browser Support
+```typescript
+// Example: Add "Safari" Browser Support
 
-1. Layer 1 - Create SafariFactory
-   class SafariFactory extends BaseBrowserFactory {
-     createDriver(): WebDriver { ... }
-     configureOptions(): SafariOptions { ... }
-   }
+// 1. Layer 1 - Create SafariFactory
+class SafariFactory extends BaseBrowserFactory {
+  createDriver(): WebDriver { ... }
+  configureOptions(): SafariOptions { ... }
+}
 
-2. Layer 1 - Register in BrowserRegistry
-   registry.register('safari', new SafariFactory())
+// 2. Layer 1 - Register in BrowserRegistry
+registry.register('safari', new SafariFactory())
 
-3. Layer 1 - Use in ConfigLoader
-   BROWSER=safari in .env
+// 3. Layer 1 - Use in ConfigLoader
+// BROWSER=safari in .env
 
-4. Layers 2, 3, 4 - Automatically work!
-   No changes needed - everything uses DriverManager
+// 4. Layers 2, 3, 4 - Automatically work!
+// No changes needed - everything uses DriverManager
 ```
 
 ---
