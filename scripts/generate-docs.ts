@@ -132,17 +132,22 @@ function markdownToHtml(markdown: string): string {
   // Inline code
   html = html.replace(/`(.*?)`/g, '<code>$1</code>');
 
-  // Unordered lists
-  html = html.replace(/^\* (.*?)$/gm, '<li>$1</li>');
-  html = html.replace(/(<li>.*?<\/li>)/s, '<ul>$1</ul>');
-
-  // Ordered lists
-  html = html.replace(/^\d+\. (.*?)$/gm, '<li>$1</li>');
-
-  // Blockquotes
+  // Blockquotes (before lists to avoid conflicts)
   html = html.replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>');
 
-  // Paragraphs
+  // Unordered lists (handle both * and - bullets) - use marker to distinguish from ordered
+  html = html.replace(/^[*-] (.*?)$/gm, '<UL_ITEM>$1</UL_ITEM>');
+  // Wrap consecutive unordered list items with <ul></ul>
+  html = html.replace(/(<UL_ITEM>(?:.*?<\/UL_ITEM>)+)/s, '<ul>$1</ul>');
+  html = html.replace(/<UL_ITEM>(.*?)<\/UL_ITEM>/g, '<li>$1</li>');
+
+  // Ordered lists
+  html = html.replace(/^\d+\. (.*?)$/gm, '<OL_ITEM>$1</OL_ITEM>');
+  // Wrap consecutive ordered list items with <ol></ol>
+  html = html.replace(/(<OL_ITEM>(?:.*?<\/OL_ITEM>)+)/s, '<ol>$1</ol>');
+  html = html.replace(/<OL_ITEM>(.*?)<\/OL_ITEM>/g, '<li>$1</li>');
+
+  // Paragraphs (after lists to avoid breaking them)
   html = html.replace(/\n\n/g, '</p><p>');
   html = '<p>' + html + '</p>';
 
@@ -151,6 +156,13 @@ function markdownToHtml(markdown: string): string {
   html = html.replace(/<ul><li>/g, '<ul>\n<li>');
   html = html.replace(/<\/li><li>/g, '</li>\n<li>');
   html = html.replace(/<\/li><\/ul>/g, '</li>\n</ul>');
+  html = html.replace(/<ol><li>/g, '<ol>\n<li>');
+  html = html.replace(/<\/li><li>/g, '</li>\n<li>');
+  html = html.replace(/<\/li><\/ol>/g, '</li>\n</ol>');
+  html = html.replace(/<p><ul>/g, '<ul>');
+  html = html.replace(/<\/ul><\/p>/g, '</ul>');
+  html = html.replace(/<p><ol>/g, '<ol>');
+  html = html.replace(/<\/ol><\/p>/g, '</ol>');
 
   return html;
 }
