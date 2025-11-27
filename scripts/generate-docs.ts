@@ -109,12 +109,25 @@ function addHeadingIds(html: string): string {
 
 function markdownToHtml(markdown: string): string {
   let html = markdown;
+  const codeBlockPlaceholders: Map<string, string> = new Map();
+  let blockIndex = 0;
 
-  // Code blocks FIRST (before headers) to protect content
-  html = html.replace(/```(.*?)\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>');
-  html = html.replace(/```\n([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+  // Extract code blocks and replace with placeholders
+  html = html.replace(/```(.*?)\n([\s\S]*?)```/g, (match, lang, code) => {
+    const placeholder = `___CODE_BLOCK_${blockIndex}___`;
+    codeBlockPlaceholders.set(placeholder, `<pre><code class="language-${lang}">${code}</code></pre>`);
+    blockIndex++;
+    return placeholder;
+  });
 
-  // Headers (after code blocks so # in code is protected)
+  html = html.replace(/```\n([\s\S]*?)```/g, (match, code) => {
+    const placeholder = `___CODE_BLOCK_${blockIndex}___`;
+    codeBlockPlaceholders.set(placeholder, `<pre><code>${code}</code></pre>`);
+    blockIndex++;
+    return placeholder;
+  });
+
+  // Headers (now safe, code blocks are protected)
   html = html.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
   html = html.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
   html = html.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
@@ -163,6 +176,11 @@ function markdownToHtml(markdown: string): string {
   html = html.replace(/<\/ul><\/p>/g, '</ul>');
   html = html.replace(/<p><ol>/g, '<ol>');
   html = html.replace(/<\/ol><\/p>/g, '</ol>');
+
+  // Restore code blocks from placeholders
+  codeBlockPlaceholders.forEach((codeBlockHtml, placeholder) => {
+    html = html.replace(new RegExp(placeholder, 'g'), codeBlockHtml);
+  });
 
   return html;
 }
