@@ -18,12 +18,12 @@
     "clean:test": "npm run clean:reports && npm run test:multi",
     "report:allure:generate": "allure generate allure-results -o allure-report --clean",
     "report:allure": "npm run report:allure:generate && npx allure open allure-report",
-    "report:mochawesome": "node -e \"const {execSync} = require('child_process'); const os = require('os'); const path = 'mochawesome-report/mochawesome.html'; try { if (os.platform() === 'win32') { execSync('start ' + path); } else if (os.platform() === 'darwin') { execSync('open ' + path); } else { execSync('xdg-open ' + path); } } catch (e) { }\"",
+    "report:mochawesome": "open mochawesome-report/mochawesome.html",
     "report:all": "npm run report:mochawesome && npm run report:allure",
     "docs:clean": "rimraf docs-html",
     "docs:generate": "tsc scripts/generate-docs.ts --target ES2021 --module CommonJS --moduleResolution node --outDir . --skipLibCheck && node generate-docs.js",
     "docs:rebuild": "npm run docs:clean && npm run docs:generate",
-    "docs:open": "node -e \"const {execSync} = require('child_process'); const os = require('os'); const path = 'docs-html/index.html'; try { if (os.platform() === 'win32') { execSync('start ' + path); } else if (os.platform() === 'darwin') { execSync('open ' + path); } else { execSync('xdg-open ' + path); } } catch (e) { }\"",
+    "docs:open": "open docs-html/index.html",
     "docs": "npm run docs:rebuild && npm run docs:open"
   },
   "keywords": [
@@ -52,6 +52,7 @@
     "mocha": "^10.8.2",
     "mocha-multi-reporters": "^1.5.1",
     "mochawesome": "^7.1.4",
+    "open": "^11.0.0",
     "rimraf": "^6.1.2",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
