@@ -19,9 +19,6 @@ SaniumTS provides three types of assertions:
 3. **Type Assertions** (`TypeAssertion`) - No Retry
    - `toBe(expected)` - Strict equality check
    - `toEqual(expected)` - Deep equality check
-   - `toBeNull()` - Value is null
-   - `toBeDefined()` - Value is defined
-   - And other standard Chai assertions
 
 ## Element Assertions
 
@@ -140,10 +137,6 @@ await expect(result).toBe(42);
 
 // Deep equality
 await expect(array).toEqual([1, 2, 3]);
-
-// Null/undefined checks
-await expect(value).toBeNull();
-await expect(value).toBeDefined();
 ```
 
 **Example:**
