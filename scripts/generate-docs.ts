@@ -148,6 +148,9 @@ function markdownToHtml(markdown: string): string {
   // Blockquotes (before lists to avoid conflicts)
   html = html.replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>');
 
+  // Horizontal rules
+  html = html.replace(/^---$/gm, '<hr>');
+
   // Unordered lists (handle both * and - bullets) - use marker to distinguish from ordered
   html = html.replace(/^[*-] (.*?)$/gm, '<UL_ITEM>$1</UL_ITEM>');
   // Wrap consecutive unordered list items with <ul></ul>
@@ -164,6 +167,7 @@ function markdownToHtml(markdown: string): string {
   // But protect code block placeholders
   html = html.replace(/\n\n/g, '</p><p>');
   html = html.replace(/<p>(CODEBLOCK\d+)<\/p>/g, '$1');
+  html = html.replace(/<p><hr><\/p>/g, '<hr>');
   html = '<p>' + html + '</p>';
 
   // Clean up
