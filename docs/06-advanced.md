@@ -179,20 +179,38 @@ it('should show error', async () => {
 });
 ```
 
-## Reporting
+## Custom Reporters
 
-The framework includes built-in reporting with Allure and Mochawesome:
+Extend reporting capabilities by creating custom reporters:
 
-```bash
-# Generate Allure report
-npm run report:allure
+```typescript
+// src/reporting/MyCustomReporter.ts
+import { BaseReporter } from '@reporting/BaseReporter';
+import { logger } from '@utils/Logger';
 
-# Generate Mochawesome HTML report  
-npm run report:mochawesome
+export class MyCustomReporter extends BaseReporter {
+  async beforeAll(): Promise<void> {
+    logger.info('Test suite started');
+  }
 
-# Both reports are configured in package.json
-# and automatically generated during test runs
+  async afterAll(): Promise<void> {
+    logger.info('Test suite completed');
+  }
+
+  async onTestFailure(testName: string, error: Error): Promise<void> {
+    logger.error(`Test failed: ${testName} - ${error.message}`);
+    // Take screenshot or perform custom actions
+  }
+}
 ```
+
+The `BaseReporter` interface provides:
+- `beforeAll()` - Runs before all tests
+- `afterAll()` - Runs after all tests  
+- `beforeEach()` - Runs before each test
+- `afterEach()` - Runs after each test
+- `onTestFailure(testName, error)` - Runs when test fails
+- `setDriver(driver)` - Access to WebDriver instance
 
 ## Performance Optimization
 
