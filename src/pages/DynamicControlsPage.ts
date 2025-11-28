@@ -1,4 +1,4 @@
-import { BasePage } from './BasePage';
+import { BasePage } from '@pages/BasePage';
 import { logger } from '@utils/Logger';
 import { configLoader } from '@config/ConfigLoader';
 

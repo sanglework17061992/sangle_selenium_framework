@@ -1,4 +1,4 @@
-import { DynamicLoadingPage } from './DynamicLoadingPage';
+import { DynamicLoadingPage } from '@pages/DynamicLoadingPage';
 import { logger } from '@utils/Logger';
 
 /**
