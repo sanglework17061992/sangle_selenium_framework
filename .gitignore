@@ -6,6 +6,9 @@ dist/
 generate-docs.js
 docs-html/
 
+# Demo app - ignore node_modules
+demo-app/node_modules/
+
 # Logs
 *.log
 logs/
