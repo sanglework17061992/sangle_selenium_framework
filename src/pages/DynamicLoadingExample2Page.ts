@@ -14,21 +14,14 @@ export class DynamicLoadingExample2Page extends DynamicLoadingPage {
     // Example 2 specific locators - public for assertions in tests
     public startButton = this.css('button');
     public finishMessage = this.id('finish');
-    public heading = this.css('div.example > h3');    /**
+    public heading = this.css('div.example > h3');
+
+    /**
      * Click the Start button to trigger dynamic loading
      */
     public async clickStartButton(): Promise<void> {
         logger.info('Clicking Start button to trigger loading for Example 2');
         await this.startButton.click();
-    }
-
-    /**
-     * Verify we are on Example 2 page using framework assertion with auto-retry
-     */
-    public async verifyPageLoaded(): Promise<void> {
-        logger.info('Verifying on Dynamic Loading Example 2 page with auto-retry');
-        await this.toHaveURL(/dynamic_loading\/2/);
-        logger.info('Successfully verified on Example 2 page');
     }
 }
 

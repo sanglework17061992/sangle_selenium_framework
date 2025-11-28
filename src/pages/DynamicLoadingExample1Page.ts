@@ -23,15 +23,6 @@ export class DynamicLoadingExample1Page extends DynamicLoadingPage {
         logger.info('Clicking Start button to trigger loading for Example 1');
         await this.startButton.click();
     }
-
-    /**
-     * Verify we are on Example 1 page using framework assertion with auto-retry
-     */
-    public async verifyPageLoaded(): Promise<void> {
-        logger.info('Verifying on Dynamic Loading Example 1 page with auto-retry');
-        await this.toHaveURL(/dynamic_loading\/1/);
-        logger.info('Successfully verified on Example 1 page');
-    }
 }
 
 export default DynamicLoadingExample1Page;

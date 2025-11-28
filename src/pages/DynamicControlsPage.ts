@@ -34,15 +34,6 @@ export class DynamicControlsPage extends BasePage {
     }
 
     /**
-     * Verify we are on the Dynamic Controls page using framework assertion with auto-retry
-     */
-    public async isOnThePage(): Promise<void> {
-        logger.info('Verifying on Dynamic Controls page with auto-retry');
-        await this.toHaveURL(/dynamic_controls/);
-        logger.info('Successfully verified on Dynamic Controls page');
-    }
-
-    /**
      * Click on the checkbox element
      */
     public async clickCheckbox(): Promise<void> {
