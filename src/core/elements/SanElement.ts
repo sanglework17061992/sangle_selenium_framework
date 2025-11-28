@@ -5,6 +5,7 @@ import { actionabilityChecker } from '@core/elements/ActionabilityChecker';
 import { elementFinder } from '@core/elements/ElementFinder';
 import { ActionType } from '@enums';
 import { TimeUtils } from '@utils/TimeUtils';
+import { logger } from '@utils/Logger';
 import { TIMING } from '@config/Constants';
 
 export { ActionType } from '@enums';
@@ -127,11 +128,13 @@ export class SanElement {
    * Requirements: STABLE, ENABLED
    */
   async click(options?: ActionOptions): Promise<void> {
+    logger.debug(`Clicking element with locator: ${this.locator.using}="${this.locator.value}"`);
     await this.executeWithRecovery(
       ActionType.CLICK,
       (element: WebElement) => element.click(),
       options
     );
+    logger.debug(`Element clicked successfully: ${this.locator.using}="${this.locator.value}"`);
   }
 
   /**
@@ -160,6 +163,14 @@ export class SanElement {
   async isDisplayed(options?: ReadOptions): Promise<boolean> {
     const element = await this.findVisibleElement({ timeout: options?.timeout });
     return await element.isDisplayed();
+  }
+
+  /**
+   * Check if element is enabled
+   */
+  async isEnabled(options?: ReadOptions): Promise<boolean> {
+    const element = await this.findVisibleElement({ timeout: options?.timeout });
+    return await element.isEnabled();
   }
 
   /**

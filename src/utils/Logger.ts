@@ -1,13 +1,17 @@
 import winston from 'winston';
 import { LogLevel } from '@enums';
 import path from 'node:path';
+import { configLoader } from '@config/ConfigLoader';
 
 // Create logs directory
 const logDir = 'logs';
 
+// Get log level from config or default to INFO
+const logLevel = configLoader.getLogLevel();
+
 // logger configuration
 const winstonLogger = winston.createLogger({
-  level: LogLevel.INFO,
+  level: logLevel,
   format: winston.format.combine(
     winston.format.timestamp({
       format: 'YYYY-MM-DD HH:mm:ss'
@@ -27,8 +31,7 @@ const winstonLogger = winston.createLogger({
     new winston.transports.File({
       filename: path.join(logDir, 'combined.log')
     })
-  ],
-  silent: process.env.NODE_ENV === 'test'
+  ]
 });
 
 // Wrapper class to maintain existing API
@@ -65,5 +68,5 @@ export class Logger {
   }
 }
 
-// Export
-export const logger = new Logger();
+// Export - initialized with log level from config
+export const logger = new Logger(logLevel);
