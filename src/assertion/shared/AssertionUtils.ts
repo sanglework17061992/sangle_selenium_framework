@@ -8,10 +8,11 @@ import { formatValue } from '@utils/ValueFormatter';
 import { TIMING } from '@config/Constants';
 
 /**
- * Core retry mechanism - waits until condition passes or timeout
- * Shared by Element and Page assertions
+ * Core retry mechanism - waits until element becomes visible or condition passes
+ * Shared by Element and Page assertions for checking visible/present states
+ * (text, button visibility, URL changes, etc.)
  */
-export async function waitUntil(
+export async function waitUntilVisible(
   condition: () => Promise<boolean>,
   errorMessage: string,
   timeout: number
@@ -36,6 +37,36 @@ export async function waitUntil(
   // Timeout reached
   const finalError = lastError || new Error(errorMessage);
   throw new Error(`${errorMessage}\nLast error: ${finalError.message}`);
+}
+
+/**
+ * Wait until element is hidden or removed from DOM
+ * Handles both: element with display:none and element removed from DOM
+ */
+export async function waitUntilHidden(
+  condition: () => Promise<boolean>,
+  errorMessage: string,
+  timeout: number
+): Promise<void> {
+  const startTime = Date.now();
+
+  while (TimeUtils.getRemainingTimeout(startTime, timeout) > 0) {
+    try {
+      const result = await condition();
+      if (result) {
+        return; // Element is hidden
+      }
+    } catch {
+      // Element not found in DOM - considered hidden
+      return;
+    }
+    
+    // Wait before next retry
+    await TimeUtils.sleep(TIMING.DEFAULT_RETRY_INTERVAL);
+  }
+
+  // Timeout reached - element still visible
+  throw new Error(errorMessage);
 }
 
 /**

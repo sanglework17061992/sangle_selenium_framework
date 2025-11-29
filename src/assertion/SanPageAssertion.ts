@@ -14,7 +14,7 @@
 
 import { WebDriver } from 'selenium-webdriver';
 import { defaultDriverManager } from '@driver/DriverManager';
-import { waitUntil } from '@assertion/shared/AssertionUtils';
+import { waitUntilVisible } from '@assertion/shared/AssertionUtils';
 import { TIMING } from '@config/Constants';
 
 export class SanPageAssertion {
@@ -33,7 +33,7 @@ export class SanPageAssertion {
    */
   async toHaveTitle(expectedTitle: string): Promise<void> {
     let lastActualTitle = '';
-    await waitUntil(
+    await waitUntilVisible(
       async () => {
         lastActualTitle = await this.driver.getTitle();
         return lastActualTitle.trim() === expectedTitle.trim();
@@ -60,7 +60,7 @@ export class SanPageAssertion {
     const isRegExp = expectedUrl instanceof RegExp;
     const expectedPattern = isRegExp ? expectedUrl.toString() : expectedUrl;
     
-    await waitUntil(
+    await waitUntilVisible(
       async () => {
         try {
           lastActualUrl = await this.driver.getCurrentUrl();
