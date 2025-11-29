@@ -44,16 +44,13 @@ describe('Dynamic Loading - Example 1: Hidden Element', () => {
 
     describe('Hidden Element Loading', () => {
         it('should load hidden element with auto-wait and auto-assertion', async () => {
-            logger.info('Step 1: Verify we are on Example 1 page');
-            await sanExpect(example1Page).toHaveURL(/dynamic_loading\/1/);
+            logger.info('Step 1: Verify we are on Example 1 page with correct heading');
+            await example1Page.verifyPageLoaded();
 
-            logger.info('Step 2: Verifying page heading displays correct text');
-            await sanExpect(example1Page.heading).toHaveText('Dynamically Loaded Page Elements');
-
-            logger.info('Step 3: Clicking Start button to trigger loading');
+            logger.info('Step 2: Clicking Start button to trigger loading');
             await example1Page.clickStartButton();
 
-            logger.info('Step 4: Verifying finish message has expected text with auto-retry');
+            logger.info('Step 3: Verifying finish message has expected text with auto-retry');
             await sanExpect(example1Page.finishMessage).toHaveText('Hello World!');
         });
     });

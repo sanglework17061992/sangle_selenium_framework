@@ -44,17 +44,13 @@ describe('Dynamic Loading - Example 2: Rendered Element', () => {
 
     describe('Rendered Element Loading', () => {
         it('should render element dynamically with auto-wait and auto-assertion', async () => {
-            logger.info('Step 1: Verify we are on Example 2 page');
-            await sanExpect(example2Page).toHaveURL(/dynamic_loading\/2/);
-            logger.info('Successfully verified on Example 2 page');
+            logger.info('Step 1: Verify we are on Example 2 page with correct heading');
+            await example2Page.verifyPageLoaded();
 
-            logger.info('Step 2: Verifying page heading displays correct text');
-            await sanExpect(example2Page.heading).toHaveText('Dynamically Loaded Page Elements');
-
-            logger.info('Step 3: Clicking Start button to trigger dynamic rendering');
+            logger.info('Step 2: Clicking Start button to trigger dynamic rendering');
             await example2Page.clickStartButton();
 
-            logger.info('Step 4: Verifying finish message has expected text with auto-retry');
+            logger.info('Step 3: Verifying finish message has expected text with auto-retry');
             await sanExpect(example2Page.finishMessage).toHaveText('Hello World!');
         });
     });

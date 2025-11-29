@@ -23,6 +23,20 @@ export class DynamicLoadingExample1Page extends DynamicLoadingPage {
         logger.info('Clicking Start button to trigger loading for Example 1');
         await this.startButton.click();
     }
+
+    /**
+     * Verify page loaded with correct URL and heading text
+     * Combines verification of URL and page heading into single reusable method
+     */
+    public async verifyPageLoaded(): Promise<void> {
+        logger.info('Verifying Example 1 page is loaded with correct URL and heading');
+        const { expect: sanExpect } = await import('@assertion/index');
+        
+        await sanExpect(this).toHaveURL(/dynamic_loading\/1/);
+        await sanExpect(this.heading).toHaveText('Dynamically Loaded Page Elements');
+        
+        logger.info('Example 1 page verification complete');
+    }
 }
 
 export default DynamicLoadingExample1Page;
