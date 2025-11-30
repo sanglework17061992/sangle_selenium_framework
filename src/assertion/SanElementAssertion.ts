@@ -13,7 +13,7 @@
  */
 
 import { SanElement } from '@core/elements/SanElement';
-import { waitUntilVisible, waitUntilHidden } from '@assertion/shared/AssertionUtils';
+import { waitUntilVisible, waitUntilHidden, type AssertionContext } from '@assertion/shared/AssertionUtils';
 import { TIMING } from '@config/Constants';
 
 export class SanElementAssertion {
@@ -26,6 +26,23 @@ export class SanElementAssertion {
   }
 
   /**
+   * Get locator string for error messages
+   * @private
+   */
+  private getLocatorString(): string | undefined {
+    try {
+      // Access locator from SanElement if available
+      const locator = (this.element as any).locator;
+      if (locator) {
+        return `${locator.using}('${locator.value}')`;
+      }
+    } catch {
+      // Ignore if locator is not accessible
+    }
+    return undefined;
+  }
+
+  /**
    * Assert that the element has the exact text
    * Trims whitespace (spaces, newlines, indentation) from both actual and expected text before comparison.
    * This is necessary because HTML formatting often adds whitespace that doesn't affect
@@ -34,12 +51,19 @@ export class SanElementAssertion {
    */
   async toHaveText(expectedText: string): Promise<void> {
     let lastActualText = '';
+    const context: AssertionContext = {
+      assertionType: 'toHaveText',
+      expected: expectedText.trim(),
+      locator: this.getLocatorString(),
+    };
+
     await waitUntilVisible(
       async () => {
         lastActualText = await this.element.getText();
+        context.actual = lastActualText.trim();
         return lastActualText.trim() === expectedText.trim();
       },
-      `Expected element text "${expectedText.trim()}" but got "${lastActualText.trim()}"`,
+      context,
       this.timeout
     );
   }
@@ -49,9 +73,18 @@ export class SanElementAssertion {
    * @example await expect(element).toBeVisible()
    */
   async toBeVisible(): Promise<void> {
+    const context: AssertionContext = {
+      assertionType: 'toBeVisible',
+      expected: 'visible',
+      locator: this.getLocatorString(),
+    };
+
     await waitUntilVisible(
-      () => this.element.isDisplayed(),
-      'Expected element to be visible but it is not',
+      async () => {
+        context.actual = (await this.element.isDisplayed()) ? 'visible' : 'hidden';
+        return this.element.isDisplayed();
+      },
+      context,
       this.timeout
     );
   }
@@ -62,12 +95,20 @@ export class SanElementAssertion {
    * @example await expect(element).toBeHidden()
    */
   async toBeHidden(): Promise<void> {
+    let isDisplayed = false;
+    const context: AssertionContext = {
+      assertionType: 'toBeHidden',
+      expected: 'hidden',
+      locator: this.getLocatorString(),
+    };
+
     await waitUntilHidden(
       async () => {
         const isDisplayed = await this.element.isDisplayedNow();
+        context.actual = isDisplayed ? 'visible' : 'hidden';
         return !isDisplayed;
       },
-      'Expected element to be hidden but it is visible',
+      context,
       this.timeout
     );
   }
@@ -78,12 +119,19 @@ export class SanElementAssertion {
    * @example await expect(inputElement).toBeEnabled()
    */
   async toBeEnabled(): Promise<void> {
+    const context: AssertionContext = {
+      assertionType: 'toBeEnabled',
+      expected: true,
+      locator: this.getLocatorString(),
+    };
+
     await waitUntilVisible(
       async () => {
         const isEnabled = await this.element.isEnabledNow();
+        context.actual = isEnabled;
         return isEnabled === true;
       },
-      'Expected element to be enabled but it is disabled',
+      context,
       this.timeout
     );
   }
@@ -94,13 +142,21 @@ export class SanElementAssertion {
    * @example await expect(inputElement).toBeDisabled()
    */
   async toBeDisabled(): Promise<void> {
+    const context: AssertionContext = {
+      assertionType: 'toBeDisabled',
+      expected: false,
+      locator: this.getLocatorString(),
+    };
+
     await waitUntilVisible(
       async () => {
         const isEnabled = await this.element.isEnabledNow();
+        context.actual = !isEnabled;
         return isEnabled === false;
       },
-      'Expected element to be disabled but it is enabled',
+      context,
       this.timeout
     );
   }
 }
+

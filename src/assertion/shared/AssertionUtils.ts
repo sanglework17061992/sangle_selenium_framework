@@ -7,15 +7,41 @@ import { TimeUtils } from '@utils/TimeUtils';
 import { formatValue } from '@utils/ValueFormatter';
 import { logger } from '@utils/Logger';
 import { TIMING } from '@config/Constants';
+import { AssertionError } from '@assertion/errors';
+
+/**
+ * Context information for detailed error messages
+ */
+export interface AssertionContext {
+  assertionType: string;
+  expected: string | boolean;
+  actual?: string | boolean;
+  locator?: string;
+}
 
 /**
  * Core retry mechanism - waits until element becomes visible or condition passes
  * Shared by Element and Page assertions for checking visible/present states
  * (text, button visibility, URL changes, etc.)
+ * 
+ * @param condition - Function that returns true when assertion passes
+ * @param context - Context information for error message or simple error message string
+ * @param timeout - Timeout in milliseconds
+ * 
+ * @example
+ * await waitUntilVisible(
+ *   () => element.isDisplayed(),
+ *   { 
+ *     assertionType: 'toBeVisible',
+ *     expected: 'visible',
+ *     locator: 'button.submit'
+ *   },
+ *   10000
+ * );
  */
 export async function waitUntilVisible(
   condition: () => Promise<boolean>,
-  errorMessage: string,
+  context: AssertionContext | string,
   timeout: number
 ): Promise<void> {
   const startTime = Date.now();
@@ -36,21 +62,39 @@ export async function waitUntilVisible(
     await TimeUtils.sleep(TIMING.DEFAULT_RETRY_INTERVAL);
   }
 
-  // Timeout reached
-  const finalError = lastError || new Error(errorMessage);
-  throw new Error(`${errorMessage}\nLast error: ${finalError.message}`);
+  // Timeout reached - throw detailed error
+  if (typeof context === 'string') {
+    // Legacy string message support
+    const finalError = lastError || new Error(context);
+    throw new Error(`${context}\nLast error: ${finalError.message}`);
+  }
+
+  // Throw custom AssertionError with context
+  throw new AssertionError(
+    context.assertionType,
+    context.expected,
+    context.actual,
+    context.locator,
+    timeout,
+    lastError ?? undefined
+  );
 }
 
 /**
  * Wait until element is hidden or removed from DOM
  * Handles both: element with display:none and element removed from DOM
+ * 
+ * @param condition - Function that returns true when element is hidden
+ * @param context - Context information for error message or simple error message string
+ * @param timeout - Timeout in milliseconds
  */
 export async function waitUntilHidden(
   condition: () => Promise<boolean>,
-  errorMessage: string,
+  context: AssertionContext | string,
   timeout: number
 ): Promise<void> {
   const startTime = Date.now();
+  let lastError: Error | null = null;
 
   while (TimeUtils.getRemainingTimeout(startTime, timeout) > 0) {
     try {
@@ -71,7 +115,20 @@ export async function waitUntilHidden(
   }
 
   // Timeout reached - element still visible
-  throw new Error(errorMessage);
+  if (typeof context === 'string') {
+    // Legacy string message support
+    throw new TypeError(context);
+  }
+
+  // Throw custom AssertionError with context
+  throw new AssertionError(
+    context.assertionType,
+    context.expected,
+    context.actual,
+    context.locator,
+    timeout,
+    lastError ?? undefined
+  );
 }
 
 /**
