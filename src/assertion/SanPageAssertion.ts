@@ -14,7 +14,7 @@
 
 import { WebDriver } from 'selenium-webdriver';
 import { defaultDriverManager } from '@driver/DriverManager';
-import { waitUntilVisible } from '@assertion/shared/AssertionUtils';
+import { waitUntilVisible, type AssertionContext } from '@assertion/shared/AssertionUtils';
 import { TIMING } from '@config/Constants';
 
 export class SanPageAssertion {
@@ -33,12 +33,19 @@ export class SanPageAssertion {
    */
   async toHaveTitle(expectedTitle: string): Promise<void> {
     let lastActualTitle = '';
+    const context: AssertionContext = {
+      assertionType: 'toHaveTitle',
+      expected: expectedTitle.trim(),
+      locator: 'page.title',
+    };
+
     await waitUntilVisible(
       async () => {
         lastActualTitle = await this.driver.getTitle();
+        context.actual = lastActualTitle.trim();
         return lastActualTitle.trim() === expectedTitle.trim();
       },
-      `Expected title "${expectedTitle.trim()}" but got "${lastActualTitle.trim()}"`,
+      context,
       this.timeout
     );
   }
@@ -59,11 +66,17 @@ export class SanPageAssertion {
     let lastActualUrl = '';
     const isRegExp = expectedUrl instanceof RegExp;
     const expectedPattern = isRegExp ? expectedUrl.toString() : expectedUrl;
+    const context: AssertionContext = {
+      assertionType: 'toHaveURL',
+      expected: expectedPattern,
+      locator: 'page.url',
+    };
     
     await waitUntilVisible(
       async () => {
         try {
           lastActualUrl = await this.driver.getCurrentUrl();
+          context.actual = lastActualUrl.trim();
           if (isRegExp) {
             return expectedUrl.test(lastActualUrl);
           } else {
@@ -75,8 +88,9 @@ export class SanPageAssertion {
           return false;
         }
       },
-      `Expected URL to ${isRegExp ? 'match pattern' : 'equal'} "${expectedPattern}" but got "${lastActualUrl.trim()}"`,
+      context,
       this.timeout
     );
   }
 }
+
