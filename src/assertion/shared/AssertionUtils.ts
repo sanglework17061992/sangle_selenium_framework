@@ -5,6 +5,7 @@
 
 import { TimeUtils } from '@utils/TimeUtils';
 import { formatValue } from '@utils/ValueFormatter';
+import { logger } from '@utils/Logger';
 import { TIMING } from '@config/Constants';
 
 /**
@@ -28,6 +29,7 @@ export async function waitUntilVisible(
       }
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
+      logger.error(`waitUntilVisible: ${lastError.message}`);
     }
     
     // Wait before next retry
@@ -56,8 +58,11 @@ export async function waitUntilHidden(
       if (result) {
         return; // Element is hidden
       }
-    } catch {
+    } catch (error) {
       // Element not found in DOM - considered hidden
+      if (error instanceof Error) {
+        logger.error(`waitUntilHidden: ${error.message}`);
+      }
       return;
     }
     
