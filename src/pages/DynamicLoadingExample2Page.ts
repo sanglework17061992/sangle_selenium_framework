@@ -1,5 +1,6 @@
 import { DynamicLoadingPage } from '@pages/DynamicLoadingPage';
 import { logger } from '@utils/Logger';
+import { expect as sanExpect } from '@assertion/index';
 
 /**
  * DynamicLoadingExample2Page - Page Object for Example 2 dynamic loading scenario
@@ -30,7 +31,6 @@ export class DynamicLoadingExample2Page extends DynamicLoadingPage {
      */
     public async verifyPageLoaded(): Promise<void> {
         logger.info('Verifying Example 2 page is loaded with correct URL and heading');
-        const { expect: sanExpect } = await import('@assertion/index');
         
         await sanExpect(this).toHaveURL(/dynamic_loading\/2/);
         await sanExpect(this.heading).toHaveText('Dynamically Loaded Page Elements');
