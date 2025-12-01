@@ -16,12 +16,12 @@ export class DynamicControlsPage extends BasePage {
     // Checkbox section locators - public for assertions in tests
     public checkboxInput = this.id('checkbox');
     public checkboxExample = this.id('checkbox-example');
-    public removeCheckboxButton = this.css('[id="checkbox-example"] > button');
+    public removeCheckboxButton = this.checkboxExample.findChild({ using: 'css', value: 'button' });
 
     // Input section locators - public for assertions in tests
-    public inputField = this.css('[id="input-example"] > input');
     public inputExample = this.id('input-example');
-    public enableDisableButton = this.css('[id="input-example"] > button');
+    public inputField = this.inputExample.findChild({ using: 'css', value: 'input' });
+    public enableDisableButton = this.inputExample.findChild({ using: 'css', value: 'button' });
 
     /**
      * Navigate to the dynamic controls page

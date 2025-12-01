@@ -14,7 +14,7 @@ export class DynamicLoadingPage extends BasePage {
     private readonly PAGE_PATH = '/dynamic_loading';
 
     // Main page locators
-    protected example1Link = this.css('[id="content"] a:nth-of-type(1)');
+    protected example1Link = this.css('#content a:nth-of-type(1)');
     protected example2Link = this.css('a:nth-of-type(2)');
 
     /**
