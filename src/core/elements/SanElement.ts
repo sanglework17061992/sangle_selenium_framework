@@ -166,6 +166,22 @@ export class SanElement {
   }
 
   /**
+   * Check if element is currently displayed without waiting for visibility
+   * This is useful for assertions that need to verify the current state
+   * without auto-retrying for the element to become visible.
+   * 
+   * @returns true if element is displayed, false if hidden or not found
+   */
+  async isDisplayedNow(): Promise<boolean> {
+    try {
+      const element = await this.findElement(ActionType.READ);
+      return await element.isDisplayed();
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Check if element is enabled
    */
   async isEnabled(options?: ReadOptions): Promise<boolean> {
@@ -181,15 +197,14 @@ export class SanElement {
     return new SanElement(locator, this);
   }
 
-  // TODO: Additional methods for future enhancement
+  // Additional methods for future enhancement:
   // - sendKeys(keys): Send special keys
   // - getAttribute(name): Get attribute value
-  // - isDisplayed(): Check if element is visible
   // - clear(): Clear input field
   // - check()/uncheck(): Toggle checkbox/radio
   // - isChecked(): Check if checkbox/radio is selected
   // - hover(): Hover over element
-  // - scrollIntoView(): Manually scroll element intoTimeout now only configured per-action via  view
+  // - scrollIntoView(): Manually scroll element into view
 }
 
 export default SanElement;

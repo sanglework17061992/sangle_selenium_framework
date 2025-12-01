@@ -59,12 +59,13 @@ export class SanElementAssertion {
   /**
    * Assert that the element is hidden/not visible
    * Handles both cases: element is hidden (display:none) or element is removed from DOM
+   * Uses isDisplayedNow() instead of isDisplayed() to avoid auto-waiting for visibility
    * @example await expect(element).toBeHidden()
    */
   async toBeHidden(): Promise<void> {
     await waitUntilHidden(
       async () => {
-        const isDisplayed = await this.element.isDisplayed();
+        const isDisplayed = await this.element.isDisplayedNow();
         return !isDisplayed;
       },
       'Expected element to be hidden but it is visible',
