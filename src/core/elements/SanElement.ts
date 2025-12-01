@@ -158,7 +158,7 @@ export class SanElement {
   }
 
   /**
-   * Check if element is displayed/visible
+   * Check if element is displayed (waits for visibility)
    */
   async isDisplayed(options?: ReadOptions): Promise<boolean> {
     const element = await this.findVisibleElement({ timeout: options?.timeout });
@@ -166,11 +166,8 @@ export class SanElement {
   }
 
   /**
-   * Check if element is currently displayed without waiting for visibility
-   * This is useful for assertions that need to verify the current state
-   * without auto-retrying for the element to become visible.
-   * 
-   * @returns true if element is displayed, false if hidden or not found
+   * Check if element is currently displayed (no wait)
+   * Used internally by assertion framework for toBeHidden()
    */
   async isDisplayedNow(): Promise<boolean> {
     try {
@@ -182,7 +179,7 @@ export class SanElement {
   }
 
   /**
-   * Check if element is enabled
+   * Check if element is enabled (waits for enabled state)
    */
   async isEnabled(options?: ReadOptions): Promise<boolean> {
     const element = await this.findVisibleElement({ timeout: options?.timeout });
@@ -190,11 +187,8 @@ export class SanElement {
   }
 
   /**
-   * Check if element is currently enabled without waiting for it to become enabled
-   * This is useful for assertions that need to verify the current enabled state
-   * without auto-retrying for the element to become enabled.
-   * 
-   * @returns true if element is enabled, false if disabled or not found
+   * Check if element is currently enabled (no wait)
+   * Used internally by assertion framework for toBeEnabled/toBeDisabled()
    */
   async isEnabledNow(): Promise<boolean> {
     try {
