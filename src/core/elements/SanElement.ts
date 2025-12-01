@@ -190,6 +190,22 @@ export class SanElement {
   }
 
   /**
+   * Check if element is currently enabled without waiting for it to become enabled
+   * This is useful for assertions that need to verify the current enabled state
+   * without auto-retrying for the element to become enabled.
+   * 
+   * @returns true if element is enabled, false if disabled or not found
+   */
+  async isEnabledNow(): Promise<boolean> {
+    try {
+      const element = await this.findElement(ActionType.READ);
+      return await element.isEnabled();
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Find child element within this element
    * Creates a new SanElement with this element as parent for scoped searching
    */

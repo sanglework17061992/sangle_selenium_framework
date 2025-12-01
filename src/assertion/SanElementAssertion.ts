@@ -75,13 +75,13 @@ export class SanElementAssertion {
 
   /**
    * Assert that the element is enabled
-   * Checks if the element is not disabled (enabled attribute is not present or false)
+   * Waits for the element to become enabled
    * @example await expect(inputElement).toBeEnabled()
    */
   async toBeEnabled(): Promise<void> {
     await waitUntilVisible(
       async () => {
-        const isEnabled = await this.element.isEnabled();
+        const isEnabled = await this.element.isEnabledNow();
         return isEnabled === true;
       },
       'Expected element to be enabled but it is disabled',
@@ -91,13 +91,13 @@ export class SanElementAssertion {
 
   /**
    * Assert that the element is disabled
-   * Checks if the element has the disabled attribute or is not enabled
+   * Waits for the element to become disabled
    * @example await expect(inputElement).toBeDisabled()
    */
   async toBeDisabled(): Promise<void> {
     await waitUntilVisible(
       async () => {
-        const isEnabled = await this.element.isEnabled();
+        const isEnabled = await this.element.isEnabledNow();
         return isEnabled === false;
       },
       'Expected element to be disabled but it is enabled',
