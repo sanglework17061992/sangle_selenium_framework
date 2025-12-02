@@ -13,7 +13,7 @@
  */
 
 import { SanElement } from '@core/elements/SanElement';
-import { waitUntil } from '@assertion/shared/AssertionUtils';
+import { waitUntilVisible, waitUntilHidden } from '@assertion/shared/AssertionUtils';
 import { TIMING } from '@config/Constants';
 
 export class SanElementAssertion {
@@ -34,7 +34,7 @@ export class SanElementAssertion {
    */
   async toHaveText(expectedText: string): Promise<void> {
     let lastActualText = '';
-    await waitUntil(
+    await waitUntilVisible(
       async () => {
         lastActualText = await this.element.getText();
         return lastActualText.trim() === expectedText.trim();
@@ -49,9 +49,57 @@ export class SanElementAssertion {
    * @example await expect(element).toBeVisible()
    */
   async toBeVisible(): Promise<void> {
-    await waitUntil(
+    await waitUntilVisible(
       () => this.element.isDisplayed(),
       'Expected element to be visible but it is not',
+      this.timeout
+    );
+  }
+
+  /**
+   * Assert that the element is hidden/not visible
+   * Handles both cases: element is hidden (display:none) or element is removed from DOM
+   * @example await expect(element).toBeHidden()
+   */
+  async toBeHidden(): Promise<void> {
+    await waitUntilHidden(
+      async () => {
+        const isDisplayed = await this.element.isDisplayedNow();
+        return !isDisplayed;
+      },
+      'Expected element to be hidden but it is visible',
+      this.timeout
+    );
+  }
+
+  /**
+   * Assert that the element is enabled
+   * Waits for the element to become enabled
+   * @example await expect(inputElement).toBeEnabled()
+   */
+  async toBeEnabled(): Promise<void> {
+    await waitUntilVisible(
+      async () => {
+        const isEnabled = await this.element.isEnabledNow();
+        return isEnabled === true;
+      },
+      'Expected element to be enabled but it is disabled',
+      this.timeout
+    );
+  }
+
+  /**
+   * Assert that the element is disabled
+   * Waits for the element to become disabled
+   * @example await expect(inputElement).toBeDisabled()
+   */
+  async toBeDisabled(): Promise<void> {
+    await waitUntilVisible(
+      async () => {
+        const isEnabled = await this.element.isEnabledNow();
+        return isEnabled === false;
+      },
+      'Expected element to be disabled but it is enabled',
       this.timeout
     );
   }

@@ -75,6 +75,7 @@ export class ConfigLoader {
   
   /**
    * Get base URL for application under test
+   * Removes trailing slash to avoid double slashes when concatenating with paths
    * @throws Error if BASE_URL is not set
    */
   getBaseUrl(): string {
@@ -84,7 +85,8 @@ export class ConfigLoader {
       throw new Error('BASE_URL is not configured in .env file');
     }
 
-    return baseUrl;
+    // Remove trailing slash to prevent double slashes in URL concatenation
+    return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
   }
 
   /**

@@ -5,6 +5,7 @@ import { actionabilityChecker } from '@core/elements/ActionabilityChecker';
 import { elementFinder } from '@core/elements/ElementFinder';
 import { ActionType } from '@enums';
 import { TimeUtils } from '@utils/TimeUtils';
+import { logger } from '@utils/Logger';
 import { TIMING } from '@config/Constants';
 
 export { ActionType } from '@enums';
@@ -127,11 +128,13 @@ export class SanElement {
    * Requirements: STABLE, ENABLED
    */
   async click(options?: ActionOptions): Promise<void> {
+    logger.debug(`Clicking element with locator: ${this.locator.using}="${this.locator.value}"`);
     await this.executeWithRecovery(
       ActionType.CLICK,
       (element: WebElement) => element.click(),
       options
     );
+    logger.debug(`Element clicked successfully: ${this.locator.using}="${this.locator.value}"`);
   }
 
   /**
@@ -163,6 +166,46 @@ export class SanElement {
   }
 
   /**
+   * Check if element is currently displayed without waiting for visibility
+   * This is useful for assertions that need to verify the current state
+   * without auto-retrying for the element to become visible.
+   * 
+   * @returns true if element is displayed, false if hidden or not found
+   */
+  async isDisplayedNow(): Promise<boolean> {
+    try {
+      const element = await this.findElement(ActionType.READ);
+      return await element.isDisplayed();
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Check if element is enabled
+   */
+  async isEnabled(options?: ReadOptions): Promise<boolean> {
+    const element = await this.findVisibleElement({ timeout: options?.timeout });
+    return await element.isEnabled();
+  }
+
+  /**
+   * Check if element is currently enabled without waiting for it to become enabled
+   * This is useful for assertions that need to verify the current enabled state
+   * without auto-retrying for the element to become enabled.
+   * 
+   * @returns true if element is enabled, false if disabled or not found
+   */
+  async isEnabledNow(): Promise<boolean> {
+    try {
+      const element = await this.findElement(ActionType.READ);
+      return await element.isEnabled();
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Find child element within this element
    * Creates a new SanElement with this element as parent for scoped searching
    */
@@ -170,15 +213,14 @@ export class SanElement {
     return new SanElement(locator, this);
   }
 
-  // TODO: Additional methods for future enhancement
+  // Additional methods for future enhancement:
   // - sendKeys(keys): Send special keys
   // - getAttribute(name): Get attribute value
-  // - isDisplayed(): Check if element is visible
   // - clear(): Clear input field
   // - check()/uncheck(): Toggle checkbox/radio
   // - isChecked(): Check if checkbox/radio is selected
   // - hover(): Hover over element
-  // - scrollIntoView(): Manually scroll element intoTimeout now only configured per-action via  view
+  // - scrollIntoView(): Manually scroll element into view
 }
 
 export default SanElement;
