@@ -59,14 +59,17 @@ export class SanElementAssertion {
   /**
    * Assert that the element is hidden/not visible
    * Handles both cases: element is hidden (display:none) or element is removed from DOM
-   * Uses isDisplayedNow() instead of isDisplayed() to avoid auto-waiting for visibility
    * @example await expect(element).toBeHidden()
    */
   async toBeHidden(): Promise<void> {
     await waitUntilHidden(
       async () => {
-        const isDisplayed = await this.element.isDisplayedNow();
-        return !isDisplayed;
+        try {
+          const isDisplayed = await this.element.isDisplayed({ timeout: 0 });
+          return !isDisplayed;
+        } catch {
+          return true; // Element not found = hidden
+        }
       },
       'Expected element to be hidden but it is visible',
       this.timeout
@@ -81,8 +84,12 @@ export class SanElementAssertion {
   async toBeEnabled(): Promise<void> {
     await waitUntilVisible(
       async () => {
-        const isEnabled = await this.element.isEnabledNow();
-        return isEnabled === true;
+        try {
+          const isEnabled = await this.element.isEnabled({ timeout: 0 });
+          return isEnabled === true;
+        } catch {
+          return false;
+        }
       },
       'Expected element to be enabled but it is disabled',
       this.timeout
@@ -97,8 +104,12 @@ export class SanElementAssertion {
   async toBeDisabled(): Promise<void> {
     await waitUntilVisible(
       async () => {
-        const isEnabled = await this.element.isEnabledNow();
-        return isEnabled === false;
+        try {
+          const isEnabled = await this.element.isEnabled({ timeout: 0 });
+          return isEnabled === false;
+        } catch {
+          return false;
+        }
       },
       'Expected element to be disabled but it is enabled',
       this.timeout
