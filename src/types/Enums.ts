@@ -71,3 +71,23 @@ export enum ExecutionMode {
   PARALLEL = 'parallel',
   SEQUENTIAL = 'sequential'
 }
+
+/**
+ * Error type enum for categorizing different error scenarios
+ */
+export enum ErrorType {
+  /** Element not found, not visible, or not actionable */
+  ElementError = 'ElementError',
+  /** Action on element failed (click, type, etc.) */
+  ActionabilityError = 'ActionabilityError',
+  /** Assertion condition not met */
+  AssertionError = 'AssertionError',
+  /** Navigation or URL change failed */
+  NavigationError = 'NavigationError',
+  /** Operation exceeded time limit */
+  TimeoutError = 'TimeoutError',
+  /** Configuration key missing or invalid */
+  ConfigurationError = 'ConfigurationError',
+  /** Unexpected or unrecoverable error */
+  UnexpectedError = 'UnexpectedError'
+}

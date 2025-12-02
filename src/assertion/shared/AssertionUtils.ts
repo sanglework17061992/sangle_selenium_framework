@@ -7,7 +7,7 @@ import { TimeUtils } from '@utils/TimeUtils';
 import { formatValue } from '@utils/ValueFormatter';
 import { logger } from '@utils/Logger';
 import { TIMING } from '@config/Constants';
-import { AssertionError } from '@assertion/errors';
+import { SanError, ErrorType } from '@errors';
 
 /**
  * Context information for detailed error messages
@@ -69,14 +69,17 @@ export async function waitUntilVisible(
     throw new Error(`${context}\nLast error: ${finalError.message}`);
   }
 
-  // Throw custom AssertionError with context
-  throw new AssertionError(
-    context.assertionType,
-    context.expected,
-    context.actual,
-    context.locator,
-    timeout,
-    lastError ?? undefined
+  // Throw SanError with assertion context
+  throw new SanError(
+    `${context.assertionType} assertion failed: expected ${JSON.stringify(context.expected)} but got ${JSON.stringify(context.actual ?? 'element not visible')}`,
+    {
+      type: ErrorType.AssertionError,
+      locator: context.locator,
+      expected: context.expected,
+      actual: context.actual ?? 'element not visible',
+      timeout,
+      lastError: lastError ?? undefined
+    }
   );
 }
 
@@ -120,14 +123,17 @@ export async function waitUntilHidden(
     throw new TypeError(context);
   }
 
-  // Throw custom AssertionError with context
-  throw new AssertionError(
-    context.assertionType,
-    context.expected,
-    context.actual,
-    context.locator,
-    timeout,
-    lastError ?? undefined
+  // Throw SanError with assertion context
+  throw new SanError(
+    `${context.assertionType} assertion failed: expected ${JSON.stringify(context.expected)} but got ${JSON.stringify(context.actual ?? 'element still visible')}`,
+    {
+      type: ErrorType.AssertionError,
+      locator: context.locator,
+      expected: context.expected,
+      actual: context.actual ?? 'element still visible',
+      timeout,
+      lastError: lastError ?? undefined
+    }
   );
 }
 
@@ -136,7 +142,14 @@ export async function waitUntilHidden(
  */
 export function equal<T>(actual: T, expected: T, message?: string): void {
   if (actual !== expected) {
-    throw new Error(message || `Expected ${formatValue(actual)} to equal ${formatValue(expected)}`);
+    throw new SanError(
+      message || `Expected ${formatValue(actual)} to equal ${formatValue(expected)}`,
+      {
+        type: ErrorType.AssertionError,
+        expected: String(expected),
+        actual: String(actual)
+      }
+    );
   }
 }
 

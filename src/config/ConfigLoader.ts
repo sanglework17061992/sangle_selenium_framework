@@ -2,6 +2,7 @@ import { config } from 'dotenv';
 import { BrowserType, LogLevel, ConfigType, ConfigKey } from '@enums';
 import type { BrowserConfig, TimeoutConfig } from '@configTypes';
 import { DEFAULT_CONFIG } from '@config/Constants';
+import { SanError, ErrorType } from '@errors';
 
 // Load environment variables from .env file
 config();
@@ -58,7 +59,10 @@ export class ConfigLoader {
 
     // Validate browser name
     if (browserName.trim() === '') {
-      throw new Error('BROWSER cannot be empty');
+      throw new SanError('BROWSER configuration is empty', {
+        type: ErrorType.ConfigurationError,
+        configKey: ConfigKey.BROWSER
+      });
     }
 
     // Validate against supported browser types
@@ -82,7 +86,10 @@ export class ConfigLoader {
     const baseUrl = this.parseConfig(ConfigKey.BASE_URL, '');
     
     if (!baseUrl || baseUrl.trim() === '') {
-      throw new Error('BASE_URL is not configured in .env file');
+      throw new SanError('BASE_URL is not configured', {
+        type: ErrorType.ConfigurationError,
+        configKey: ConfigKey.BASE_URL
+      });
     }
 
     // Remove trailing slash to prevent double slashes in URL concatenation

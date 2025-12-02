@@ -2,6 +2,7 @@ import { By, WebElement, WebDriver } from 'selenium-webdriver';
 import { TIMING } from '@config/Constants';
 import { TimeUtils } from '@utils/TimeUtils';
 import { Locator } from '@core/elements/SanElement';
+import { SanError, ErrorType } from '@errors';
 
 /**
  * Options for finding elements
@@ -28,7 +29,10 @@ export class ElementFinder {
     options?: FindOptions
   ): Promise<WebElement> {
     if (!options) {
-      throw new Error('FindOptions must be provided with at least timeout');
+      throw new SanError('FindOptions must be provided with at least timeout', {
+        type: ErrorType.ConfigurationError,
+        configKey: 'FindOptions'
+      });
     }
 
     const by = this.toBy(locator);
@@ -49,7 +53,10 @@ export class ElementFinder {
       case 'id': return By.id(locator.value);
       case 'name': return By.name(locator.value);
       case 'class': return By.className(locator.value);
-      default: throw new Error('Unsupported locator');
+      default: throw new SanError(`Unsupported locator type: ${locator.using}`, {
+        type: ErrorType.ConfigurationError,
+        configKey: `locator.using=${locator.using}`
+      });
     }
   }
 
@@ -85,7 +92,11 @@ export class ElementFinder {
       }
       await TimeUtils.sleep(TIMING.DEFAULT_RETRY_INTERVAL);
     }
-    throw new Error(`Element not visible within ${timeout}ms`);
+    throw new SanError(`Element not visible within ${timeout}ms`, {
+      type: ErrorType.ElementError,
+      locator: `${by.constructor.name}('${by.value}')`,
+      timeout
+    });
   }
 }
 

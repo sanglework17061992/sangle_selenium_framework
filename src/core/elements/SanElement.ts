@@ -7,6 +7,7 @@ import { ActionType } from '@enums';
 import { TimeUtils } from '@utils/TimeUtils';
 import { logger } from '@utils/Logger';
 import { TIMING } from '@config/Constants';
+import { SanError, ErrorType } from '@errors';
 
 export { ActionType } from '@enums';
 export type Locator = { using: 'css' | 'xpath' | 'id' | 'name' | 'class'; value: string };
@@ -120,7 +121,10 @@ export class SanElement {
     }
 
     // This should never be reached, but TypeScript requires it
-    throw new Error('executeWithRecovery: Unexpected end of retry loop');
+    throw new SanError('executeWithRecovery: Unexpected end of retry loop', {
+      type: ErrorType.UnexpectedError,
+      context: { actionType, locatorUsing: this.locator.using, locatorValue: this.locator.value }
+    });
   }
 
   /**

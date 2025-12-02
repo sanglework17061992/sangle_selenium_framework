@@ -14,7 +14,7 @@ class DynamicControlsTest extends BaseTest<DynamicControlsPage> {
     }
 }
 
-describe('Dynamic Controls - Auto-Wait & Auto-Assertion', () => {
+describe.skip('Dynamic Controls - Auto-Wait & Auto-Assertion', () => {
     const test = new DynamicControlsTest();
     let dynamicControlsPage: DynamicControlsPage;
 

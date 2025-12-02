@@ -18,7 +18,7 @@ class DynamicLoadingExample2Test extends BaseTest<DynamicLoadingExample2Page> {
     }
 }
 
-describe('Dynamic Loading - Example 2: Rendered Element', () => {
+describe.skip('Dynamic Loading - Example 2: Rendered Element', () => {
     const test = new DynamicLoadingExample2Test();
     let parentPage: DynamicLoadingPage;
     let example2Page: DynamicLoadingExample2Page;

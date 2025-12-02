@@ -61,7 +61,13 @@ export class Logger {
 
   error(message: string, error?: Error): void {
     if (error) {
-      winstonLogger.error(`${message}: ${error.message}`, { stack: error.stack });
+      // Check if it's a SanError with getFormattedMessage method
+      if ('getFormattedMessage' in error && typeof error.getFormattedMessage === 'function') {
+        const sanError = error as any;
+        winstonLogger.error(`${message}\n${sanError.getFormattedMessage()}`, { stack: error.stack });
+      } else {
+        winstonLogger.error(`${message}: ${error.message}`, { stack: error.stack });
+      }
     } else {
       winstonLogger.error(message);
     }

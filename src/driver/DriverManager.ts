@@ -4,6 +4,7 @@ import { configLoader, ConfigLoader } from '@config/ConfigLoader';
 import { logger, Logger } from '@utils/Logger';
 import { BrowserFactory, ChromeFactory, FirefoxFactory, BrowserRegistry } from '@browser';
 import type { BrowserConfig } from '@configTypes';
+import { SanError, ErrorType } from '@errors';
 
 /**
  * Instance-based driver manager with dependency injection
@@ -109,7 +110,10 @@ export class DriverManager {
    */
   getDriver(): WebDriver {
     if (!this.currentDriver) {
-      throw new Error('Driver not initialized. Call createDriver() first.');
+      throw new SanError('Driver not initialized. Call createDriver() first.', {
+        type: ErrorType.UnexpectedError,
+        operation: 'getDriver'
+      });
     }
     return this.currentDriver;
   }

@@ -24,7 +24,9 @@
       "@base/*": ["base/*"],
       "@reporting/*": ["reporting/*"],
       "@pages/*": ["pages/*"],
-      "@tests/*": ["tests/*"]
+      "@tests/*": ["tests/*"],
+      "@errors": ["errors/index"],
+      "@errors/*": ["errors/*"]
     }
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"],
