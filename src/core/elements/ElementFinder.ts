@@ -92,10 +92,12 @@ export class ElementFinder {
       }
       await TimeUtils.sleep(TIMING.DEFAULT_RETRY_INTERVAL);
     }
-    throw new SanError(`Element not visible within ${timeout}ms`, {
-      type: ErrorType.ElementError,
+    throw new SanError(`Failed to find element within ${timeout}ms`, {
+      type: ErrorType.TimeoutError,
+      operation: 'Element visibility check',
       locator: `${by.constructor.name}('${by.value}')`,
-      timeout
+      timeout,
+      reason: 'Element was not found or did not become visible within the specified timeout'
     });
   }
 }

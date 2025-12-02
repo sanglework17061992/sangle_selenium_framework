@@ -90,8 +90,20 @@ export class SanError extends Error {
 
   /**
    * Get formatted error message with all relevant context
+   * For AssertionError type, provides detailed structured output with assertion details
+   * For TimeoutError type, provides timeout-specific information
    */
   getFormattedMessage(): string {
+    // Special formatting for assertion errors
+    if (this.type === 'AssertionError') {
+      return this.getAssertionErrorMessage();
+    }
+
+    // Special formatting for timeout errors
+    if (this.type === 'TimeoutError') {
+      return this.getTimeoutErrorMessage();
+    }
+
     const lines = [this.baseMessage, `  Error Type: ${this.type}`];
 
     // Add type-specific details
@@ -139,6 +151,90 @@ export class SanError extends Error {
     }
 
     lines.push(`  Timestamp: ${this.timestamp.toISOString()}`);
+
+    return lines.join('\n');
+  }
+
+  /**
+   * Get formatted assertion error message with structured output
+   * Provides assertion type, expected, actual, locator, and timeout in a clear format
+   */
+  private getAssertionErrorMessage(): string {
+    const lines: string[] = [];
+
+    // Extract assertion type from base message (format: "assertionName assertion failed: ...")
+    const assertionMatch = /^(.+?)\s+assertion\s+failed/.exec(this.baseMessage);
+    const assertionType = assertionMatch ? assertionMatch[1] : 'Unknown';
+
+    lines.push(
+      `AssertionError: ${assertionType} assertion failed`,
+      '',
+      `  Assertion Type: ${assertionType}`
+    );
+
+    if (this.expected !== undefined) {
+      lines.push(`  Expected: ${JSON.stringify(this.expected)}`);
+    }
+
+    if (this.actual !== undefined) {
+      lines.push(`  Actual: ${JSON.stringify(this.actual)}`);
+    }
+
+    if (this.locator) {
+      lines.push(`  Locator: ${this.locator}`);
+    }
+
+    if (this.timeout) {
+      lines.push(`  Timeout: ${this.timeout}ms`);
+    }
+
+    // NOTE: Diff comparison is intentionally removed here as Mocha appears to be
+    // adding its own diff output for assertion errors with expected/actual values.
+    // We keep the structured metadata above for clarity.
+
+    return lines.join('\n');
+  }
+
+  /**
+   * Get formatted timeout error message with structured output
+   * Provides operation, timeout duration, and context about what was being waited for
+   */
+  private getTimeoutErrorMessage(): string {
+    const lines: string[] = [];
+
+    lines.push(
+      `TimeoutError: ${this.baseMessage}`,
+      '',
+      `  Error Type: TimeoutError`
+    );
+
+    if (this.operation) {
+      lines.push(`  Operation: ${this.operation}`);
+    }
+
+    if (this.timeout) {
+      lines.push(`  Timeout: ${this.timeout}ms`);
+    }
+
+    if (this.locator) {
+      lines.push(`  Locator: ${this.locator}`);
+    }
+
+    if (this.reason) {
+      lines.push(`  Reason: ${this.reason}`);
+    }
+
+    if (this.expected !== undefined) {
+      lines.push(`  Expected: ${JSON.stringify(this.expected)}`);
+    }
+
+    if (this.actual !== undefined) {
+      lines.push(`  Actual: ${JSON.stringify(this.actual)}`);
+    }
+
+    if (this.lastError) {
+      lines.push(`  Last Error: ${this.lastError.message}`);
+    }
 
     return lines.join('\n');
   }

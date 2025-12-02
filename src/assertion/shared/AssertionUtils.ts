@@ -66,10 +66,14 @@ export async function waitUntilVisible(
   if (typeof context === 'string') {
     // Legacy string message support
     const finalError = lastError || new Error(context);
-    throw new Error(`${context}\nLast error: ${finalError.message}`);
+    throw new SanError(`${context}`, {
+      type: ErrorType.TimeoutError,
+      timeout,
+      lastError: finalError
+    });
   }
 
-  // Throw SanError with assertion context
+  // Throw SanError with timeout context
   throw new SanError(
     `${context.assertionType} assertion failed: expected ${JSON.stringify(context.expected)} but got ${JSON.stringify(context.actual ?? 'element not visible')}`,
     {
@@ -120,7 +124,11 @@ export async function waitUntilHidden(
   // Timeout reached - element still visible
   if (typeof context === 'string') {
     // Legacy string message support
-    throw new TypeError(context);
+    throw new SanError(`${context}`, {
+      type: ErrorType.TimeoutError,
+      timeout,
+      lastError: lastError ?? undefined
+    });
   }
 
   // Throw SanError with assertion context
