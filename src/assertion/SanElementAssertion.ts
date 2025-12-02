@@ -64,12 +64,8 @@ export class SanElementAssertion {
   async toBeHidden(): Promise<void> {
     await waitUntilHidden(
       async () => {
-        try {
-          const isDisplayed = await this.element.isDisplayed({ timeout: 0 });
-          return !isDisplayed;
-        } catch {
-          return true; // Element not found = hidden
-        }
+        const isDisplayed = await this.element.isDisplayedNow();
+        return !isDisplayed;
       },
       'Expected element to be hidden but it is visible',
       this.timeout
@@ -84,12 +80,8 @@ export class SanElementAssertion {
   async toBeEnabled(): Promise<void> {
     await waitUntilVisible(
       async () => {
-        try {
-          const isEnabled = await this.element.isEnabled({ timeout: 0 });
-          return isEnabled === true;
-        } catch {
-          return false;
-        }
+        const isEnabled = await this.element.isEnabledNow();
+        return isEnabled === true;
       },
       'Expected element to be enabled but it is disabled',
       this.timeout
@@ -104,12 +96,8 @@ export class SanElementAssertion {
   async toBeDisabled(): Promise<void> {
     await waitUntilVisible(
       async () => {
-        try {
-          const isEnabled = await this.element.isEnabled({ timeout: 0 });
-          return isEnabled === false;
-        } catch {
-          return false;
-        }
+        const isEnabled = await this.element.isEnabledNow();
+        return isEnabled === false;
       },
       'Expected element to be disabled but it is enabled',
       this.timeout

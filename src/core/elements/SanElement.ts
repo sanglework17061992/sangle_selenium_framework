@@ -158,9 +158,7 @@ export class SanElement {
   }
 
   /**
-   * Check if element is displayed
-   * If timeout is 0 or very low, returns immediate state without waiting
-   * @param options - Optional timeout configuration. Pass { timeout: 0 } for instant check
+   * Check if element is displayed/visible
    */
   async isDisplayed(options?: ReadOptions): Promise<boolean> {
     const element = await this.findVisibleElement({ timeout: options?.timeout });
@@ -168,13 +166,43 @@ export class SanElement {
   }
 
   /**
+   * Check if element is currently displayed without waiting for visibility
+   * This is useful for assertions that need to verify the current state
+   * without auto-retrying for the element to become visible.
+   * 
+   * @returns true if element is displayed, false if hidden or not found
+   */
+  async isDisplayedNow(): Promise<boolean> {
+    try {
+      const element = await this.findElement(ActionType.READ);
+      return await element.isDisplayed();
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Check if element is enabled
-   * If timeout is 0 or very low, returns immediate state without waiting
-   * @param options - Optional timeout configuration. Pass { timeout: 0 } for instant check
    */
   async isEnabled(options?: ReadOptions): Promise<boolean> {
     const element = await this.findVisibleElement({ timeout: options?.timeout });
     return await element.isEnabled();
+  }
+
+  /**
+   * Check if element is currently enabled without waiting for it to become enabled
+   * This is useful for assertions that need to verify the current enabled state
+   * without auto-retrying for the element to become enabled.
+   * 
+   * @returns true if element is enabled, false if disabled or not found
+   */
+  async isEnabledNow(): Promise<boolean> {
+    try {
+      const element = await this.findElement(ActionType.READ);
+      return await element.isEnabled();
+    } catch {
+      return false;
+    }
   }
 
   /**
