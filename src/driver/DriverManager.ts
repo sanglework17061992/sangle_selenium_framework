@@ -70,13 +70,12 @@ export class DriverManager {
 
       // In parallel mode, check if driver already exists for this worker
       if (this.isParallel && this.drivers.has(driverKey)) {
-        this.log.info(`[Worker ${this.workerId}] Reusing existing ${browserName} driver`);
+        this.log.info(`Reusing existing ${browserName} driver`);
         this.currentDriver = this.drivers.get(driverKey)!;
         return this.currentDriver;
       }
 
-      const modeLabel = this.isParallel ? `[Worker ${this.workerId}]` : '[Sequential]';
-      this.log.info(`${modeLabel} Initializing ${browserName} driver`);
+      this.log.info(`Initializing ${browserName} driver`);
 
       const factory = this.registry.get(browserName);
       
@@ -90,12 +89,8 @@ export class DriverManager {
       this.currentDriver = driver;
       
       // Store driver in parallel map if in parallel mode
-      if (this.isParallel) {
-        this.drivers.set(driverKey, driver);
-        this.log.info(`${modeLabel} ${browserName} driver created successfully`);
-      } else {
-        this.log.info(`${browserName} driver created successfully`);
-      }
+      this.drivers.set(driverKey, driver);
+      this.log.info(`${browserName} driver created successfully`);
       
       return driver;
     } catch (error) {
@@ -131,10 +126,8 @@ export class DriverManager {
         
         if (this.isParallel) {
           this.drivers.delete(driverKey);
-          this.log.info(`[Worker ${this.workerId}] Driver quit successfully`);
-        } else {
-          this.log.info('Driver quit successfully');
         }
+        this.log.info('Driver quit successfully');
       } catch (error) {
         this.log.error(`Error quitting driver: ${error instanceof Error ? error.message : 'Unknown error'}`);
       } finally {

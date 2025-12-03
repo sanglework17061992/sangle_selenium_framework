@@ -248,14 +248,12 @@ export class SanError extends Error {
   }
 
   /**
-   * Print formatted error to console for better visibility
-   * Useful when test runner doesn't capture full message
+   * Get loggable error message for framework logger
+   * Used by Winston logger for writing to error.log and combined.log files
+   * This is automatically called when the logger processes the error
    */
-  printToConsole(): void {
-    const formatted = this.getFormattedMessage();
-    console.error('\n\n' + '[ERROR] ' + '='.repeat(75));
-    console.error(formatted);
-    console.error('='.repeat(82) + '\n');
+  getLoggableError(): string {
+    return this.getFormattedMessage();
   }
 }
 
