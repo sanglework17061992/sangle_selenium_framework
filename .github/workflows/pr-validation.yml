@@ -53,17 +53,15 @@ jobs:
         if: always()
         run: ls -la mochawesome-report/ allure-results/ logs/ 2>&1 || echo "Directories not found"
       
-      # Step 5c: Display combined log on failure
-      - name: Display test logs on failure
-        if: failure()
+      # Step 5c: Display combined log (always show for debugging)
+      - name: Display test logs
+        if: always()
         run: |
-          echo "=== Test Logs ===" >> $GITHUB_STEP_SUMMARY
+          echo "======= Test Execution Logs ======="
           if [ -f logs/combined.log ]; then
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            tail -100 logs/combined.log >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat logs/combined.log
           else
-            echo "No logs found" >> $GITHUB_STEP_SUMMARY
+            echo "No logs found"
           fi
         
       # Step 6: Upload test results
