@@ -116,7 +116,20 @@ export class SanElement {
         }
 
         // Step 4: Re-throw if not stale or retries exhausted
-        throw error;
+        throw new SanError(`Action failed on element`, {
+          type: ErrorType.ElementError,
+          operation: actionType.toString(),
+          locator: `${this.locator.using}('${this.locator.value}')`,
+          reason: error instanceof Error ? error.message : String(error),
+          context: {
+            actionType,
+            retryCount,
+            maxRetries: MAX_STALE_RETRIES,
+            parentElement: this.parentElement ? 'present' : 'none',
+            errorName: error?.name
+          },
+          lastError: error instanceof Error ? error : undefined
+        });
       }
     }
 

@@ -63,10 +63,13 @@ export class DriverManager {
    * In sequential mode: creates single driver
    */
   async createDriver(name?: string, additionalConfig?: Partial<BrowserConfig>): Promise<WebDriver> {
+    let browserName = '';
+    let driverKey = '';
+    
     try {
       const browserConfig = this.config.getBrowserConfig();
-      const browserName = name || browserConfig.name;
-      const driverKey = this.getDriverKey();
+      browserName = name || browserConfig.name;
+      driverKey = this.getDriverKey();
 
       // In parallel mode, check if driver already exists for this worker
       if (this.isParallel && this.drivers.has(driverKey)) {
@@ -95,8 +98,18 @@ export class DriverManager {
       return driver;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      this.log.error(`Failed to create driver: ${errorMsg}`);
-      throw error;
+      throw new SanError(`Failed to initialize driver for ${browserName || 'unknown'}`, {
+        type: ErrorType.ActionabilityError,
+        operation: 'createDriver',
+        reason: errorMsg,
+        context: {
+          browser: browserName,
+          workerId: this.workerId,
+          isParallel: this.isParallel,
+          driverKey: driverKey
+        },
+        lastError: error instanceof Error ? error : undefined
+      });
     }
   }
 

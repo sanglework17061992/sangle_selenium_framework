@@ -87,7 +87,19 @@ export class ElementFinder {
         if (error.name !== 'StaleElementReferenceError' && 
             error.name !== 'NoSuchElementError' &&
             !error.message?.includes('no such element')) {
-          throw error;
+          // Non-transient error - wrap in SanError
+          throw new SanError('Failed to find element', {
+            type: ErrorType.ElementError,
+            operation: 'findElement',
+            locator: `${by.constructor.name}('${by.value}')`,
+            timeout,
+            reason: error instanceof Error ? error.message : String(error),
+            context: {
+              errorName: error.name,
+              parentElement: parentElement ? 'present' : 'none'
+            },
+            lastError: error instanceof Error ? error : undefined
+          });
         }
       }
       await TimeUtils.sleep(TIMING.DEFAULT_RETRY_INTERVAL);
