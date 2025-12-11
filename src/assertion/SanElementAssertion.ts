@@ -13,8 +13,9 @@
  */
 
 import { SanElement } from '@core/elements/SanElement';
-import { waitUntilVisible, waitUntilHidden, type AssertionContext } from '@assertion/shared/AssertionUtils';
+import { waitUntilVisible, waitUntilHidden } from '@assertion/shared/AssertionUtils';
 import { TIMING } from '@config/Constants';
+import type { ErrorContext } from '@errorTypes';
 
 export class SanElementAssertion {
   private readonly element: SanElement;
@@ -51,8 +52,8 @@ export class SanElementAssertion {
    */
   async toHaveText(expectedText: string): Promise<void> {
     let lastActualText = '';
-    const context: AssertionContext = {
-      assertionType: 'toHaveText',
+    const context: ErrorContext = {
+      operation: 'toHaveText',
       expected: expectedText.trim(),
       locator: this.getLocatorString(),
     };
@@ -73,8 +74,8 @@ export class SanElementAssertion {
    * @example await expect(element).toBeVisible()
    */
   async toBeVisible(): Promise<void> {
-    const context: AssertionContext = {
-      assertionType: 'toBeVisible',
+    const context: ErrorContext = {
+      operation: 'toBeVisible',
       expected: 'visible',
       locator: this.getLocatorString(),
     };
@@ -96,8 +97,8 @@ export class SanElementAssertion {
    */
   async toBeHidden(): Promise<void> {
     let isDisplayed = false;
-    const context: AssertionContext = {
-      assertionType: 'toBeHidden',
+    const context: ErrorContext = {
+      operation: 'toBeHidden',
       expected: 'hidden',
       locator: this.getLocatorString(),
     };
@@ -119,8 +120,8 @@ export class SanElementAssertion {
    * @example await expect(inputElement).toBeEnabled()
    */
   async toBeEnabled(): Promise<void> {
-    const context: AssertionContext = {
-      assertionType: 'toBeEnabled',
+    const context: ErrorContext = {
+      operation: 'toBeEnabled',
       expected: true,
       locator: this.getLocatorString(),
     };
@@ -142,8 +143,8 @@ export class SanElementAssertion {
    * @example await expect(inputElement).toBeDisabled()
    */
   async toBeDisabled(): Promise<void> {
-    const context: AssertionContext = {
-      assertionType: 'toBeDisabled',
+    const context: ErrorContext = {
+      operation: 'toBeDisabled',
       expected: false,
       locator: this.getLocatorString(),
     };

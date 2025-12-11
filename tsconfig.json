@@ -14,6 +14,7 @@
       "@config/*": ["config/*"],
       "@enums": ["types/Enums"],
       "@configTypes": ["types/ConfigTypes"],
+      "@errorTypes": ["types/ErrorTypes"],
       "@types/*": ["types/*"],
       "@core/*": ["core/*"],
       "@driver/*": ["driver/*"],

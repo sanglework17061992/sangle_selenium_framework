@@ -41,7 +41,6 @@ export class TimeoutError extends SanError {
   getFormattedMessage(): string {
     const lines: string[] = [
       `${this.type}: ${this.baseMessage}`,
-      '',
       `  Error Type: ${this.type}`,
       `  Operation: ${this.operation}`,
       `  Timeout: ${this.timeout}ms`

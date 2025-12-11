@@ -47,7 +47,6 @@ export class AssertionError extends SanError {
 
     lines.push(
       `AssertionError: ${assertionType} assertion failed`,
-      '',
       `  Assertion Type: ${assertionType}`,
       `  Expected: ${JSON.stringify(this.expected)}`
     );

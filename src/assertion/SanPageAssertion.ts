@@ -14,7 +14,8 @@
 
 import { WebDriver } from 'selenium-webdriver';
 import { defaultDriverManager } from '@driver/DriverManager';
-import { waitUntilVisible, type AssertionContext } from '@assertion/shared/AssertionUtils';
+import { waitUntilVisible } from '@assertion/shared/AssertionUtils';
+import type { ErrorContext } from '@errorTypes';
 import { TIMING } from '@config/Constants';
 
 export class SanPageAssertion {
@@ -33,8 +34,8 @@ export class SanPageAssertion {
    */
   async toHaveTitle(expectedTitle: string): Promise<void> {
     let lastActualTitle = '';
-    const context: AssertionContext = {
-      assertionType: 'toHaveTitle',
+    const context: ErrorContext = {
+      operation: 'toHaveTitle',
       expected: expectedTitle.trim(),
       locator: 'page.title',
     };
@@ -66,8 +67,8 @@ export class SanPageAssertion {
     let lastActualUrl = '';
     const isRegExp = expectedUrl instanceof RegExp;
     const expectedPattern = isRegExp ? expectedUrl.toString() : expectedUrl;
-    const context: AssertionContext = {
-      assertionType: 'toHaveURL',
+    const context: ErrorContext = {
+      operation: 'toHaveURL',
       expected: expectedPattern,
       locator: 'page.url',
     };

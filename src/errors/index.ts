@@ -24,3 +24,6 @@ export { ActionabilityError } from '@errors/ActionabilityError';
 export { ConfigurationError } from '@errors/ConfigurationError';
 export { NavigationError } from '@errors/NavigationError';
 export { UnexpectedError } from '@errors/UnexpectedError';
+
+// Error-related types
+export type { ErrorContext } from '@errorTypes';

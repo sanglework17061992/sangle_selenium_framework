@@ -8,16 +8,7 @@ import { formatValue } from '@utils/ValueFormatter';
 import { logger } from '@utils/Logger';
 import { TIMING } from '@config/Constants';
 import { AssertionError, TimeoutError } from '@errors';
-
-/**
- * Context information for detailed error messages
- */
-export interface AssertionContext {
-  assertionType: string;
-  expected: string | boolean;
-  actual?: string | boolean;
-  locator?: string;
-}
+import type { ErrorContext } from '@errorTypes';
 
 /**
  * Core retry mechanism - waits until element becomes visible or condition passes
@@ -32,7 +23,7 @@ export interface AssertionContext {
  * await waitUntilVisible(
  *   () => element.isDisplayed(),
  *   { 
- *     assertionType: 'toBeVisible',
+ *     operation: 'toBeVisible',
  *     expected: 'visible',
  *     locator: 'button.submit'
  *   },
@@ -41,7 +32,7 @@ export interface AssertionContext {
  */
 export async function waitUntilVisible(
   condition: () => Promise<boolean>,
-  context: AssertionContext | string,
+  context: ErrorContext | string,
   timeout: number
 ): Promise<void> {
   const startTime = Date.now();
@@ -55,7 +46,7 @@ export async function waitUntilVisible(
       }
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      logger.error(`waitUntilVisible: ${lastError.message}`);
+      // Don't log here - we'll log the final formatted error if timeout is reached
     }
     
     // Wait before next retry
@@ -66,24 +57,28 @@ export async function waitUntilVisible(
   if (typeof context === 'string') {
     // Legacy string message support
     const finalError = lastError || new Error(context);
-    throw new TimeoutError(`${context}`, {
+    const timeoutError = new TimeoutError(`${context}`, {
       operation: 'waitUntilVisible',
       timeout,
       lastError: finalError
     });
+    logger.error(`waitUntilVisible: ${timeoutError.getFormattedMessage()}`);
+    throw timeoutError;
   }
 
   // Throw AssertionError with full context
-  throw new AssertionError(
-    `${context.assertionType} assertion failed: expected ${JSON.stringify(context.expected)} but got ${JSON.stringify(context.actual ?? 'element not visible')}`,
+  const assertionError = new AssertionError(
+    `${context.operation} assertion failed: expected ${JSON.stringify(context.expected)} but got ${JSON.stringify(context.actual ?? 'element not visible')}`,
     {
-      expected: context.expected,
+      expected: context.expected!,
       actual: context.actual ?? 'element not visible',
       locator: context.locator,
       timeout,
       lastError: lastError ?? undefined
     }
   );
+  logger.error(`waitUntilVisible: ${assertionError.getFormattedMessage()}`);
+  throw assertionError;
 }
 
 /**
@@ -96,7 +91,7 @@ export async function waitUntilVisible(
  */
 export async function waitUntilHidden(
   condition: () => Promise<boolean>,
-  context: AssertionContext | string,
+  context: ErrorContext | string,
   timeout: number
 ): Promise<void> {
   const startTime = Date.now();
@@ -108,11 +103,8 @@ export async function waitUntilHidden(
       if (result) {
         return; // Element is hidden
       }
-    } catch (error) {
-      // Element not found in DOM - considered hidden
-      if (error instanceof Error) {
-        logger.error(`waitUntilHidden: ${error.message}`);
-      }
+    } catch {
+      // Element not found in DOM - considered hidden (this is expected behavior)
       return;
     }
     
@@ -123,24 +115,28 @@ export async function waitUntilHidden(
   // Timeout reached - element still visible
   if (typeof context === 'string') {
     // Legacy string message support
-    throw new TimeoutError(`${context}`, {
+    const timeoutError = new TimeoutError(`${context}`, {
       operation: 'waitUntilHidden',
       timeout,
       lastError: lastError ?? undefined
     });
+    logger.error(`waitUntilHidden: ${timeoutError.getFormattedMessage()}`);
+    throw timeoutError;
   }
 
   // Throw AssertionError with full context
-  throw new AssertionError(
-    `${context.assertionType} assertion failed: expected ${JSON.stringify(context.expected)} but got ${JSON.stringify(context.actual ?? 'element still visible')}`,
+  const assertionError = new AssertionError(
+    `${context.operation} assertion failed: expected ${JSON.stringify(context.expected)} but got ${JSON.stringify(context.actual ?? 'element still visible')}`,
     {
-      expected: context.expected,
+      expected: context.expected!,
       actual: context.actual ?? 'element still visible',
       locator: context.locator,
       timeout,
       lastError: lastError ?? undefined
     }
   );
+  logger.error(`waitUntilHidden: ${assertionError.getFormattedMessage()}`);
+  throw assertionError;
 }
 
 /**
