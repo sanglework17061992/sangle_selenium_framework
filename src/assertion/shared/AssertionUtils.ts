@@ -7,7 +7,7 @@ import { TimeUtils } from '@utils/TimeUtils';
 import { formatValue } from '@utils/ValueFormatter';
 import { logger } from '@utils/Logger';
 import { TIMING } from '@config/Constants';
-import { SanError, ErrorType } from '@errors';
+import { AssertionError, TimeoutError } from '@errors';
 
 /**
  * Context information for detailed error messages
@@ -66,21 +66,20 @@ export async function waitUntilVisible(
   if (typeof context === 'string') {
     // Legacy string message support
     const finalError = lastError || new Error(context);
-    throw new SanError(`${context}`, {
-      type: ErrorType.TimeoutError,
+    throw new TimeoutError(`${context}`, {
+      operation: 'waitUntilVisible',
       timeout,
       lastError: finalError
     });
   }
 
-  // Throw SanError with timeout context
-  throw new SanError(
+  // Throw AssertionError with full context
+  throw new AssertionError(
     `${context.assertionType} assertion failed: expected ${JSON.stringify(context.expected)} but got ${JSON.stringify(context.actual ?? 'element not visible')}`,
     {
-      type: ErrorType.AssertionError,
-      locator: context.locator,
       expected: context.expected,
       actual: context.actual ?? 'element not visible',
+      locator: context.locator,
       timeout,
       lastError: lastError ?? undefined
     }
@@ -124,21 +123,20 @@ export async function waitUntilHidden(
   // Timeout reached - element still visible
   if (typeof context === 'string') {
     // Legacy string message support
-    throw new SanError(`${context}`, {
-      type: ErrorType.TimeoutError,
+    throw new TimeoutError(`${context}`, {
+      operation: 'waitUntilHidden',
       timeout,
       lastError: lastError ?? undefined
     });
   }
 
-  // Throw SanError with assertion context
-  throw new SanError(
+  // Throw AssertionError with full context
+  throw new AssertionError(
     `${context.assertionType} assertion failed: expected ${JSON.stringify(context.expected)} but got ${JSON.stringify(context.actual ?? 'element still visible')}`,
     {
-      type: ErrorType.AssertionError,
-      locator: context.locator,
       expected: context.expected,
       actual: context.actual ?? 'element still visible',
+      locator: context.locator,
       timeout,
       lastError: lastError ?? undefined
     }
@@ -150,10 +148,9 @@ export async function waitUntilHidden(
  */
 export function equal<T>(actual: T, expected: T, message?: string): void {
   if (actual !== expected) {
-    throw new SanError(
+    throw new AssertionError(
       message || `Expected ${formatValue(actual)} to equal ${formatValue(expected)}`,
       {
-        type: ErrorType.AssertionError,
         expected: String(expected),
         actual: String(actual)
       }

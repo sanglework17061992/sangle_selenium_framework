@@ -2,7 +2,7 @@ import { config } from 'dotenv';
 import { BrowserType, LogLevel, ConfigType, ConfigKey } from '@enums';
 import type { BrowserConfig, TimeoutConfig } from '@configTypes';
 import { DEFAULT_CONFIG } from '@config/Constants';
-import { SanError, ErrorType } from '@errors';
+import { ConfigurationError } from '@errors';
 
 // Load environment variables from .env file
 config();
@@ -59,8 +59,7 @@ export class ConfigLoader {
 
     // Validate browser name
     if (browserName.trim() === '') {
-      throw new SanError('BROWSER configuration is empty', {
-        type: ErrorType.ConfigurationError,
+      throw new ConfigurationError('BROWSER configuration is empty', {
         configKey: ConfigKey.BROWSER
       });
     }
@@ -86,8 +85,7 @@ export class ConfigLoader {
     const baseUrl = this.parseConfig(ConfigKey.BASE_URL, '');
     
     if (!baseUrl || baseUrl.trim() === '') {
-      throw new SanError('BASE_URL is not configured', {
-        type: ErrorType.ConfigurationError,
+      throw new ConfigurationError('BASE_URL is not configured', {
         configKey: ConfigKey.BASE_URL
       });
     }

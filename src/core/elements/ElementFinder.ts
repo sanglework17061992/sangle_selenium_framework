@@ -2,7 +2,7 @@ import { By, WebElement, WebDriver } from 'selenium-webdriver';
 import { TIMING } from '@config/Constants';
 import { TimeUtils } from '@utils/TimeUtils';
 import { Locator } from '@core/elements/SanElement';
-import { SanError, ErrorType } from '@errors';
+import { ConfigurationError, ElementError, TimeoutError } from '@errors';
 
 /**
  * Options for finding elements
@@ -29,8 +29,7 @@ export class ElementFinder {
     options?: FindOptions
   ): Promise<WebElement> {
     if (!options) {
-      throw new SanError('FindOptions must be provided with at least timeout', {
-        type: ErrorType.ConfigurationError,
+      throw new ConfigurationError('FindOptions must be provided with at least timeout', {
         configKey: 'FindOptions'
       });
     }
@@ -53,8 +52,7 @@ export class ElementFinder {
       case 'id': return By.id(locator.value);
       case 'name': return By.name(locator.value);
       case 'class': return By.className(locator.value);
-      default: throw new SanError(`Unsupported locator type: ${locator.using}`, {
-        type: ErrorType.ConfigurationError,
+      default: throw new ConfigurationError(`Unsupported locator type: ${locator.using}`, {
         configKey: `locator.using=${locator.using}`
       });
     }
@@ -87,10 +85,8 @@ export class ElementFinder {
         if (error.name !== 'StaleElementReferenceError' && 
             error.name !== 'NoSuchElementError' &&
             !error.message?.includes('no such element')) {
-          // Non-transient error - wrap in SanError
-          throw new SanError('Failed to find element', {
-            type: ErrorType.ElementError,
-            operation: 'findElement',
+          // Non-transient error - wrap in ElementError
+          throw new ElementError('Failed to find element', {
             locator: `${by.constructor.name}('${by.value}')`,
             timeout,
             reason: error instanceof Error ? error.message : String(error),
@@ -104,11 +100,10 @@ export class ElementFinder {
       }
       await TimeUtils.sleep(TIMING.DEFAULT_RETRY_INTERVAL);
     }
-    throw new SanError(`Failed to find element within ${timeout}ms`, {
-      type: ErrorType.TimeoutError,
+    throw new TimeoutError(`Failed to find element within ${timeout}ms`, {
       operation: 'Element visibility check',
-      locator: `${by.constructor.name}('${by.value}')`,
       timeout,
+      locator: `${by.constructor.name}('${by.value}')`,
       reason: 'Element was not found or did not become visible within the specified timeout'
     });
   }

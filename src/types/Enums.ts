@@ -74,20 +74,14 @@ export enum ExecutionMode {
 
 /**
  * Error type enum for categorizing different error scenarios
+ * Used for the readonly type property in error classes
  */
 export enum ErrorType {
-  /** Element not found, not visible, or not actionable */
-  ElementError = 'ElementError',
-  /** Action on element failed (click, type, etc.) */
-  ActionabilityError = 'ActionabilityError',
-  /** Assertion condition not met */
   AssertionError = 'AssertionError',
-  /** Navigation or URL change failed */
-  NavigationError = 'NavigationError',
-  /** Operation exceeded time limit */
   TimeoutError = 'TimeoutError',
-  /** Configuration key missing or invalid */
+  ElementError = 'ElementError',
+  ActionabilityError = 'ActionabilityError',
   ConfigurationError = 'ConfigurationError',
-  /** Unexpected or unrecoverable error */
+  NavigationError = 'NavigationError',
   UnexpectedError = 'UnexpectedError'
 }

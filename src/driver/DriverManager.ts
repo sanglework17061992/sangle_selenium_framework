@@ -4,7 +4,7 @@ import { configLoader, ConfigLoader } from '@config/ConfigLoader';
 import { logger, Logger } from '@utils/Logger';
 import { BrowserFactory, ChromeFactory, FirefoxFactory, BrowserRegistry } from '@browser';
 import type { BrowserConfig } from '@configTypes';
-import { SanError, ErrorType } from '@errors';
+import { UnexpectedError } from '@errors';
 
 /**
  * Instance-based driver manager with dependency injection
@@ -98,8 +98,7 @@ export class DriverManager {
       return driver;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      throw new SanError(`Failed to initialize driver for ${browserName || 'unknown'}`, {
-        type: ErrorType.ActionabilityError,
+      throw new UnexpectedError(`Failed to initialize driver for ${browserName || 'unknown'}`, {
         operation: 'createDriver',
         reason: errorMsg,
         context: {
@@ -118,9 +117,9 @@ export class DriverManager {
    */
   getDriver(): WebDriver {
     if (!this.currentDriver) {
-      throw new SanError('Driver not initialized. Call createDriver() first.', {
-        type: ErrorType.UnexpectedError,
-        operation: 'getDriver'
+      throw new UnexpectedError('Driver not initialized. Call createDriver() first.', {
+        operation: 'getDriver',
+        reason: 'Driver instance is null - createDriver() must be called before getDriver()'
       });
     }
     return this.currentDriver;

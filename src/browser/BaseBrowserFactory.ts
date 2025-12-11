@@ -2,7 +2,7 @@ import { Builder, WebDriver } from 'selenium-webdriver';
 import type { BrowserConfig } from '@configTypes';
 import { BrowserType } from '@enums';
 import { logger } from '@utils/Logger';
-import { SanError, ErrorType } from '@errors';
+import { UnexpectedError } from '@errors';
 
 export interface BrowserFactory {
   createWebDriver(config: BrowserConfig): Promise<WebDriver>;
@@ -123,8 +123,7 @@ export abstract class BaseBrowserFactory<T extends BrowserType = BrowserType> im
       return await builder.build();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      throw new SanError(`Failed to create ${this.browserName} driver`, {
-        type: ErrorType.ActionabilityError,
+      throw new UnexpectedError(`Failed to create ${this.browserName} driver`, {
         operation: 'createWebDriver',
         reason: errorMessage,
         context: {
