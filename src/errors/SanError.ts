@@ -28,9 +28,16 @@
  */
 export abstract class SanError extends Error {
   readonly timestamp: Date;
-  abstract readonly type: string;
   readonly context?: Record<string, any>;
   readonly lastError?: Error;
+
+  /**
+   * Get error type from class name
+   * This eliminates the need for a separate ErrorType enum
+   */
+  get type(): string {
+    return this.constructor.name;
+  }
 
   protected readonly baseMessage: string;
 

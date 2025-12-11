@@ -1,5 +1,4 @@
 import { SanError } from '@errors/SanError';
-import { ErrorType } from '@enums';
 
 /**
  * ElementError - Thrown when an element is not found, not visible, or not actionable
@@ -12,7 +11,6 @@ import { ErrorType } from '@enums';
  * });
  */
 export class ElementError extends SanError {
-  readonly type = ErrorType.ElementError;
   readonly locator: string;
   readonly timeout?: number;
   readonly reason?: string;

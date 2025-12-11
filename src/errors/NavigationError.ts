@@ -1,5 +1,4 @@
 import { SanError } from '@errors/SanError';
-import { ErrorType } from '@enums';
 
 /**
  * NavigationError - Thrown when navigation or URL change fails
@@ -11,7 +10,6 @@ import { ErrorType } from '@enums';
  * });
  */
 export class NavigationError extends SanError {
-  readonly type = ErrorType.NavigationError;
   readonly url?: string;
   readonly reason?: string;
 

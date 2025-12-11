@@ -52,17 +52,6 @@ jobs:
       - name: List test artifacts
         if: always()
         run: ls -la mochawesome-report/ allure-results/ logs/ 2>&1 || echo "Directories not found"
-      
-      # Step 5c: Display combined log (always show for debugging)
-      - name: Display test logs
-        if: always()
-        run: |
-          echo "======= Test Execution Logs ======="
-          if [ -f logs/combined.log ]; then
-            cat logs/combined.log
-          else
-            echo "No logs found"
-          fi
         
       # Step 6: Upload test results
       - name: Upload test results

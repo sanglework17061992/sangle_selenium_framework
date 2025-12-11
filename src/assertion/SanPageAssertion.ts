@@ -28,26 +28,43 @@ export class SanPageAssertion {
   }
 
   /**
+   * Generic assertion helper that retries until condition is met
+   * @private
+   */
+  private async assertWithRetry(
+    operation: string,
+    locator: string,
+    expectedValue: any,
+    testFn: (context: ErrorContext) => Promise<boolean>
+  ): Promise<void> {
+    const context: ErrorContext = {
+      operation,
+      expected: expectedValue,
+      locator,
+    };
+
+    await waitUntilVisible(
+      () => testFn(context),
+      context,
+      this.timeout
+    );
+  }
+
+  /**
    * Assert that the page has the expected title (exact match)
    * Trims whitespace from both actual and expected title before comparison.
    * @example await expect(driver).toHaveTitle('Dashboard')
    */
   async toHaveTitle(expectedTitle: string): Promise<void> {
-    let lastActualTitle = '';
-    const context: ErrorContext = {
-      operation: 'toHaveTitle',
-      expected: expectedTitle.trim(),
-      locator: 'page.title',
-    };
-
-    await waitUntilVisible(
-      async () => {
-        lastActualTitle = await this.driver.getTitle();
-        context.actual = lastActualTitle.trim();
-        return lastActualTitle.trim() === expectedTitle.trim();
-      },
-      context,
-      this.timeout
+    await this.assertWithRetry(
+      'toHaveTitle',
+      'page.title',
+      expectedTitle.trim(),
+      async (context) => {
+        const actualTitle = await this.driver.getTitle();
+        context.actual = actualTitle.trim();
+        return actualTitle.trim() === expectedTitle.trim();
+      }
     );
   }
 
@@ -64,33 +81,26 @@ export class SanPageAssertion {
    * await expect(driver).toHaveURL(/\/dashboard\/\d+/)
    */
   async toHaveURL(expectedUrl: string | RegExp): Promise<void> {
-    let lastActualUrl = '';
     const isRegExp = expectedUrl instanceof RegExp;
     const expectedPattern = isRegExp ? expectedUrl.toString() : expectedUrl;
-    const context: ErrorContext = {
-      operation: 'toHaveURL',
-      expected: expectedPattern,
-      locator: 'page.url',
-    };
-    
-    await waitUntilVisible(
-      async () => {
+
+    await this.assertWithRetry(
+      'toHaveURL',
+      'page.url',
+      expectedPattern,
+      async (context) => {
         try {
-          lastActualUrl = await this.driver.getCurrentUrl();
-          context.actual = lastActualUrl.trim();
+          const actualUrl = await this.driver.getCurrentUrl();
+          context.actual = actualUrl.trim();
           if (isRegExp) {
-            return expectedUrl.test(lastActualUrl);
+            return expectedUrl.test(actualUrl);
           } else {
-            // Exact string match (not partial)
-            return lastActualUrl.trim() === expectedUrl.trim();
+            return actualUrl.trim() === expectedUrl.trim();
           }
         } catch {
-          // Navigation not complete yet, return false to retry
           return false;
         }
-      },
-      context,
-      this.timeout
+      }
     );
   }
 }

@@ -1,5 +1,4 @@
 import { SanError } from '@errors/SanError';
-import { ErrorType } from '@enums';
 
 /**
  * TimeoutError - Thrown when an operation exceeds its time limit
@@ -13,7 +12,6 @@ import { ErrorType } from '@enums';
  * });
  */
 export class TimeoutError extends SanError {
-  readonly type = ErrorType.TimeoutError;
   readonly operation: string;
   readonly timeout: number;
   readonly locator?: string;

@@ -27,20 +27,47 @@ export class SanElementAssertion {
   }
 
   /**
-   * Get locator string for error messages
+   * Generic assertion helper that retries until condition is met
    * @private
    */
-  private getLocatorString(): string | undefined {
-    try {
-      // Access locator from SanElement if available
-      const locator = (this.element as any).locator;
-      if (locator) {
-        return `${locator.using}('${locator.value}')`;
-      }
-    } catch {
-      // Ignore if locator is not accessible
-    }
-    return undefined;
+  private async assertWithRetry(
+    operation: string,
+    expectedValue: any,
+    testFn: (context: ErrorContext) => Promise<boolean>
+  ): Promise<void> {
+    const context: ErrorContext = {
+      operation,
+      expected: expectedValue,
+      locator: this.element.getLocatorString(),
+    };
+
+    await waitUntilVisible(
+      () => testFn(context),
+      context,
+      this.timeout
+    );
+  }
+
+  /**
+   * Generic assertion helper for hidden elements (uses waitUntilHidden instead of waitUntilVisible)
+   * @private
+   */
+  private async assertWithRetryHidden(
+    operation: string,
+    expectedValue: any,
+    testFn: (context: ErrorContext) => Promise<boolean>
+  ): Promise<void> {
+    const context: ErrorContext = {
+      operation,
+      expected: expectedValue,
+      locator: this.element.getLocatorString(),
+    };
+
+    await waitUntilHidden(
+      () => testFn(context),
+      context,
+      this.timeout
+    );
   }
 
   /**
@@ -51,21 +78,14 @@ export class SanElementAssertion {
    * @example await expect(element).toHaveText('Welcome')
    */
   async toHaveText(expectedText: string): Promise<void> {
-    let lastActualText = '';
-    const context: ErrorContext = {
-      operation: 'toHaveText',
-      expected: expectedText.trim(),
-      locator: this.getLocatorString(),
-    };
-
-    await waitUntilVisible(
-      async () => {
-        lastActualText = await this.element.getText();
-        context.actual = lastActualText.trim();
-        return lastActualText.trim() === expectedText.trim();
-      },
-      context,
-      this.timeout
+    await this.assertWithRetry(
+      'toHaveText',
+      expectedText.trim(),
+      async (context) => {
+        const actualText = await this.element.getText();
+        context.actual = actualText.trim();
+        return actualText.trim() === expectedText.trim();
+      }
     );
   }
 
@@ -74,19 +94,14 @@ export class SanElementAssertion {
    * @example await expect(element).toBeVisible()
    */
   async toBeVisible(): Promise<void> {
-    const context: ErrorContext = {
-      operation: 'toBeVisible',
-      expected: 'visible',
-      locator: this.getLocatorString(),
-    };
-
-    await waitUntilVisible(
-      async () => {
-        context.actual = (await this.element.isDisplayed()) ? 'visible' : 'hidden';
-        return this.element.isDisplayed();
-      },
-      context,
-      this.timeout
+    await this.assertWithRetry(
+      'toBeVisible',
+      'visible',
+      async (context) => {
+        const isDisplayed = await this.element.isDisplayed();
+        context.actual = isDisplayed ? 'visible' : 'hidden';
+        return isDisplayed;
+      }
     );
   }
 
@@ -96,21 +111,14 @@ export class SanElementAssertion {
    * @example await expect(element).toBeHidden()
    */
   async toBeHidden(): Promise<void> {
-    let isDisplayed = false;
-    const context: ErrorContext = {
-      operation: 'toBeHidden',
-      expected: 'hidden',
-      locator: this.getLocatorString(),
-    };
-
-    await waitUntilHidden(
-      async () => {
+    await this.assertWithRetryHidden(
+      'toBeHidden',
+      'hidden',
+      async (context) => {
         const isDisplayed = await this.element.isDisplayedNow();
         context.actual = isDisplayed ? 'visible' : 'hidden';
         return !isDisplayed;
-      },
-      context,
-      this.timeout
+      }
     );
   }
 
@@ -120,20 +128,14 @@ export class SanElementAssertion {
    * @example await expect(inputElement).toBeEnabled()
    */
   async toBeEnabled(): Promise<void> {
-    const context: ErrorContext = {
-      operation: 'toBeEnabled',
-      expected: true,
-      locator: this.getLocatorString(),
-    };
-
-    await waitUntilVisible(
-      async () => {
+    await this.assertWithRetry(
+      'toBeEnabled',
+      true,
+      async (context) => {
         const isEnabled = await this.element.isEnabledNow();
         context.actual = isEnabled;
         return isEnabled === true;
-      },
-      context,
-      this.timeout
+      }
     );
   }
 
@@ -143,20 +145,14 @@ export class SanElementAssertion {
    * @example await expect(inputElement).toBeDisabled()
    */
   async toBeDisabled(): Promise<void> {
-    const context: ErrorContext = {
-      operation: 'toBeDisabled',
-      expected: false,
-      locator: this.getLocatorString(),
-    };
-
-    await waitUntilVisible(
-      async () => {
+    await this.assertWithRetry(
+      'toBeDisabled',
+      false,
+      async (context) => {
         const isEnabled = await this.element.isEnabledNow();
         context.actual = !isEnabled;
         return isEnabled === false;
-      },
-      context,
-      this.timeout
+      }
     );
   }
 }

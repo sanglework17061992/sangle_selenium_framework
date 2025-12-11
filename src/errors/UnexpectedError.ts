@@ -1,5 +1,4 @@
 import { SanError } from '@errors/SanError';
-import { ErrorType } from '@enums';
 
 /**
  * UnexpectedError - Thrown for unexpected or unrecoverable errors
@@ -12,7 +11,6 @@ import { ErrorType } from '@enums';
  * });
  */
 export class UnexpectedError extends SanError {
-  readonly type = ErrorType.UnexpectedError;
   readonly operation?: string;
   readonly reason?: string;
 

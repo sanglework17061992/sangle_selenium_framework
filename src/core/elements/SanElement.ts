@@ -53,6 +53,14 @@ export class SanElement {
   }
 
   /**
+   * Get locator string for error messages and logging
+   * Returns formatted string like: css('selector') or xpath('//path')
+   */
+  getLocatorString(): string {
+    return `${this.locator.using}('${this.locator.value}')`;
+  }
+
+  /**
    * Find and prepare element for interaction or reading
    */
   private async findElement(

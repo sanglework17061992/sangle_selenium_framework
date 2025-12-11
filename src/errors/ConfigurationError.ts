@@ -1,5 +1,4 @@
 import { SanError } from '@errors/SanError';
-import { ErrorType } from '@enums';
 
 /**
  * ConfigurationError - Thrown when configuration is missing or invalid
@@ -10,7 +9,6 @@ import { ErrorType } from '@enums';
  * });
  */
 export class ConfigurationError extends SanError {
-  readonly type = ErrorType.ConfigurationError;
   readonly configKey?: string;
 
   constructor(

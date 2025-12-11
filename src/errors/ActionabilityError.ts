@@ -1,5 +1,4 @@
 import { SanError } from '@errors/SanError';
-import { ErrorType } from '@enums';
 
 /**
  * ActionabilityError - Thrown when an element is found but not actionable
@@ -12,7 +11,6 @@ import { ErrorType } from '@enums';
  * });
  */
 export class ActionabilityError extends SanError {
-  readonly type = ErrorType.ActionabilityError;
   readonly operation: string;
   readonly locator?: string;
   readonly reason?: string;

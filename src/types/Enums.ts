@@ -71,17 +71,3 @@ export enum ExecutionMode {
   PARALLEL = 'parallel',
   SEQUENTIAL = 'sequential'
 }
-
-/**
- * Error type enum for categorizing different error scenarios
- * Used for the readonly type property in error classes
- */
-export enum ErrorType {
-  AssertionError = 'AssertionError',
-  TimeoutError = 'TimeoutError',
-  ElementError = 'ElementError',
-  ActionabilityError = 'ActionabilityError',
-  ConfigurationError = 'ConfigurationError',
-  NavigationError = 'NavigationError',
-  UnexpectedError = 'UnexpectedError'
-}

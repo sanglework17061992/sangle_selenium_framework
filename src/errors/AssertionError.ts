@@ -1,5 +1,4 @@
 import { SanError } from '@errors/SanError';
-import { ErrorType } from '@enums';
 
 /**
  * AssertionError - Thrown when an assertion fails
@@ -13,7 +12,6 @@ import { ErrorType } from '@enums';
  * });
  */
 export class AssertionError extends SanError {
-  readonly type = ErrorType.AssertionError;
   readonly expected: string | boolean;
   readonly actual?: string | boolean;
   readonly locator?: string;
