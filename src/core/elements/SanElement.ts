@@ -7,6 +7,7 @@ import { ActionType } from '@enums';
 import { TimeUtils } from '@utils/TimeUtils';
 import { logger } from '@utils/Logger';
 import { TIMING } from '@config/Constants';
+import { ElementError, UnexpectedError } from '@errors';
 
 export { ActionType } from '@enums';
 export type Locator = { using: 'css' | 'xpath' | 'id' | 'name' | 'class'; value: string };
@@ -49,6 +50,14 @@ export class SanElement {
 
   private get driver() {
     return defaultDriverManager.getDriver();
+  }
+
+  /**
+   * Get locator string for error messages and logging
+   * Returns formatted string like: css('selector') or xpath('//path')
+   */
+  getLocatorString(): string {
+    return `${this.locator.using}('${this.locator.value}')`;
   }
 
   /**
@@ -115,12 +124,29 @@ export class SanElement {
         }
 
         // Step 4: Re-throw if not stale or retries exhausted
-        throw error;
+        throw new ElementError(`Action failed on element`, {
+          locator: `${this.locator.using}('${this.locator.value}')`,
+          timeout: options?.timeout,
+          reason: error instanceof Error ? error.message : String(error),
+          context: {
+            actionType,
+            operation: actionType.toString(),
+            retryCount,
+            maxRetries: MAX_STALE_RETRIES,
+            parentElement: this.parentElement ? 'present' : 'none',
+            errorName: error?.name
+          },
+          lastError: error instanceof Error ? error : undefined
+        });
       }
     }
 
     // This should never be reached, but TypeScript requires it
-    throw new Error('executeWithRecovery: Unexpected end of retry loop');
+    throw new UnexpectedError('executeWithRecovery: Unexpected end of retry loop', {
+      operation: 'executeWithRecovery',
+      reason: 'Retry loop completed without returning or throwing',
+      context: { actionType, locatorUsing: this.locator.using, locatorValue: this.locator.value }
+    });
   }
 
   /**

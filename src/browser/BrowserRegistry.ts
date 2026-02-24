@@ -1,4 +1,5 @@
 import { BrowserFactory } from '@browser/BaseBrowserFactory';
+import { ConfigurationError } from '@errors';
 
 /**
  * Registry for managing browser factories
@@ -12,10 +13,14 @@ export class BrowserRegistry {
    */
   register(name: string, factory: BrowserFactory): void {
     if (!name?.trim()) {
-      throw new Error('Browser name cannot be empty');
+      throw new ConfigurationError('Browser name cannot be empty', {
+        configKey: 'BrowserName'
+      });
     }
     if (!factory) {
-      throw new Error('Browser factory is required');
+      throw new ConfigurationError('Browser factory is required', {
+        configKey: 'BrowserFactory'
+      });
     }
     
     this.factories.set(name.toLowerCase().trim(), factory);
@@ -26,13 +31,18 @@ export class BrowserRegistry {
    */
   get(name: string): BrowserFactory {
     if (!name?.trim()) {
-      throw new Error('Browser name cannot be empty');
+      throw new ConfigurationError('Browser name cannot be empty', {
+        configKey: 'BrowserName'
+      });
     }
     
     const factory = this.factories.get(name.toLowerCase().trim());
     if (!factory) {
       const available = Array.from(this.factories.keys()).join(', ');
-      throw new Error(`No browser factory registered for: "${name}". Available: ${available}`);
+      throw new ConfigurationError(`No browser factory registered for: "${name}"`, {
+        configKey: `BrowserFactory[${name}]`,
+        context: { availableBrowsers: available }
+      });
     }
     
     return factory;

@@ -2,6 +2,7 @@ import { By, WebElement, WebDriver } from 'selenium-webdriver';
 import { TIMING } from '@config/Constants';
 import { TimeUtils } from '@utils/TimeUtils';
 import { Locator } from '@core/elements/SanElement';
+import { ConfigurationError, ElementError, TimeoutError } from '@errors';
 
 /**
  * Options for finding elements
@@ -28,7 +29,9 @@ export class ElementFinder {
     options?: FindOptions
   ): Promise<WebElement> {
     if (!options) {
-      throw new Error('FindOptions must be provided with at least timeout');
+      throw new ConfigurationError('FindOptions must be provided with at least timeout', {
+        configKey: 'FindOptions'
+      });
     }
 
     const by = this.toBy(locator);
@@ -49,7 +52,9 @@ export class ElementFinder {
       case 'id': return By.id(locator.value);
       case 'name': return By.name(locator.value);
       case 'class': return By.className(locator.value);
-      default: throw new Error('Unsupported locator');
+      default: throw new ConfigurationError(`Unsupported locator type: ${locator.using}`, {
+        configKey: `locator.using=${locator.using}`
+      });
     }
   }
 
@@ -80,12 +85,27 @@ export class ElementFinder {
         if (error.name !== 'StaleElementReferenceError' && 
             error.name !== 'NoSuchElementError' &&
             !error.message?.includes('no such element')) {
-          throw error;
+          // Non-transient error - wrap in ElementError
+          throw new ElementError('Failed to find element', {
+            locator: `${by.constructor.name}('${by.value}')`,
+            timeout,
+            reason: error instanceof Error ? error.message : String(error),
+            context: {
+              errorName: error.name,
+              parentElement: parentElement ? 'present' : 'none'
+            },
+            lastError: error instanceof Error ? error : undefined
+          });
         }
       }
       await TimeUtils.sleep(TIMING.DEFAULT_RETRY_INTERVAL);
     }
-    throw new Error(`Element not visible within ${timeout}ms`);
+    throw new TimeoutError(`Failed to find element within ${timeout}ms`, {
+      operation: 'Element visibility check',
+      timeout,
+      locator: `${by.constructor.name}('${by.value}')`,
+      reason: 'Element was not found or did not become visible within the specified timeout'
+    });
   }
 }
 

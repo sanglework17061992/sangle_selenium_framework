@@ -9,6 +9,9 @@ const logDir = 'logs';
 // Get log level from config or default to INFO
 const logLevel = configLoader.getLogLevel();
 
+// Global worker ID context - set when in parallel mode
+let globalWorkerId: string | null = null;
+
 // logger configuration
 const winstonLogger = winston.createLogger({
   level: logLevel,
@@ -18,16 +21,13 @@ const winstonLogger = winston.createLogger({
     }),
     winston.format.errors({ stack: true }),
     winston.format.printf(({ timestamp, level, message, stack }) => {
+      const workerPrefix = globalWorkerId && globalWorkerId !== 'main' ? `[Worker ${globalWorkerId}] ` : '';
       const stackTrace = stack && typeof stack === 'string' ? '\n' + stack : '';
-      return `[${timestamp}] [${level.toUpperCase()}] ${message}${stackTrace}`;
+      return `[${timestamp}] [${level.toUpperCase()}] ${workerPrefix}${message}${stackTrace}`;
     })
   ),
   transports: [
     new winston.transports.Console(),
-    new winston.transports.File({
-      filename: path.join(logDir, 'error.log'),
-      level: 'error'
-    }),
     new winston.transports.File({
       filename: path.join(logDir, 'combined.log')
     })
@@ -38,8 +38,11 @@ const winstonLogger = winston.createLogger({
 export class Logger {
   private currentLevel: LogLevel = LogLevel.INFO;
 
-  constructor(level: LogLevel = LogLevel.INFO) {
+  constructor(level: LogLevel = LogLevel.INFO, workerId?: string) {
     this.setLevel(level);
+    if (workerId && workerId !== 'main') {
+      globalWorkerId = workerId;
+    }
   }
 
   setLevel(level: LogLevel): void {
@@ -61,12 +64,30 @@ export class Logger {
 
   error(message: string, error?: Error): void {
     if (error) {
-      winstonLogger.error(`${message}: ${error.message}`, { stack: error.stack });
+      // Check if it's a SanError with getFormattedMessage method
+      if ('getFormattedMessage' in error && typeof error.getFormattedMessage === 'function') {
+        const sanError = error as any;
+        winstonLogger.error(`${message} ${sanError.getFormattedMessage()}`);
+      } else {
+        winstonLogger.error(`${message}: ${error.message}`);
+      }
     } else {
       winstonLogger.error(message);
+    }
+  }
+
+  /**
+   * Set worker ID for parallel test execution logging
+   * Adds worker context to all subsequent logs
+   */
+  setWorkerId(workerId: string): void {
+    if (workerId === 'main') {
+      globalWorkerId = null;
+    } else {
+      globalWorkerId = workerId;
     }
   }
 }
 
 // Export - initialized with log level from config
-export const logger = new Logger(logLevel);
+export const logger = new Logger(logLevel, process.env.MOCHA_WORKER_ID);

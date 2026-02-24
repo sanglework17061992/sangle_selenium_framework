@@ -5,6 +5,7 @@ import { TIMING } from '@config/Constants';
 import { TimeUtils } from '@utils/TimeUtils';
 import { configLoader } from '@config/ConfigLoader';
 import { defaultDriverManager } from '@driver/DriverManager';
+import { ActionabilityError } from '@errors';
 
 export { Check } from '@enums';
 
@@ -129,9 +130,12 @@ export class ActionabilityChecker {
       .map(([check, count]) => `${check} (failed ${count} times)`)
       .join(', ');
     
-    throw new Error(
-      `Element not ready for ${actionType} within ${effectiveTimeout}ms. ` +
-      `Failed checks: ${failureDetails}`
+    throw new ActionabilityError(
+      `Element not ready for ${actionType} within ${effectiveTimeout}ms`,
+      {
+        operation: actionType,
+        reason: `Failed checks: ${failureDetails}`
+      }
     );
   }
 

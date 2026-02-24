@@ -15,6 +15,7 @@
 import { SanElement } from '@core/elements/SanElement';
 import { waitUntilVisible, waitUntilHidden } from '@assertion/shared/AssertionUtils';
 import { TIMING } from '@config/Constants';
+import type { ErrorContext } from '@errorTypes';
 
 export class SanElementAssertion {
   private readonly element: SanElement;
@@ -26,6 +27,50 @@ export class SanElementAssertion {
   }
 
   /**
+   * Generic assertion helper that retries until condition is met
+   * @private
+   */
+  private async assertWithRetry(
+    operation: string,
+    expectedValue: any,
+    testFn: (context: ErrorContext) => Promise<boolean>
+  ): Promise<void> {
+    const context: ErrorContext = {
+      operation,
+      expected: expectedValue,
+      locator: this.element.getLocatorString(),
+    };
+
+    await waitUntilVisible(
+      () => testFn(context),
+      context,
+      this.timeout
+    );
+  }
+
+  /**
+   * Generic assertion helper for hidden elements (uses waitUntilHidden instead of waitUntilVisible)
+   * @private
+   */
+  private async assertWithRetryHidden(
+    operation: string,
+    expectedValue: any,
+    testFn: (context: ErrorContext) => Promise<boolean>
+  ): Promise<void> {
+    const context: ErrorContext = {
+      operation,
+      expected: expectedValue,
+      locator: this.element.getLocatorString(),
+    };
+
+    await waitUntilHidden(
+      () => testFn(context),
+      context,
+      this.timeout
+    );
+  }
+
+  /**
    * Assert that the element has the exact text
    * Trims whitespace (spaces, newlines, indentation) from both actual and expected text before comparison.
    * This is necessary because HTML formatting often adds whitespace that doesn't affect
@@ -33,14 +78,14 @@ export class SanElementAssertion {
    * @example await expect(element).toHaveText('Welcome')
    */
   async toHaveText(expectedText: string): Promise<void> {
-    let lastActualText = '';
-    await waitUntilVisible(
-      async () => {
-        lastActualText = await this.element.getText();
-        return lastActualText.trim() === expectedText.trim();
-      },
-      `Expected element text "${expectedText.trim()}" but got "${lastActualText.trim()}"`,
-      this.timeout
+    await this.assertWithRetry(
+      'toHaveText',
+      expectedText.trim(),
+      async (context) => {
+        const actualText = await this.element.getText();
+        context.actual = actualText.trim();
+        return actualText.trim() === expectedText.trim();
+      }
     );
   }
 
@@ -49,10 +94,14 @@ export class SanElementAssertion {
    * @example await expect(element).toBeVisible()
    */
   async toBeVisible(): Promise<void> {
-    await waitUntilVisible(
-      () => this.element.isDisplayed(),
-      'Expected element to be visible but it is not',
-      this.timeout
+    await this.assertWithRetry(
+      'toBeVisible',
+      'visible',
+      async (context) => {
+        const isDisplayed = await this.element.isDisplayed();
+        context.actual = isDisplayed ? 'visible' : 'hidden';
+        return isDisplayed;
+      }
     );
   }
 
@@ -62,13 +111,14 @@ export class SanElementAssertion {
    * @example await expect(element).toBeHidden()
    */
   async toBeHidden(): Promise<void> {
-    await waitUntilHidden(
-      async () => {
+    await this.assertWithRetryHidden(
+      'toBeHidden',
+      'hidden',
+      async (context) => {
         const isDisplayed = await this.element.isDisplayedNow();
+        context.actual = isDisplayed ? 'visible' : 'hidden';
         return !isDisplayed;
-      },
-      'Expected element to be hidden but it is visible',
-      this.timeout
+      }
     );
   }
 
@@ -78,13 +128,14 @@ export class SanElementAssertion {
    * @example await expect(inputElement).toBeEnabled()
    */
   async toBeEnabled(): Promise<void> {
-    await waitUntilVisible(
-      async () => {
+    await this.assertWithRetry(
+      'toBeEnabled',
+      true,
+      async (context) => {
         const isEnabled = await this.element.isEnabledNow();
+        context.actual = isEnabled;
         return isEnabled === true;
-      },
-      'Expected element to be enabled but it is disabled',
-      this.timeout
+      }
     );
   }
 
@@ -94,13 +145,15 @@ export class SanElementAssertion {
    * @example await expect(inputElement).toBeDisabled()
    */
   async toBeDisabled(): Promise<void> {
-    await waitUntilVisible(
-      async () => {
+    await this.assertWithRetry(
+      'toBeDisabled',
+      false,
+      async (context) => {
         const isEnabled = await this.element.isEnabledNow();
+        context.actual = !isEnabled;
         return isEnabled === false;
-      },
-      'Expected element to be disabled but it is enabled',
-      this.timeout
+      }
     );
   }
 }
+

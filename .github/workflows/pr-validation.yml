@@ -51,7 +51,7 @@ jobs:
       # Step 5b: List generated artifacts (debug)
       - name: List test artifacts
         if: always()
-        run: ls -la mochawesome-report/ allure-results/ 2>&1 || echo "Directories not found"
+        run: ls -la mochawesome-report/ allure-results/ logs/ 2>&1 || echo "Directories not found"
         
       # Step 6: Upload test results
       - name: Upload test results
@@ -62,6 +62,7 @@ jobs:
           path: |
             mochawesome-report/
             allure-results/
+            logs/
           retention-days: 30
           if-no-files-found: warn
 
